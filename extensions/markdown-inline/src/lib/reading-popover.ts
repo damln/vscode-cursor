@@ -16,7 +16,7 @@ export function readingPopover(trigger: HTMLButtonElement, menu: HTMLElement, fo
   };
   trigger.addEventListener('pointerenter', event => {
     if (event.pointerType === 'touch' || !matchMedia('(hover: hover)').matches) return;
-    cancel(); timer = setTimeout(() => show(), 180);
+    show();
   });
   const leave = () => {
     cancel(); timer = setTimeout(() => {
