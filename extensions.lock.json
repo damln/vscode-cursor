@@ -11,10 +11,10 @@
     },
     {
       "id": "damln.file-actions",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "source": "extensions/file-actions",
-      "package": "dist/damln.file-actions-0.3.1.vsix",
-      "sha256": "c6a096d1e7a138494ceaf2b1dfc8bf73e42a8c110cf3abcb0b573b307370afe4",
+      "package": "dist/damln.file-actions-0.3.2.vsix",
+      "sha256": "d6db16bc8f562933c169ae4a763c9dde217bbaff756646aa1493601e951ffd03",
       "remote": false
     },
     {
