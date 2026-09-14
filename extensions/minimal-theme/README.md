@@ -1,12 +1,14 @@
-# Damln Minimal
+# Damln Minimal Theme
 
-A quiet dark theme for standard VS Code, using its supported theme API.
+Two quiet native VS Code themes: **Damln Minimal** (charcoal, the original dark theme)
+and **Damln Minimal Light** (soft white, slate ink). Both use restrained blue accents,
+semantic highlighting and coordinated terminal colors.
 
-The palette is original. Research included Mokka 2.0.5 and the minimalist setup at `adriandrs/vscode-settings`, but no Mokka source was copied because its repository and Marketplace package do not declare a license.
+Install this extension alone, then run **Preferences: Color Theme** to choose either.
+Installation never changes your selected theme or settings. There is no startup code,
+layout automation, workbench patch or dependency on another extension.
 
-- [themes/minimal-color-theme.json](themes/minimal-color-theme.json): palette.
-- [package.json](package.json): extension metadata and contributions.
+To remove it, select another theme and uninstall through Extensions.
+Requires VS Code 1.100.0+ or a compatible Cursor classic IDE.
 
-Choose **Preferences: Color Theme → Damln Minimal** to activate it. Installation
-does not change settings, hide views, or run startup code. Choose another theme
-before uninstalling if you want a specific replacement.
+Original theme definitions and yellow-and-black SVG artwork: [MIT](LICENSE).

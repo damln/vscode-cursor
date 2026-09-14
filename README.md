@@ -6,11 +6,11 @@ automatic settings changes, font installation, remote setup or workbench patches
 
 | Extension | Purpose |
 | --- | --- |
-| [Markdown Inline](extensions/markdown-inline/) | Visual Markdown, tables, Mermaid, frontmatter and six themes |
+| [Markdown Inline](extensions/markdown-inline/) | Visual Markdown, tables, Mermaid, frontmatter and ten themes |
 | [HTML Preview](extensions/html-preview/) | Preview HTML and its assets |
 | [File Actions](extensions/file-actions/) | Copy content, file path or parent path |
 | [Jump](extensions/jump/) | Keyboard navigation to word boundaries |
-| [Minimal Theme](extensions/minimal-theme/) | Optional dark VS Code theme |
+| [Minimal Theme](extensions/minimal-theme/) | Optional dark and light VS Code themes |
 
 ## Install or uninstall
 
@@ -82,6 +82,5 @@ or `npm audit --omit=dev --audit-level=high` in Jump after installing dependenci
 
 ## Licenses
 
-Private for now: original code marked `UNLICENSED` needs a license decision before
-an open-source release. Jump retains [MIT and upstream attribution](extensions/jump/UPSTREAM.json),
+The four original extensions and their SVG artwork use [MIT](LICENSE). Jump retains [MIT and upstream attribution](extensions/jump/UPSTREAM.json),
 fonts retain OFL, and bundled libraries retain their notices.

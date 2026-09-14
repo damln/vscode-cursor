@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Damln Minimal Theme</title>
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#ffd84d"/>
+  <g fill="none" stroke="#141414" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="128" cy="128" r="55"/><path d="M128 73a55 55 0 0 1 0 110Z" fill="#141414" stroke="none"/><path d="M128 42v10m0 152v10M42 128h10m152 0h10M67 67l7 7m108 108 7 7M67 189l7-7m108-108 7-7"/></g>
+</svg>

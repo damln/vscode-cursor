@@ -13,9 +13,9 @@ const contrast = (a, b) => {
   return (high + .05) / (low + .05);
 };
 
-test("six distinct themes retain readable body text, secondary text and links", () => {
-  assert.equal(new Set(THEMES.map(theme => theme.id)).size, 6);
-  for (const mode of ["light", "dark"]) assert.equal(THEMES.filter(theme => theme.mode === mode).length, 3);
+test("ten distinct themes retain readable body text, secondary text and links", () => {
+  assert.equal(new Set(THEMES.map(theme => theme.id)).size, 10);
+  for (const mode of ["light", "dark"]) assert.equal(THEMES.filter(theme => theme.mode === mode).length, 5);
   for (const theme of THEMES) {
     const [page, foreground, secondary, , , code, floating, accent] = theme.colors;
     for (const background of [page, floating]) {

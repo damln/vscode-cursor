@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Damln File Actions</title>
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#ffd84d"/>
+  <g fill="none" stroke="#141414" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M95 72H67a9 9 0 0 0-9 9v108a9 9 0 0 0 9 9h88a9 9 0 0 0 9-9v-24"/><rect x="94" y="48" width="104" height="112" rx="10"/><path d="m124 128 43-43m-30 0h30v30"/></g>
+</svg>

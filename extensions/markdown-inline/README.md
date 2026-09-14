@@ -27,7 +27,7 @@ use **Compare retained draft** to inspect both versions, then **Restore retained
 draft** to confirm restoring and saving your work. Restoration and discarding
 both create recovery backups before replacing anything.
 
-Use the **palette** button to choose among six light and dark editor themes.
+Use the **palette** button to choose among ten light and dark editor themes.
 The centered picker previews each palette and remembers your choice across files.
 
 Use **Width** and the adjacent **font-size** control to adjust the reading layout.
