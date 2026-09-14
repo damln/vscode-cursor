@@ -157,15 +157,10 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     for (const width of [320, 480, 768, 1440]) {
       await page.setViewportSize({width, height: 700});
       const before = await page.locator('header').boundingBox();
-      const messageCount = messages.length;
-      await page.locator('#copy-document').click();
-      await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'loading');
-      for (let i = 0; i < 100 && !messages.slice(messageCount).some(m => m.type === 'copyDocument'); i++) await page.waitForTimeout(20);
-      const requestId = messages.slice(messageCount).find(m => m.type === 'copyDocument').requestId;
-      await page.evaluate(requestId => window.postMessage({type: 'copyComplete', target: 'document', requestId}, '*'), requestId);
-      await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'success');
+      assert.equal(await page.locator('#copy-document, #copy-path, #copy-folder-path').count(), 0);
+      await page.locator('#inline-theme').hover();
       const after = await page.locator('header').boundingBox();
-      assert.deepEqual(after, before, 'copy feedback does not change header geometry');
+      assert.deepEqual(after, before, 'header hover does not change geometry');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     }
     const beforeRemoval = text;

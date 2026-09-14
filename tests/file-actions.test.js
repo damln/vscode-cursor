@@ -16,6 +16,7 @@ function harness() {
   const file = new Uri("file", "/work/read me.txt");
   const vscode = {
     Uri,
+    extensions: {getExtension: () => undefined},
     commands: {registerCommand(id, callback) {commands.set(id, callback);return {dispose() {}};}},
     env: {clipboard: {async writeText(value) {copied.push(value);}}},
     workspace: {
@@ -99,4 +100,46 @@ test("dirty notebooks cannot silently copy older disk content", async () => {
   const h = harness(); h.vscode.workspace.notebookDocuments = [{uri: h.file, isDirty: true}];
   assert.equal(await h.run("copyContent"), false); assert.equal(h.opened.length, 0);
   await h.run("copyFilePath"); assert.equal(h.copied[0], "read me.txt");
+});
+
+
+test("Markdown Inline content waits for pending visual edits", async () => {
+  const h = harness(), uri = new Uri("file", "/work/notes/draft.md");
+  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {uri, viewType: "damln.markdownInline"};
+  let release;
+  h.vscode.extensions.getExtension = () => ({isActive: true, exports: {
+    prepareCopy: async target => {assert.equal(target, uri); await new Promise(resolve => {release = resolve;});}
+  }});
+  const copying = h.run("copyContent");
+  assert.equal(h.opened.length, 0); assert.equal(h.copied.length, 0);
+  release(); await copying;
+  assert.equal(h.opened[0], uri);
+  assert.equal(h.copied[0], "Unsaved café\r\n  text\r\n");
+  await h.run("copyFilePath"); await h.run("copyParentFolderPath");
+  assert.deepEqual(h.copied.slice(1), ["notes/draft.md", "notes"]);
+});
+
+test("a conflicting Markdown draft or old Inline version cannot copy stale content", async () => {
+  const h = harness();
+  h.vscode.window.tabGroups.activeTabGroup.activeTab.input.viewType = "damln.markdownInline";
+  assert.equal(await h.run("copyContent"), false);
+  h.vscode.extensions.getExtension = () => ({isActive: true, exports: {
+    prepareCopy: async () => {throw new Error("Resolve the retained draft first");}
+  }});
+  assert.equal(await h.run("copyContent"), false);
+  assert.equal(h.copied.length, 0); assert.equal(h.opened.length, 0);
+  assert.match(h.errors[1], /retained draft/);
+});
+
+test("paths use the file's workspace root in multi-root and Remote SSH workspaces", async () => {
+  const h = harness(), uri = new Uri("vscode-remote", "/projects/second/docs/read me.md");
+  h.vscode.workspace.getWorkspaceFolder = target => {
+    assert.equal(target, uri); return {uri: new Uri("vscode-remote", "/projects/second")};
+  };
+  h.vscode.workspace.asRelativePath = (target, includeWorkspace) => {
+    assert.equal(includeWorkspace, false);
+    return path.posix.relative("/projects/second", target.path);
+  };
+  await h.run("copyFilePath", uri); await h.run("copyParentFolderPath", uri);
+  assert.deepEqual(h.copied, ["docs/read me.md", "docs"]);
 });

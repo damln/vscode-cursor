@@ -5,7 +5,6 @@ import { GitGutter, type RenderedBlock } from './lib/git-gutter';
 import { contentWidth, setupContentWidth } from './lib/content-width';
 import { pastePlainText } from "./milkdown/markdown-paste";
 import { setupHeaderPopovers } from "./lib/header-popover";
-import { CopyFeedback } from "./lib/copy-feedback";
 import { navigateHeading } from "./lib/heading-navigation";
 import {
   commandsCtx,
@@ -58,12 +57,6 @@ interface CommandMessage {
     | "addLink" | "focusToolbar" | "moveBlockUp" | "moveBlockDown";
 }
 
-interface CopyCompleteMessage {
-  type: "copyComplete" | "copyFailed";
-  requestId: string;
-  target: "document" | "path" | "folderPath";
-}
-
 interface JumpMessage extends InlineJumpOptions {
   type: "jump";
 }
@@ -99,9 +92,6 @@ let improvementError = "";
 const improveText = document.querySelector<HTMLButtonElement>("#improve-text");
 const rootElement = document.getElementById("editor");
 const openRawElement = document.getElementById("open-raw");
-const copyDocumentElement = document.getElementById("copy-document");
-const copyPathElement = document.getElementById("copy-path");
-const copyFolderPathElement = document.getElementById("copy-folder-path");
 const saveStateElement = document.getElementById("save-state");
 const inlineThemeElement = document.getElementById("inline-theme");
 const documentScrollElement = document.getElementById("document-scroll");
@@ -111,9 +101,6 @@ const addFrontmatterFieldElement = document.getElementById("frontmatter-add");
 if (
   !rootElement ||
   !openRawElement ||
-  !(copyDocumentElement instanceof HTMLButtonElement) ||
-  !(copyPathElement instanceof HTMLButtonElement) ||
-  !(copyFolderPathElement instanceof HTMLButtonElement) ||
   !saveStateElement ||
   !(inlineThemeElement instanceof HTMLButtonElement) ||
   !documentScrollElement ||
@@ -125,9 +112,6 @@ if (
 }
 const root = rootElement;
 const openRaw = openRawElement;
-const copyDocument = copyDocumentElement;
-const copyPath = copyPathElement;
-const copyFolderPath = copyFolderPathElement;
 setupContentWidth(width, value => {
   width = value;
   vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
@@ -137,10 +121,6 @@ setupFontSize(textSize, value => {
   vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
 });
 setupHeaderPopovers();
-const copyFeedback = new CopyFeedback(
-  {document: copyDocument, path: copyPath, folderPath: copyFolderPath},
-  document.getElementById('copy-feedback')!,
-);
 const saveState = saveStateElement;
 
 const documentScroll = documentScrollElement;
@@ -250,9 +230,7 @@ function sendNextEdit() {
   retry.disabled = sync.conflicted || Boolean(sync.sourceError) || Boolean(sync.inFlight);
   restoreDraft.disabled = Boolean(sync.inFlight);
   setStatus(sync.error ? 'Draft retained' : sync.pending ? 'Synchronizing' : sync.dirty ? 'Modified' : 'Saved');
-  if (sync.error) copyFeedback.cancelDocument('Resolve the document sync error before copying.');
   actions.drain(sync.version < 0 || sync.pending, sync.error, action => {
-    if (action.type === 'copyDocument' && action.requestId && !copyFeedback.isPending('document', action.requestId)) return;
     vscode.postMessage(action);
   });
   if (!request) return;
@@ -440,14 +418,6 @@ function isCommandMessage(value: any): value is CommandMessage {
   );
 }
 
-function isCopyCompleteMessage(value: any): value is CopyCompleteMessage {
-  return (
-    (value?.type === "copyComplete" || value?.type === "copyFailed") &&
-    typeof value.requestId === "string" &&
-    (value.target === "document" || value.target === "path" || value.target === "folderPath")
-  );
-}
-
 function isJumpMessage(value: any): value is JumpMessage {
   return (
     value?.type === "jump" &&
@@ -570,11 +540,6 @@ window.addEventListener("message", event => {
   }
   if (isJumpMessage(message)) {
     receiveJump(message);
-    return;
-  }
-  if (isCopyCompleteMessage(message)) {
-    copyFeedback.finish(message.target, message.requestId,
-      message.type === 'copyFailed' ? 'Could not copy. Try again.' : '');
     return;
   }
   if (isThemeMessage(message)) {
@@ -740,15 +705,6 @@ openRaw.addEventListener("click", () => {
     offset += sourceMarkdown?.blockOffset(view.state.selection.$from.index(0)) ?? 0;
   });
   flushAction({ type: "openRaw", offset });
-});
-copyDocument.addEventListener("click", () => {
-  flushAction({ type: "copyDocument", requestId: copyFeedback.begin("document") });
-});
-copyPath.addEventListener("click", () => {
-  vscode.postMessage({ type: "copyPath", requestId: copyFeedback.begin("path") });
-});
-copyFolderPath.addEventListener("click", () => {
-  vscode.postMessage({ type: "copyFolderPath", requestId: copyFeedback.begin("folderPath") });
 });
 for (const type of ["pointerdown", "click", "beforeinput", "paste", "drop"] as const) {
   window.addEventListener(type, event => {

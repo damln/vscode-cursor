@@ -100,10 +100,10 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     const contents = page.getByRole('button', {name: 'Table of contents', exact: true});
     await contents.click(); await page.keyboard.press('Escape'); await assertClosed();
     assert.equal(await contents.evaluate(el => el === document.activeElement), true);
-    await page.locator('#copy-document').hover();
+    await page.locator('#open-raw').hover();
     await page.locator('#header-popover').waitFor({state: 'visible'});
     await page.keyboard.press('Escape'); await assertClosed();
-    await page.mouse.move(800, 600); await page.locator('#copy-document').hover();
+    await page.mouse.move(800, 600); await page.locator('#open-raw').hover();
     await page.locator('#header-popover').waitFor({state: 'visible'});
     await page.keyboard.press('Escape'); await assertClosed();
     assert.deepEqual(edits, [], 'popup dismissal does not edit the Markdown');

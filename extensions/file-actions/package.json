@@ -2,7 +2,7 @@
   "name": "file-actions",
   "displayName": "Damln File Actions",
   "description": "Copy content, file paths and parent folder paths from every editor title bar.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "damln",
   "license": "UNLICENSED",
   "engines": {
@@ -29,56 +29,56 @@
     "commands": [
       {
         "command": "damlnFileActions.copyContent",
-        "title": "Copy content",
+        "title": "Copy full file content to clipboard",
         "category": "File",
         "icon": "$(copy)",
-        "enablement": "resource && activeCustomEditorId != damln.markdownInline"
+        "enablement": "resource"
       },
       {
         "command": "damlnFileActions.copyFilePath",
-        "title": "Copy file path",
+        "title": "Copy file path relative to workspace",
         "category": "File",
         "icon": "$(file-code)",
-        "enablement": "resource && activeCustomEditorId != damln.markdownInline && resourceScheme != untitled"
+        "enablement": "resource && resourceScheme != untitled"
       },
       {
         "command": "damlnFileActions.copyParentFolderPath",
-        "title": "Copy parent folder path",
+        "title": "Copy parent folder path relative to workspace",
         "category": "File",
         "icon": "$(folder)",
-        "enablement": "resource && activeCustomEditorId != damln.markdownInline && resourceScheme != untitled"
+        "enablement": "resource && resourceScheme != untitled"
       }
     ],
     "menus": {
       "editor/title": [
         {
           "command": "damlnFileActions.copyContent",
-          "when": "resource && activeCustomEditorId != damln.markdownInline",
+          "when": "resource",
           "group": "navigation@10"
         },
         {
           "command": "damlnFileActions.copyFilePath",
-          "when": "resource && activeCustomEditorId != damln.markdownInline",
+          "when": "resource",
           "group": "navigation@11"
         },
         {
           "command": "damlnFileActions.copyParentFolderPath",
-          "when": "resource && activeCustomEditorId != damln.markdownInline",
+          "when": "resource",
           "group": "navigation@12"
         }
       ],
       "commandPalette": [
         {
           "command": "damlnFileActions.copyContent",
-          "when": "resource && activeCustomEditorId != damln.markdownInline"
+          "when": "resource"
         },
         {
           "command": "damlnFileActions.copyFilePath",
-          "when": "resource && activeCustomEditorId != damln.markdownInline && resourceScheme != untitled"
+          "when": "resource && resourceScheme != untitled"
         },
         {
           "command": "damlnFileActions.copyParentFolderPath",
-          "when": "resource && activeCustomEditorId != damln.markdownInline && resourceScheme != untitled"
+          "when": "resource && resourceScheme != untitled"
         }
       ]
     }

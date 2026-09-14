@@ -180,3 +180,23 @@ test("ignores duplicate clicks and does not run after a failed save", async () =
   assert.equal(failed.events.includes("run"), false);
   assert.deepEqual(failed.states, [true, false]);
 });
+
+
+test("File Actions preparation flushes only the requested Inline document and propagates conflicts", async () => {
+  const f = fixture(async () => "unused");
+  let provider;
+  f.vscode.commands = { registerCommand: () => ({dispose() {}}) };
+  f.vscode.window.onDidChangeTextEditorSelection = () => ({dispose() {}});
+  f.vscode.window.registerCustomEditorProvider = (_type, value) => {provider = value; return {dispose() {}};};
+  f.vscode.workspace.onWillSaveTextDocument = () => ({dispose() {}});
+  const api = f.exports.activate({subscriptions: [], globalState: {get: () => undefined}, workspaceState: {get: () => ({})}});
+  provider.panelDocuments.set({}, f.document);
+  let flushed = 0;
+  provider.flushDocument = async document => {assert.equal(document, f.document); flushed++;};
+  await api.prepareCopy({toString: () => "file:///other.md"});
+  assert.equal(flushed, 0);
+  await api.prepareCopy(f.document.uri);
+  assert.equal(flushed, 1);
+  provider.flushDocument = async () => {throw new Error("Draft retained");};
+  await assert.rejects(api.prepareCopy(f.document.uri), /Draft retained/);
+});

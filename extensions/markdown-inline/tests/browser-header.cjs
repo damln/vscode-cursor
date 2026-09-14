@@ -39,12 +39,13 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     await page.waitForSelector('.ProseMirror');
 
     const buttons = page.locator('.header-icon-button:visible');
-    assert.equal(await buttons.count(), 7);
+    assert.equal(await buttons.count(), 4);
     const popup = page.getByRole('tooltip');
-    const copy = page.locator('#copy-document');
+    const copy = page.locator('#open-raw');
+    assert.equal(await page.locator('#copy-document, #copy-path, #copy-folder-path').count(), 0);
     await copy.hover();
     await popup.waitFor({state: 'visible'});
-    assert.ok((await popup.textContent()).includes('full Markdown content'));
+    assert.ok((await popup.textContent()).includes('Markdown source'));
     assert.equal(await copy.getAttribute('title'), null, 'custom popover replaces the native tooltip');
     assert.equal(await copy.getAttribute('aria-describedby'), 'header-popover');
     await popup.hover();
@@ -69,42 +70,12 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     const geometry = () => page.locator('header').evaluate(el => [el, ...el.querySelectorAll('button:not([hidden])')].map(node => {
       const {x, y, width, height} = node.getBoundingClientRect(); return {x, y, width, height};
     }));
-    const reply = (type, target, requestId) => page.evaluate(m => window.postMessage(m, '*'), {type, target, requestId});
     for (const width of [320, 480, 768, 1440]) {
       await page.setViewportSize({width, height: 700});
       const before = await geometry();
       assert.ok(await page.locator('.header-icon-button:not([hidden])').evaluateAll(buttons => buttons.every(b => b.getBoundingClientRect().width >= 24 && b.getBoundingClientRect().height === 24)));
-      assert.deepEqual(await page.locator('.header-action-label').allTextContents(), ['Improve text', 'Width', '17px', 'Content', 'File', 'Folder', 'Edit']);
-      for (const [id, target, type] of [['copy-document', 'document', 'copyDocument'], ['copy-path', 'path', 'copyPath'], ['copy-folder-path', 'folderPath', 'copyFolderPath']]) {
-        const button = page.locator('#' + id);
-        await button.focus();
-        await button.press('Enter');
-        await page.waitForFunction(id => document.getElementById(id).dataset.state === 'loading', id);
-        assert.equal(await button.isDisabled(), true);
-        assert.equal(await button.getAttribute('aria-busy'), 'true');
-        assert.deepEqual(await geometry(), before);
-        const requestId = messages.findLast(m => m.type === type).requestId;
-        const count = messages.filter(m => m.type === type).length;
-        await button.evaluate(el => el.click());
-        assert.equal(messages.filter(m => m.type === type).length, count, 'busy button cannot submit twice');
-        await reply('copyComplete', target, requestId);
-        await page.waitForFunction(id => document.getElementById(id).dataset.state === 'success', id);
-        assert.equal(await button.isEnabled(), true);
-        assert.equal(await button.locator('svg:visible').count(), 1);
-        assert.deepEqual(await geometry(), before);
-        await button.press('Space');
-        const retryId = messages.findLast(m => m.type === type).requestId;
-        await reply('copyComplete', target, requestId);
-        await page.waitForTimeout(20);
-        assert.equal(await button.getAttribute('data-state'), 'loading', 'stale completion cannot finish a newer request');
-        await reply('copyFailed', target, retryId);
-        await page.waitForFunction(id => document.getElementById(id).dataset.state === 'error', id);
-        assert.equal(await button.isEnabled(), true);
-        assert.ok((await button.getAttribute('data-tooltip')).includes('Try again'));
-        assert.ok((await page.locator('#copy-feedback').textContent()).includes('Could not copy'));
-        assert.deepEqual(await geometry(), before);
-      }
-      await page.locator('#copy-folder-path').hover();
+      assert.deepEqual(await page.locator('.header-action-label').allTextContents(), ['Improve text', 'Width', '17px', 'Edit']);
+      await page.locator('#open-raw').hover();
       await popup.waitFor({state: 'visible'});
       const popoverBox = await popup.boundingBox();
       assert.ok(popoverBox.x >= 8 && popoverBox.x + popoverBox.width <= width - 8);
@@ -133,7 +104,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     assert.equal(await theme.locator('svg:visible').evaluate(el => getComputedStyle(el).transform), 'none', 'press does not scale the icon');
     await page.mouse.up();
     await page.keyboard.press('Escape');
-    for (const id of ['copy-document', 'copy-path', 'copy-folder-path', 'open-raw', 'improve-text']) {
+    for (const id of ['open-raw', 'improve-text']) {
       const action = page.locator('#' + id);
       await action.hover(); await page.waitForTimeout(150);
       assert.equal(await action.locator('svg:visible').evaluate(el => getComputedStyle(el).transform), 'none', id);
@@ -144,19 +115,6 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     await popup.waitFor({state: 'visible'});
     assert.equal(await popup.evaluate(el => getComputedStyle(el).transitionDuration), '0s');
     await page.keyboard.press('Escape');
-    await page.clock.install();
-    await page.locator('#copy-path').click();
-    assert.equal(await page.locator('#copy-path .action-loading').evaluate(el => getComputedStyle(el).animationName), 'none');
-    await page.clock.fastForward(15001);
-    assert.equal(await page.locator('#copy-path').getAttribute('data-state'), 'error');
-    assert.equal(await page.locator('#copy-path').isEnabled(), true);
-    await page.evaluate(() => window.postMessage({type: 'operationError', error: 'Sync conflict'}, '*'));
-    await page.waitForTimeout(30);
-    await page.locator('#copy-document').click();
-    assert.equal(await page.locator('#copy-document').isEnabled(), true);
-    assert.ok((await page.locator('#copy-document').getAttribute('data-tooltip')).includes('sync error'));
-    // Capture a clean resting state using actual production HTML and bundle.
-    await page.clock.resume();
     await page.reload();
     await page.waitForSelector('.ProseMirror');
     await page.addStyleTag({content: 'body { --vscode-font-family: Arial, sans-serif; }'});
@@ -176,6 +134,6 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     assert.ok(await touch.evaluate(() => document.documentElement.scrollWidth <= innerWidth), JSON.stringify(await touch.evaluate(() => [...document.querySelectorAll('body, header, .header-actions, #save-state, .header-icon-button')].map(el => ({tag:el.id||el.tagName, width:el.getBoundingClientRect().width,x:el.getBoundingClientRect().x, flex:getComputedStyle(el).flex, min:getComputedStyle(el).minWidth})))));
     await touch.close();
     assert.equal(errors.length, 0, errors.join('\n'));
-    console.log('Labelled header and custom popovers passed: icon geometry, keyboard, hover/press, loading/success/failure, retries, stale replies, timeout, sync conflict, reduced motion and high contrast.');
+    console.log('Labelled header and custom popovers passed: icon geometry, keyboard, hover/press, reduced motion and high contrast.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exit(1); });

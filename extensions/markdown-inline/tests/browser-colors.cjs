@@ -1,3 +1,4 @@
+const { flushEditor } = require('./browser-flush.cjs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -31,7 +32,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     if(m.type==='edit'){text=m.text;version++;edits++;await send({type:'editResult',status:'applied',requestId:m.requestId,text,version,dirty:true});}
     if(m.type==='save')saved=text;
     if(m.type==='copyCode'){codeCopied=m.text;await send({type:'copyCodeResult',requestId:m.requestId,success:true});}
-    if(m.type==='copyDocument'){copied=text;await send({type:'copyComplete',target:'document',requestId:m.requestId});}
+    if(m.type==='flushComplete'&&!m.error){copied=text;}
    });
    await page.addInitScript(()=>{window.acquireVsCodeApi=()=>({postMessage:m=>window.bridge(m),getState:()=>null,setState:()=>{}});});
    await page.goto('file://'+output);await page.waitForSelector('.inline-color-preview');
@@ -48,12 +49,12 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     await page.waitForFunction(()=>document.querySelectorAll('.inline-color-preview').length===7);
     await page.keyboard.type('4');await page.waitForFunction(()=>document.querySelectorAll('.inline-color-preview').length===8);
     assert.equal(await paragraph.count(),0);
-    await page.keyboard.press('Control+s');await page.locator('#copy-document').click();
-    await page.waitForFunction(()=>document.querySelector('#copy-document').dataset.state==='success');
+    await page.keyboard.press('Control+s');await flushEditor(page);
+
     assert.equal(text,source.replace('Swatch #112233\n','Swatch #112234\n'));
    }else{
     assert.ok(await swatches.count()>20,'plain-text colors in the actual document have swatches');
-    await page.locator('#copy-document').click();await page.waitForFunction(()=>document.querySelector('#copy-document').dataset.state==='success');
+    await flushEditor(page);
     assert.equal(text,source);
    }
    assert.equal(copied,text);if(name==='color formats'){

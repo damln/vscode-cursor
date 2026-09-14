@@ -20,6 +20,12 @@ function copyPath(uri, parent) {
 async function copyContent(uri) {
   const notebook = vscode.workspace.notebookDocuments.find(document => document.uri.toString() === uri.toString());
   if (notebook?.isDirty) throw new Error("Save the notebook first to copy its complete file content.");
+  const inline = vscode.extensions.getExtension("damln.markdown-inline");
+  if (inline?.isActive && typeof inline.exports?.prepareCopy === "function") {
+    await inline.exports.prepareCopy(uri);
+  } else if (vscode.window.tabGroups.activeTabGroup.activeTab?.input?.viewType === "damln.markdownInline") {
+    throw new Error("Update Markdown Inline and reload the window before copying visual edits.");
+  }
   const document = await vscode.workspace.openTextDocument(uri);
   return document.getText();
 }

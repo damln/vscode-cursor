@@ -403,6 +403,7 @@ class MarkdownInlineProvider {
         await panel.webview.postMessage({type: "copyCodeResult", requestId: message.requestId, success});
         return;
       }
+      // Older webviews can remain open while the extensions are updated.
       if (["copyDocument", "copyPath", "copyFolderPath"].includes(message.type)) {
         const target = message.type === "copyDocument" ? "document"
           : message.type === "copyFolderPath" ? "folderPath" : "path";
@@ -481,13 +482,6 @@ class MarkdownInlineProvider {
     const mermaidUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, "media", "mermaid.js"));
     const documentBaseUri = `${webview.asWebviewUri(documentRoot).toString()}/`;
     const icon = (body, className = "") => `<svg class="${className}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
-    const copyButton = (id, label, shortLabel, hint, body) => `<button id="${id}" class="header-button header-icon-button" type="button" aria-label="${label}" data-tooltip="${hint}">
-      ${icon(body, "action-icon")}
-      <span class="header-action-label">${shortLabel}</span>
-      ${icon('<path d="M12 3a9 9 0 1 1-9 9"/>', "action-loading")}
-      ${icon('<path d="m5 12 4 4L19 6"/>', "action-success")}
-      ${icon('<circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/>', "action-error")}
-    </button>`;
     const selectedTheme = findTheme(initialTheme);
     return `<!doctype html>
 <html lang="en" data-inline-theme="${selectedTheme.mode}" data-editor-theme="${selectedTheme.id}">
@@ -521,14 +515,10 @@ class MarkdownInlineProvider {
       <button id="inline-theme" class="header-button header-icon-button" type="button" aria-label="Choose editor theme" data-tooltip="Choose editor theme" aria-haspopup="dialog" aria-expanded="false">
         ${icon('<path d="M12 3a9 9 0 1 0 0 18h1.4a2.1 2.1 0 0 0 1.4-3.7 1.6 1.6 0 0 1 1-2.8h1.5A3.7 3.7 0 0 0 21 11 9 9 0 0 0 12 3Z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="10" cy="6.8" r=".8"/><circle cx="14" cy="6.8" r=".8"/><circle cx="17" cy="10" r=".8"/>', "action-icon")}
       </button>
-      ${copyButton("copy-document", "Copy content", "Content", "Copy the full Markdown content, including front matter.", '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>')}
-      ${copyButton("copy-path", "Copy file path", "File", "Copy the file path, relative to the workspace when available.", '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6m-10 4-2 3 2 3m4-6 2 3-2 3"/>')}
-      ${copyButton("copy-folder-path", "Copy folder path", "Folder", "Copy the parent folder path, relative to the workspace when available.", '<path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="m9 11-2 3 2 3m6-6 2 3-2 3"/>')}
       <button id="open-raw" class="header-button header-icon-button" type="button" aria-label="Edit source" data-tooltip="Open this document as Markdown source in VS Code.">
         ${icon('<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16"/>', "action-icon")}
         <span class="header-action-label">Edit</span>
       </button>
-      <span id="copy-feedback" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></span>
     </div>
   </header>
   <main id="document-scroll" aria-label="Markdown editor">
@@ -601,6 +591,12 @@ function activate(context) {
     ...formatCommandRegistrations,
     ...jumpCommandRegistrations
   );
+  return {
+    async prepareCopy(uri) {
+      const document = [...provider.panelDocuments.values()].find(item => item.uri.toString() === uri.toString());
+      if (document) await provider.flushDocument(document);
+    }
+  };
 }
 
 function deactivate() {}
