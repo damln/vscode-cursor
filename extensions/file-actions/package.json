@@ -2,11 +2,11 @@
   "name": "file-actions",
   "displayName": "Damln File Actions",
   "description": "Copy content, file paths and parent folder paths from every editor title bar.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "damln",
   "license": "UNLICENSED",
   "engines": {
-    "vscode": "^1.135.0"
+    "vscode": "^1.100.0"
   },
   "categories": [
     "Other"

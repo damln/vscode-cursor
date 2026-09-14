@@ -3,42 +3,42 @@
   "extensions": [
     {
       "id": "damln.minimal-theme",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "source": "extensions/minimal-theme",
-      "package": "dist/damln.minimal-theme-0.5.7.vsix",
-      "sha256": "8d17219ef482bce1a8338dd62605f3c578f2aaeae18903ce510b789bc2f1344b",
+      "package": "dist/damln.minimal-theme-0.5.8.vsix",
+      "sha256": "b840f9d49e8f1b9cdd422865bd06e6f1f82e8dd3f38158e75b7af3b6f399889d",
       "remote": false
     },
     {
       "id": "damln.file-actions",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "extensions/file-actions",
-      "package": "dist/damln.file-actions-0.1.0.vsix",
-      "sha256": "d2c8027bf05e4638f3349428195b0a3dc4ea76b1e1c1ff02f880ec650c52377d",
+      "package": "dist/damln.file-actions-0.1.1.vsix",
+      "sha256": "3e400c3f5de2184e1a15800d2bb6beb60b5aae0338eb36c5519a8383e1d9856d",
       "remote": false
     },
     {
       "id": "damln.markdown-inline",
-      "version": "0.7.50",
+      "version": "0.7.51",
       "source": "extensions/markdown-inline",
-      "package": "dist/damln.markdown-inline-0.7.50.vsix",
-      "sha256": "bb39db0eea483b828a83744c9e365d3c15c0f019c28dcb8bca7f2a39a66dc128",
+      "package": "dist/damln.markdown-inline-0.7.51.vsix",
+      "sha256": "921243b30fe012a82e15bf160a430caf7297a9533c5821113281d52ea23d0734",
       "remote": false
     },
     {
       "id": "damln.html-preview",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "source": "extensions/html-preview",
-      "package": "dist/damln.html-preview-0.1.2.vsix",
-      "sha256": "747c275560a39a9f92ddc011afbc55ec736268ddf355e7307622b655e1ea4c36",
+      "package": "dist/damln.html-preview-0.1.3.vsix",
+      "sha256": "ba2dbd8110eb50072af6a165a9be66eee55f7b6b12cfe198ff65e8e59b695aee",
       "remote": false
     },
     {
       "id": "damln.jump",
-      "version": "0.8.2",
+      "version": "0.8.3",
       "source": "extensions/jump",
-      "package": "dist/damln.jump-0.8.2.vsix",
-      "sha256": "2208e68dd38b3f04e271679523eb782ae559fbd7392bef0d46a4b6b68e4e1e36",
+      "package": "dist/damln.jump-0.8.3.vsix",
+      "sha256": "ec114765248ec4f1951139b7044b284b613616fbaa3ff5788fa5d80a15b521da",
       "remote": true
     }
   ]
