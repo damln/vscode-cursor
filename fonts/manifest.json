@@ -1,0 +1,27 @@
+{
+  "family": "JetBrains Mono NL",
+  "version": "2.304",
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "OFL.txt",
+  "source": "https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304",
+  "archive": "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip",
+  "archiveSha256": "6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf",
+  "files": [
+    {
+      "path": "JetBrainsMonoNL-Bold.ttf",
+      "sha256": "0198e841824025f8876e5c297f0b9b497ee8d6eb9969710a3328e1303f996ec3"
+    },
+    {
+      "path": "JetBrainsMonoNL-BoldItalic.ttf",
+      "sha256": "6c2716f2e85101f4109a8c16916061eb38176b3b10342834858d6221ec2fda1b"
+    },
+    {
+      "path": "JetBrainsMonoNL-Italic.ttf",
+      "sha256": "c7392a134293e1af1d36fbf04940dd844f632afbf97f8325d1591d3af5096cb8"
+    },
+    {
+      "path": "JetBrainsMonoNL-Regular.ttf",
+      "sha256": "fb3b2575d7b0657359707993288f12a7360344d39387bb26050e276d61f6bd2a"
+    }
+  ]
+}

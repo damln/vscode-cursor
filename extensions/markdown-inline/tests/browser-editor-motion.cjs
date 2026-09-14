@@ -1,0 +1,86 @@
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const { createRequire } = require('node:module');
+const assert = require('node:assert/strict');
+const root = process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname, '..');
+assert.ok(process.env.MARKDOWN_INLINE_TEST_ROOT, 'Set a task output directory');
+const localRequire = createRequire(path.join(root, 'extension.js'));
+const mod = { exports: {} };
+vm.runInNewContext(fs.readFileSync(path.join(root, 'extension.js'), 'utf8'), {
+  module: mod, require: id => id === 'vscode'
+    ? { Uri: { joinPath: (base, ...parts) => path.join(base, ...parts) } } : localRequire(id),
+});
+const output = path.join(process.env.MARKDOWN_INLINE_TEST_ROOT, 'editor-motion.html');
+fs.mkdirSync(path.dirname(output), { recursive: true });
+fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call(
+  { context: { extensionUri: root } }, { cspSource: 'file:', asWebviewUri: value => 'file://' + value }, root, 'dark'
+).replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/, ''));
+(async () => {
+ const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--allow-file-access-from-files']});
+ try {
+  const page=await browser.newPage({viewport:{width:1200,height:800}}), errors=[];
+  page.on('pageerror',error=>errors.push(error.stack));
+  let text='---\ntitle: Example\n---\n\n# Motion\n\nFirst paragraph with ordinary text.\n\nSecond paragraph for cursor movement.\n\n| Name | Value |\n| --- | --- |\n| Alpha | Beta |\n',version=1;
+  const original=text;
+  await page.exposeFunction('bridge',async m=>{
+   if(m.type==='ready') await page.evaluate(m=>window.postMessage(m,'*'),{type:'update',text,version,dirty:false});
+   if(m.type==='edit') {text=m.text;version++;await page.evaluate(m=>window.postMessage(m,'*'),{type:'editResult',status:'applied',requestId:m.requestId,text,version,dirty:true});}
+  });
+  await page.addInitScript(()=>{window.acquireVsCodeApi=()=>({postMessage:m=>window.bridge(m),getState:()=>null,setState:()=>{}});});
+  await page.goto('file://'+output);
+  await page.addStyleTag({content:':root { --vscode-font-family: system-ui; --vscode-editor-font-family: monospace; }'});
+  await page.waitForSelector('.ProseMirror h1');
+  const first=page.locator('.ProseMirror > p').first(),caret=page.locator('.smooth-editor-caret');
+  await first.click(); await page.keyboard.press('Home');
+  await page.waitForSelector('.ProseMirror[data-smooth-caret]');
+  await page.waitForTimeout(160);
+  const before=await caret.boundingBox();
+  await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(160);
+  const after=await caret.boundingBox();assert.ok(after.x>before.x,'caret follows keyboard movement');
+  assert.equal(await caret.evaluate(el=>getComputedStyle(el).pointerEvents),'none');
+  const native=await page.evaluate(()=>window.getSelection().getRangeAt(0).getBoundingClientRect().toJSON());
+  assert.ok(Math.abs(after.x-native.x)<3,'animated caret aligns with the native selection');
+  await page.keyboard.type('Z'); await page.waitForTimeout(350);
+  assert.equal(text,original.replace('First paragraph','FiZrst paragraph'),'typing preserves every unrelated source byte');
+  assert.ok(!text.includes('smooth-editor-caret'));
+  await page.keyboard.press('Shift+ArrowRight');
+  await page.waitForFunction(()=>!document.querySelector('.ProseMirror').hasAttribute('data-smooth-caret'));
+  const toolbar=page.locator('.milkdown-selection-toolbar');
+  await page.waitForFunction(()=>document.querySelector('.milkdown-selection-toolbar')?.dataset.show==='true');
+  const bold=toolbar.locator('.tb-bold'); await bold.hover();
+  await page.locator('.action-hint').waitFor({state:'visible'});
+  assert.ok((await page.locator('.action-hint').textContent()).includes('Bold'));
+  assert.equal(await toolbar.getAttribute('data-show'),'true','a hint does not dismiss the toolbar');
+  assert.equal(await bold.getAttribute('title'),null,'no competing native tooltip');
+  await page.locator('.action-hint').hover();
+  await page.waitForTimeout(150);assert.equal(await page.locator('.action-hint').isVisible(),true);
+  await page.screenshot({path:path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'toolbar-hint.png')});
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(()=>document.querySelector('.milkdown-selection-toolbar').dataset.show==='false');
+  assert.equal(await page.locator('.action-hint').isVisible(),false);
+  await first.click(); await page.emulateMedia({reducedMotion:'reduce'});
+  await page.waitForFunction(()=>!document.querySelector('.ProseMirror').hasAttribute('data-smooth-caret'));
+  assert.equal(await caret.isVisible(),false);
+  await page.emulateMedia({reducedMotion:'no-preference'});await first.click();
+  await page.waitForSelector('.ProseMirror[data-smooth-caret]');
+  await page.locator('.ProseMirror').dispatchEvent('compositionstart',{data:''});
+  assert.equal(await caret.isVisible(),false,'composition keeps the native caret');
+  await page.locator('.ProseMirror').dispatchEvent('compositionend',{data:''});
+  await page.locator('#frontmatter-toggle').click();
+  await page.locator('.frontmatter-value').focus();
+  assert.equal(await caret.isVisible(),false,'metadata inputs retain their native caret');
+  await page.locator('.ProseMirror td').first().click();
+  await page.waitForFunction(()=>document.querySelector('.milkdown-table-toolbar')?.dataset.show==='true');
+  await page.locator('.milkdown-table-toolbar .tb-italic').hover();
+  await page.locator('.action-hint').waitFor({state:'visible'});
+  assert.ok((await page.locator('.action-hint').textContent()).includes('Italic'));
+  assert.equal(await page.locator('.milkdown-table-toolbar').getAttribute('data-show'),'true');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.action-hint').isVisible(),false);
+  assert.deepEqual(errors,[]);
+  console.log('PASS smooth caret alignment, text entry, selection, composition, reduced motion, metadata focus and non-disruptive toolbar hints');
+ } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

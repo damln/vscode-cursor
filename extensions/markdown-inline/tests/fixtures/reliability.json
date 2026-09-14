@@ -1,0 +1,123 @@
+{
+  "baseline": {
+    "vscode": "1.136.1",
+    "installedExtension": "damln.markdown-inline@0.7.12",
+    "recorded": "2026-09-08"
+  },
+  "frontmatter": [
+    {
+      "name": "body separators",
+      "source": "# Intro\n\n---\nText\n---\nFin\n",
+      "recognized": false
+    },
+    {
+      "name": "code separators",
+      "source": "```yaml\n---\na: b\n---\n```\n",
+      "recognized": false
+    },
+    {
+      "name": "empty",
+      "source": "",
+      "recognized": false
+    },
+    {
+      "name": "unterminated",
+      "source": "---\ntitle: Keep me\n",
+      "recognized": false
+    },
+    {
+      "name": "empty metadata",
+      "source": "---\n---\nBody\n",
+      "recognized": true
+    },
+    {
+      "name": "BOM, CRLF and delimiter spaces",
+      "source": "﻿--- \t\r\ntitle: Exact\r\n--- \t\r\nBody\r\n",
+      "recognized": true
+    },
+    {
+      "name": "EOF delimiter",
+      "source": "---\na: b\n---",
+      "recognized": true
+    },
+    {
+      "name": "leading blank line",
+      "source": "\n---\na: b\n---\n",
+      "recognized": false
+    },
+    {
+      "name": "ellipsis unsupported",
+      "source": "---\na: b\n...\nBody\n",
+      "recognized": false
+    },
+    {
+      "name": "TOML unsupported",
+      "source": "+++\na = \"b\"\n+++\nBody\n",
+      "recognized": false
+    },
+    {
+      "name": "delimiter prefix",
+      "source": "---\na: b\n----\nBody\n",
+      "recognized": false
+    },
+    {
+      "name": "leading prose on the first line",
+      "source": "Intro ---\ntitle: Body\n---\n",
+      "recognized": false
+    },
+    {
+      "name": "indented opening separator",
+      "source": "  ---\ntitle: Body\n---\n",
+      "recognized": false
+    },
+    {
+      "name": "opening delimiter with trailing prose",
+      "source": "--- note\ntitle: Body\n---\n",
+      "recognized": false
+    },
+    {
+      "name": "later empty separators after blank lines",
+      "source": "\n\n---\n---\n",
+      "recognized": false
+    },
+    {
+      "name": "first of multiple closing separators",
+      "source": "---\ntitle: First\n---\nBody\n---\ntitle: Body\n---\n",
+      "recognized": true
+    }
+  ],
+  "markdown": [
+    "A<br>B\n",
+    "A<br />B\n",
+    "\\_literal\\_ and \\<tag>\n",
+    "L’été et 5′\n",
+    "👩‍💻 et français !\n",
+    "```md\n- a\n\n- b\n```\n",
+    "~~~html\nA<br>B\n~~~\n",
+    "    A<br>B\n\n    - item\n",
+    "# CRLF\r\n\r\nBody\r\n",
+    "<!--<br>-->\n"
+  ],
+  "yaml": [
+    "tags: []",
+    "tags: [solo]",
+    "tags: [\"Paris, France\", Lyon]",
+    "label: \"false\"",
+    "a.b: literal",
+    "enabled: false\nmissing: null\ndate: 2026-09-08",
+    "# Keep this comment\ntitle: \"Exact\" # inline\nbody: |\n  Two\n  lines\nfolded: >\n  Three\n  words",
+    "base: &base\n  color: red\ncopy: *base"
+  ],
+  "synchronization": [
+    "first code language/clear/delete click without typing",
+    "local draft plus source edit",
+    "two views with same base version",
+    "late acknowledgment after a newer update",
+    "applyEdit false and exception",
+    "webview recreation with pending draft",
+    "disconnect with edit in flight",
+    "focused metadata field then Save/Copy/Edit source/close",
+    "manual save, auto-save, read-only file, disk reopen",
+    "keyboard and menu undo/redo after save, metadata, move and external update"
+  ]
+}

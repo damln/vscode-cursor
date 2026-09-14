@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "audits": {
+    "jump-production": {
+      "lockfileSha256": "4b785f70756ad2fdf7d5d7792b5df2f2791e6aecf7ef5501ab4785a990abe5bd",
+      "result": "no-known-vulnerabilities",
+      "auditedAt": "2026-09-14"
+    },
+    "markdown-inline-production": {
+      "lockfileSha256": "1e25a2b25b5c1aa2718cc8e0fae03b826267762ff6ef005ed473a602914a3296",
+      "result": "no-known-vulnerabilities",
+      "auditedAt": "2026-09-14"
+    }
+  }
+}
