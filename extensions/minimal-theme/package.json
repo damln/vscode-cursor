@@ -2,7 +2,7 @@
   "name": "minimal-theme",
   "displayName": "Damln Minimal Theme",
   "description": "Quiet dark and light color themes for standard VS Code.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "publisher": "damln",
   "license": "MIT",
   "engines": {

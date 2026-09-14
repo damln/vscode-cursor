@@ -36,7 +36,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["list", "install", "uninstall"])
     parser.add_argument("extensions", nargs="*")
-    parser.add_argument("--all", action="store_true", help="Select the five bundled extensions")
+    parser.add_argument("--all", action="store_true", help="Select the four bundled extensions")
     parser.add_argument("--code", default="code", help="Editor CLI executable, e.g. code or cursor")
     parser.add_argument("--profile", help="Optional editor profile name")
     args = parser.parse_args()

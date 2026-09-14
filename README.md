@@ -1,14 +1,12 @@
 # Damln VS Code extensions
 
-Five independent extensions. Most support **VS Code 1.100.0+** and compatible
-Cursor classic IDE versions; HTML Preview requires the native browser in **1.121+**.
+Four independent extensions for **VS Code 1.100.0+** and compatible Cursor classic IDE versions.
 Install only what you need. No profile replacement,
 automatic settings changes, font installation, remote setup or workbench patches.
 
 | Extension | Purpose |
 | --- | --- |
 | [Markdown Inline](extensions/markdown-inline/) | Visual Markdown, tables, Mermaid, frontmatter and ten themes |
-| [HTML Preview](extensions/html-preview/) | Shortcut to VS Code’s native HTML browser |
 | [File Actions](extensions/file-actions/) | Copy content and paths; open HTML in your browser |
 | [Jump](extensions/jump/) | Keyboard navigation to word boundaries |
 | [Minimal Theme](extensions/minimal-theme/) | Optional dark and light VS Code themes |
@@ -62,21 +60,23 @@ remap shortcuts in **Keyboard Shortcuts**. Optional source-editor settings inclu
 `editor.smoothScrolling`, `editor.colorDecorators` and `editor.fontFamily`.
 [JetBrains Mono NL](fonts/) can be installed manually; fonts are never auto-installed.
 
+For local HTML, VS Code’s native Integrated Browser needs no extension. On versions
+offering it, choose **Reopen Editor With → Configure default editor → Integrated Browser**.
+See the [optional HTML settings](extensions/minimal-theme/README.md#optional-html-browser-default).
+Uninstall the retired `damln.html-preview` extension and replace any old
+`damln.htmlPreview` editor association. File Actions retains external-browser opening.
+
 ## Privacy and builds
 
 Personal profiles, SSH setup, trusted-domain overrides, old packages and workspace
-history are excluded. Markdown images can contact their hosts. HTML Preview
-delegates local HTML to the native browser and requires a trusted
-workspace. For HTML defaults, choose Integrated Browser under Reopen Editor With
-on VS Code versions offering it; remove old `damln.htmlPreview` associations.
+history are excluded. Markdown images can contact their hosts.
 Mermaid renders locally. **Improve text** requires an external CLI, absent here;
 when explicitly used, that CLI may send document text to its AI provider.
 
 Source stays in `extensions/`, with shared `tests/` and build `scripts/`.
 Run `python3 scripts/build_markdown_inline.py` with Docker to type-check, test and
 package Markdown using [pinned tools](config/versions.json). Other builds:
-`python3 scripts/build_extension.py minimal-theme` (also `html-preview` or
-`file-actions`), and `python3 scripts/build_jump.py` (requires Node/npm).
+`python3 scripts/build_extension.py minimal-theme` (also `file-actions`), and `python3 scripts/build_jump.py` (requires Node/npm).
 Install rebuilt VSIXs directly; the helper trusts published checksums only.
 Production audits are [bound to lockfile hashes](release/security-audits.json).
 For fresh checks, run `pnpm audit --prod --audit-level high` in Markdown Inline
@@ -84,5 +84,5 @@ or `npm audit --omit=dev --audit-level=high` in Jump after installing dependenci
 
 ## Licenses
 
-The four original extensions and their SVG artwork use [MIT](LICENSE). Jump retains [MIT and upstream attribution](extensions/jump/UPSTREAM.json),
+The three original extensions and their SVG artwork use [MIT](LICENSE). Jump retains [MIT and upstream attribution](extensions/jump/UPSTREAM.json),
 fonts retain OFL, and bundled libraries retain their notices.
