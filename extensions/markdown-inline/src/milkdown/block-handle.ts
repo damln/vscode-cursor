@@ -19,6 +19,10 @@ class BlockControls {
   private preview = document.createElement('div');
   private hovered: BlockUnit | null = null;
   private label = document.createElement('span');
+  private handleMotion: Animation | null = null;
+  private labelMotion: Animation | null = null;
+  private hideHandleTimer = 0;
+  private reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   private dragRects = new Map<number, DOMRect>();
   private dragScroll = 0;
   private previewNodes = new Map<HTMLElement, Animation>();
@@ -67,6 +71,13 @@ class BlockControls {
         head: this.hovered.from}); view.focus();
     }, options);
     this.handle.addEventListener('dragstart', this.dragStart, options);
+    this.scroller.addEventListener('pointerleave', event => {
+      if (event.relatedTarget !== this.handle && !this.dragging) this.hideHandle();
+    }, options);
+    this.handle.addEventListener('pointerleave', event => {
+      if (!(event.relatedTarget instanceof Node && this.scroller.contains(event.relatedTarget)) && !this.dragging) this.hideHandle();
+    }, options);
+    this.reducedMotion.addEventListener('change', () => this.hideHandle(true), options);
     document.addEventListener('dragover', this.dragOver, options);
     document.addEventListener('drop', this.drop, options);
     document.addEventListener('dragend', this.endDrag, options);
@@ -79,9 +90,9 @@ class BlockControls {
       if (event.key === 'Escape' && this.dragging) {event.preventDefault(); event.stopImmediatePropagation(); this.endDrag();}
       else if (event.key === 'Escape' && this.toolbar.contains(document.activeElement)) {this.select(null); view.focus();}
     }, options);
-    this.scroller.addEventListener('scroll', () => {this.handle.hidden = true; if (this.dragging) this.locateDrop();}, options);
-    window.addEventListener('resize', () => {this.handle.hidden = true; this.endDrag();}, options);
-    const layout = new ResizeObserver(() => {this.handle.hidden = true; this.endDrag();});
+    this.scroller.addEventListener('scroll', () => {this.hideHandle(true); if (this.dragging) this.locateDrop();}, options);
+    window.addEventListener('resize', () => {this.hideHandle(true); this.endDrag();}, options);
+    const layout = new ResizeObserver(() => {this.hideHandle(true); this.endDrag();});
     layout.observe(view.dom);
     this.abort.signal.addEventListener('abort', () => layout.disconnect(), {once: true});
   }
@@ -118,18 +129,62 @@ class BlockControls {
     const unit = this.marginUnit(event.clientX, event.clientY) || blockUnits(this.view.state.doc).find(candidate => {
       const rect = this.rect(candidate); return rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
     });
-    if (!unit) {this.handle.hidden = true; return;}
+    if (!unit) {this.hideHandle(); return;}
     this.showHandle(unit);
   };
+  private hideHandle(immediate = false) {
+    if (!immediate && (this.handle.hidden || this.handle.disabled)) return;
+    // A fading control is decorative: it must not select the previous block.
+    this.handle.disabled = true;
+    if (immediate || this.reducedMotion.matches) {
+      window.clearTimeout(this.hideHandleTimer); this.hideHandleTimer = 0;
+      this.handleMotion?.cancel(); this.labelMotion?.cancel();
+      this.handle.hidden = true;
+      return;
+    }
+    // Bridge the small margins between adjacent blocks without flickering.
+    this.hideHandleTimer = window.setTimeout(() => {
+      this.hideHandleTimer = 0;
+      const opacity = getComputedStyle(this.handle).opacity;
+      const transform = getComputedStyle(this.handle).transform;
+      this.handleMotion?.cancel();
+      this.handleMotion = this.handle.animate([{opacity, transform}, {opacity: 0, transform}],
+        {duration: 100, easing: 'ease-out', fill: 'forwards'});
+      this.handleMotion.onfinish = () => {this.handle.hidden = true;};
+    }, 100);
+  }
   private showHandle(unit: BlockUnit) {
+    const rect = this.rect(unit); if (!rect) return;
+    const visible = !this.handle.hidden;
+    const previous = visible ? this.handle.getBoundingClientRect() : null;
+    const opacity = visible ? getComputedStyle(this.handle).opacity : '0';
+    window.clearTimeout(this.hideHandleTimer); this.hideHandleTimer = 0;
+    const returning = this.handle.disabled;
+    this.handle.disabled = false;
     this.hovered = unit;
-    const rect = this.rect(unit)!;
     this.handle.hidden = false;
     const left = Math.max(this.scroller.getBoundingClientRect().left + 18, rect.left - this.handle.offsetWidth - 8);
-    Object.assign(this.handle.style, {left: left + 'px', top: rect.top + 'px'});
+    const moved = !this.handle.style.top || Math.abs(parseFloat(this.handle.style.left) - left) > .01
+      || Math.abs(parseFloat(this.handle.style.top) - rect.top) > .01;
+    if (moved || !visible || returning) {
+      this.handleMotion?.cancel();
+      Object.assign(this.handle.style, {left: left + 'px', top: rect.top + 'px'});
+      if (!this.reducedMotion.matches) {
+        this.handleMotion = this.handle.animate([
+          {transform: previous ? `translate(${previous.left - left}px, ${previous.top - rect.top}px)` : 'translateX(-3px)', opacity},
+          {transform: 'translate(0, 0)', opacity: 1},
+        ], {duration: 140, easing: 'cubic-bezier(.2,.8,.2,1)'});
+      }
+    }
     const names: Record<string, string> = {paragraph:'p', bullet_list:'ul', ordered_list:'ol', list_item:'li', blockquote:'quote', code_block:'code', table:'table', horizontal_rule:'hr', html:'html'};
-    this.label.textContent = unit.node.type.name === 'heading' ? `h${unit.node.attrs.level}` : names[unit.node.type.name] || unit.node.type.name;
-    this.handle.hidden = false;
+    const label = unit.node.type.name === 'heading' ? `h${unit.node.attrs.level}` : names[unit.node.type.name] || unit.node.type.name;
+    if (this.label.textContent !== label) {
+      this.labelMotion?.cancel();
+      this.label.textContent = label;
+      if (visible && !this.reducedMotion.matches) {
+        this.labelMotion = this.label.animate([{opacity: 0}, {opacity: .7}], {duration: 120, easing: 'ease-out'});
+      }
+    }
   }
   private pointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || !this.view.editable) return;
@@ -248,7 +303,7 @@ class BlockControls {
     this.view = view;
     if (this.previousDoc !== view.state.doc) {
       cancelBlockMotion(view);
-      this.hovered = null; this.handle.hidden = true; this.pointerUp(); this.previousDoc = view.state.doc;
+      this.hovered = null; this.hideHandle(true); this.pointerUp(); this.previousDoc = view.state.doc;
     }
     if (this.dragging && (this.dragging.doc !== view.state.doc || !view.editable)) this.endDrag();
     const group = blockSelectionKey.getState(view.state);
@@ -260,7 +315,7 @@ class BlockControls {
       this.up.disabled = selected[0].from === units[0].from;
       this.down.disabled = selected.at(-1)!.to === units.at(-1)!.to;
     }
-    if (!view.editable) this.handle.hidden = true;
+    if (!view.editable) this.hideHandle(true);
   }
-  destroy() {cancelBlockMotion(this.view); this.endDrag(); this.abort.abort(); this.handle.remove(); this.toolbar.remove(); this.indicator.remove(); this.rectangle.remove(); this.preview.remove();}
+  destroy() {this.hideHandle(true); cancelBlockMotion(this.view); this.endDrag(); this.abort.abort(); this.handle.remove(); this.toolbar.remove(); this.indicator.remove(); this.rectangle.remove(); this.preview.remove();}
 }
