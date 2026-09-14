@@ -3,10 +3,10 @@
   "extensions": [
     {
       "id": "damln.minimal-theme",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "source": "extensions/minimal-theme",
-      "package": "dist/damln.minimal-theme-0.6.0.vsix",
-      "sha256": "38e9ea43d2d97afade92e8466cb7def678780861479400ea9230d3540f2b8f09",
+      "package": "dist/damln.minimal-theme-0.6.1.vsix",
+      "sha256": "112bee6701e225d03932a47b329a6ea4af02e5a8750ac778e233791fd343549d",
       "remote": false
     },
     {
@@ -23,14 +23,6 @@
       "source": "extensions/markdown-inline",
       "package": "dist/damln.markdown-inline-0.8.6.vsix",
       "sha256": "3c548fc16d62baa41e054b877cc5ff284909a33fafe1344a11958c58959c9a33",
-      "remote": false
-    },
-    {
-      "id": "damln.html-preview",
-      "version": "0.4.0",
-      "source": "extensions/html-preview",
-      "package": "dist/damln.html-preview-0.4.0.vsix",
-      "sha256": "ca63b6237188049971f2a3fc5f882d093b8878031fdcfaf86604e14a8086338c",
       "remote": false
     },
     {

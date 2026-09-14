@@ -27,7 +27,7 @@ class IndependentInstallTests(unittest.TestCase):
     def test_current_packages_have_verified_checksums(self):
         manager = module.ExtensionManager(ROOT)
         commands = manager.commands("install", list(manager.entries))
-        self.assertEqual(5, len(commands))
+        self.assertEqual(4, len(commands))
         self.assertTrue(all(command[:2] == ["code", "--install-extension"] for command in commands))
 
     def test_tampered_or_escaping_package_is_rejected_before_install(self):

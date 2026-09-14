@@ -109,7 +109,6 @@ def main() -> int:
             "minimal-theme",
             "file-actions",
             "markdown-inline",
-            "html-preview",
         ),
     )
     parser.add_argument("--output")
