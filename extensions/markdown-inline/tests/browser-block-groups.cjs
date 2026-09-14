@@ -47,6 +47,44 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await alpha.hover();
   assert.equal(await page.locator('.block-group-handle').isVisible(),true);
   assert.equal(await page.locator('.block-type').textContent(),'p');
+  // Hover motion never edits the document or restarts for the same target.
+  await page.waitForTimeout(180);
+  const motion = await page.evaluate(() => {
+    const handle = document.querySelector('.block-group-handle');
+    const heading = document.querySelector('.ProseMirror h1').getBoundingClientRect();
+    const scroller = document.querySelector('#document-scroll');
+    const hoverHeading = () => scroller.dispatchEvent(new PointerEvent('pointermove', {
+      clientX: heading.x + 30, clientY: heading.y + 10, bubbles: true,
+    }));
+    const before = handle.getBoundingClientRect().top;
+    hoverHeading();
+    const animation = handle.getAnimations()[0];
+    animation.pause(); animation.currentTime = 60;
+    const between = handle.getBoundingClientRect().top;
+    hoverHeading();
+    const sameAnimation = handle.getAnimations()[0] === animation;
+    animation.finish();
+    return {before, between, target: heading.top, sameAnimation};
+  });
+  assert.ok(motion.between < motion.before && motion.between > motion.target, 'grip glides between blocks');
+  assert.equal(motion.sameAnimation, true, 'moving inside one block does not restart the glide');
+  // Briefly crossing a margin retains the visual, but disables its old action.
+  await page.evaluate(() => document.querySelector('#document-scroll').dispatchEvent(
+    new PointerEvent('pointermove', {clientX: 0, clientY: 0, bubbles: true})));
+  assert.equal(await page.locator('.block-group-handle').isVisible(), true);
+  assert.equal(await page.locator('.block-group-handle').isDisabled(), true);
+  await alpha.hover();
+  assert.equal(await page.locator('.block-group-handle').isEnabled(), true);
+  await page.waitForTimeout(250);
+  assert.equal(await page.locator('.block-group-handle').isVisible(), true, 'return cancels delayed hiding');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await alpha.hover();
+  assert.equal(await page.locator('.block-group-handle').evaluate(el => el.getAnimations().length), 0);
+  await page.evaluate(() => document.querySelector('#document-scroll').dispatchEvent(
+    new PointerEvent('pointermove', {clientX: 0, clientY: 0, bubbles: true})));
+  assert.equal(await page.locator('.block-group-handle').isVisible(), false, 'reduced motion hides immediately');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  assert.equal(text, original); assert.equal(history.length, 0);
   await page.locator('.ProseMirror h1').first().hover();
   assert.equal(await page.locator('.block-type').textContent(),'h1');
   await alpha.hover(); await page.locator('.block-group-handle').click();
