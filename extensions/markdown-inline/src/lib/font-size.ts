@@ -1,4 +1,4 @@
-import { FloatingPanel, positionMenu } from '../milkdown/floating-panel';
+import { readingPopover } from './reading-popover';
 
 export const fontSize = (value: unknown): number =>
   typeof value === 'number' && Number.isInteger(value) && value >= 12 && value <= 24 ? value : 17;
@@ -29,16 +29,7 @@ export function setupFontSize(initial: number, changed: (size: number) => void) 
   const close = button('×', 'Close font size controls', () => {panel.hide(); trigger.focus();});
   menu.append(heading, smaller, value, larger, reset, close);
   document.body.append(menu); trigger.setAttribute('aria-controls', menu.id);
-  const panel = new FloatingPanel(menu, 2, () => trigger.setAttribute('aria-expanded', 'false'), restore => {if (restore) trigger.focus();});
-  trigger.addEventListener('click', () => {
-    if (menu.dataset.show === 'true') {panel.hide(); return;}
-    if (!panel.show()) return;
-    trigger.setAttribute('aria-expanded', 'true'); positionMenu(menu, trigger.getBoundingClientRect());
-    (smaller.disabled ? larger : smaller).focus();
-  });
-  document.addEventListener('pointerdown', event => {if (!menu.contains(event.target as Node) && !trigger.contains(event.target as Node)) panel.hide();});
-  document.addEventListener('focusin', event => {if (!menu.contains(event.target as Node) && !trigger.contains(event.target as Node)) panel.hide();});
-  window.addEventListener('resize', () => panel.hide());
-  document.getElementById('document-scroll')?.addEventListener('scroll', () => panel.hide(), {passive: true});
+  const panel = readingPopover(trigger, menu, () => (smaller.disabled ? larger : smaller).focus());
   apply(false);
+  return (size: number) => {current = fontSize(size); apply(false);};
 }

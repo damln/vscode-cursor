@@ -112,13 +112,15 @@ if (
 }
 const root = rootElement;
 const openRaw = openRawElement;
-setupContentWidth(width, value => {
+const applyContentWidth = setupContentWidth(width, value => {
   width = value;
   vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+  vscode.postMessage({type: "setReadingPreference", key: "contentWidth", value});
 });
-setupFontSize(textSize, value => {
+const applyFontSize = setupFontSize(textSize, value => {
   textSize = value;
   vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+  vscode.postMessage({type: "setReadingPreference", key: "fontSize", value});
 });
 setupHeaderPopovers();
 const saveState = saveStateElement;
@@ -503,6 +505,12 @@ window.addEventListener("keydown", event => {
 
 window.addEventListener("message", event => {
   const message = event.data;
+  if (message?.type === 'readingPreferences') {
+    width = contentWidth(message.contentWidth); textSize = fontSize(message.fontSize);
+    applyContentWidth(width); applyFontSize(textSize);
+    vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+    return;
+  }
   if (message?.type === 'gitBaseline' && (message.text === null || typeof message.text === 'string')) {
     updates = updates.then(() => gitGutter.setBaseline(message.text));
     return;

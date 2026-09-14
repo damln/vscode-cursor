@@ -234,8 +234,8 @@ main { min-width: 0; min-height: 0; overflow: auto; }
 :root { --editor-max-width: 900px; }
 :root[data-content-width="large"] { --editor-max-width: 1200px; }
 :root[data-content-width="full"] { --editor-max-width: 100%; }
-.content-width-menu { position: fixed; z-index: 100; display: flex; gap: 4px; padding: 5px; border: 1px solid var(--border); border-radius: 6px; background: var(--floating-surface); box-shadow: 0 4px 16px #0002; }
-.content-width-menu button { padding: 6px 10px; border-color: transparent; background: transparent; font: 12px/20px var(--vscode-font-family, system-ui); }
+.content-width-menu { position: fixed; z-index: 100; display: flex; gap: 2px; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--floating-surface); box-shadow: 0 4px 16px #0002; }
+.content-width-menu button { padding: 3px 9px; border-radius: 999px; border-color: transparent; background: transparent; font: 11px/18px var(--vscode-font-family, system-ui); }
 .content-width-menu [aria-checked="true"] { background: var(--heat-12); border-color: var(--heat-40); color: var(--heat-100); }
 
 
@@ -1733,14 +1733,23 @@ header, .header-actions { min-width: 0; }
 .git-change[data-kind="deleted"] { background: #e5484d; width: 6px; border-radius: 0; clip-path: polygon(0 0, 100% 50%, 0 100%); }
 @media (forced-colors: active) { .git-change { background: Highlight !important; } }
 
-.font-size-menu { position: fixed; z-index: 100; display: flex; align-items: center; gap: 5px; padding: 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--floating-surface); color: var(--floating-foreground); box-shadow: 0 4px 16px #0002; font: 11px/18px var(--vscode-font-family, system-ui); }
-.font-size-menu button { min-width: 26px; height: 26px; padding: 3px 6px; font: inherit; }
+.font-size-menu { position: fixed; z-index: 100; display: flex; align-items: center; gap: 3px; padding: 4px 7px; border: 1px solid var(--border); border-radius: 999px; background: var(--floating-surface); color: var(--floating-foreground); box-shadow: 0 4px 16px #0002; font: 11px/18px var(--vscode-font-family, system-ui); }
+.font-size-menu button { min-width: 24px; height: 24px; padding: 2px 6px; border-radius: 999px; font: inherit; }
+.content-width-menu.floating-panel, .font-size-menu.floating-panel { transition: opacity 90ms ease-out, transform 90ms ease-out; }
+#content-width.header-icon-button, #font-size.header-icon-button { height: 22px; padding-inline: 7px; border-radius: 999px; border-color: var(--border); font-size: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  .content-width-menu.floating-panel, .font-size-menu.floating-panel { transition: none; transform: none; }
+}
 .font-size-menu button:disabled { opacity: .4; cursor: default; }
 .font-size-menu output { min-width: 4ch; text-align: center; font-variant-numeric: tabular-nums; }
 #font-size .header-action-label { width: 4ch; font-variant-numeric: tabular-nums; }
 .source-fallback { font-size: var(--editor-font-size, 17px); }
 @media (max-width: 620px) { .header-actions { flex: 1 1 auto; flex-wrap: wrap; } .header-navigation { flex: 0 0 auto; } }
 @media (pointer: coarse) { .contents-trigger { width: 44px; height: 44px; } .font-size-menu button { min-width: 44px; height: 44px; } }
+@media (pointer: coarse) {
+  #content-width.header-icon-button, #font-size.header-icon-button { height: 44px; }
+  .content-width-menu button { min-height: 44px; }
+}
 
 .selection-slash-menu {
   width: min(280px, calc(100vw - 16px));

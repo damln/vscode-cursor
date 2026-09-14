@@ -30,6 +30,10 @@ function parseEditorMessage(value) {
     return { type: "openRaw", ...(Number.isSafeInteger(value.offset) && value.offset >= 0 ? {offset: value.offset} : {}) };
   }
   if (value.type === "pastePlainText") return {type: "pastePlainText"};
+  if (value.type === "setReadingPreference" && (
+    value.key === "fontSize" && Number.isInteger(value.value) && value.value >= 12 && value.value <= 24 ||
+    value.key === "contentWidth" && ["normal", "large", "full"].includes(value.value)
+  )) return {type: "setReadingPreference", key: value.key, value: value.value};
   if (value.type === "flushComplete" && typeof value.flushId === "string" && value.flushId.length <= 128) {
     return { type: "flushComplete", flushId: value.flushId, ...(typeof value.error === "string" ? {error: value.error} : {}) };
   }
