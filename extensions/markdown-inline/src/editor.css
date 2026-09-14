@@ -1734,12 +1734,20 @@ header, .header-actions { min-width: 0; }
 
 .font-size-menu { position: fixed; z-index: 100; display: flex; align-items: center; gap: 3px; padding: 4px 7px; border: 1px solid var(--border); border-radius: 999px; background: var(--floating-surface); color: var(--floating-foreground); box-shadow: 0 4px 16px #0002; font: 11px/18px var(--vscode-font-family, system-ui); }
 .font-size-menu button { min-width: 24px; height: 24px; padding: 2px 6px; border-radius: 999px; font: inherit; }
+.content-width-menu button, .font-size-menu button { transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease; }
+@media (hover: hover) {
+  .content-width-menu button:hover, .font-size-menu button:not(:disabled):hover { background: var(--control-hover); border-color: var(--heat-40); }
+  .content-width-menu button[aria-checked="true"]:hover { background: var(--heat-12); border-color: var(--heat-100); }
+}
+.content-width-menu button:active, .font-size-menu button:not(:disabled):active { background: var(--heat-12); border-color: var(--heat-100); }
+.content-width-menu button:focus-visible, .font-size-menu button:focus-visible { outline: 2px solid var(--heat-100); outline-offset: 1px; }
 .content-width-menu.floating-panel, .font-size-menu.floating-panel { transition: opacity 90ms ease-out, transform 90ms ease-out; }
 #content-width.header-icon-button, #font-size.header-icon-button { height: 22px; padding-inline: 7px; border-radius: 999px; border-color: var(--border); font-size: 10px; }
 @media (prefers-reduced-motion: reduce) {
   .content-width-menu.floating-panel, .font-size-menu.floating-panel { transition: none; transform: none; }
+  .content-width-menu button, .font-size-menu button { transition: none; }
 }
-.font-size-menu button:disabled { opacity: .4; cursor: default; }
+.font-size-menu button:disabled { opacity: .4; cursor: default; background: var(--control-background); border-color: var(--border); }
 .font-size-menu output { min-width: 4ch; text-align: center; font-variant-numeric: tabular-nums; }
 #font-size .header-action-label { width: 4ch; font-variant-numeric: tabular-nums; }
 .source-fallback { font-size: var(--editor-font-size, 17px); }

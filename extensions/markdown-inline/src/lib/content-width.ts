@@ -9,7 +9,7 @@ export function setupContentWidth(initial: ContentWidth, changed: (width: Conten
   menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', 'Content width');
   document.body.append(menu);
   trigger.setAttribute('aria-controls', menu.id);
-  const panel = readingPopover(trigger, menu, () => menu.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
+  readingPopover(trigger, menu, () => menu.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
   let current = initial;
   const options = [['normal', 'Normal'], ['large', 'Large'], ['full', 'Full width']] as const;
   const apply = () => {
@@ -23,7 +23,7 @@ export function setupContentWidth(initial: ContentWidth, changed: (width: Conten
   for (const [width, label] of options) {
     const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
     button.dataset.width = width; button.setAttribute('role', 'menuitemradio');
-    button.addEventListener('click', () => {current = width; apply(); changed(width); panel.hide(); trigger.focus();});
+    button.addEventListener('click', () => {current = width; apply(); changed(width);});
     menu.append(button);
   }
   menu.addEventListener('keydown', event => {

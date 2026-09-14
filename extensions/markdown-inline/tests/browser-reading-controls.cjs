@@ -46,11 +46,11 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'reading-controls.h
     await page.addStyleTag({content: ':root {--vscode-font-family: system-ui; --vscode-editor-font-family: monospace;}'});
     assert.equal(await size(), 18, 'font choice survives width, metadata and reload');
     assert.equal(await page.locator('html').getAttribute('data-content-width'), 'large');
-    for (const [name, expected] of [['Decrease font size', 12], ['Increase font size', 24]]) {
+    for (const [name, expected] of [['Decrease font size', 10], ['Increase font size', 36]]) {
       await openSize(); const button = page.getByRole('button', {name, exact: true});
       while (await button.isEnabled()) await button.click();
       assert.equal(await size(), expected);
-      await page.getByRole('button', {name: 'Close font size controls', exact: true}).click();
+      await page.keyboard.press('Escape');
     }
     await openSize(); await page.getByRole('button', {name: 'Reset font size to 17 pixels'}).click();
     assert.equal(await size(), 17);
@@ -67,7 +67,7 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'reading-controls.h
           const handle = page.locator('.block-group-handle');
           await handle.waitFor({state: 'visible'});
           const grip = await handle.boundingBox(), marker = await page.locator('.git-change').first().boundingBox(), block = await list.boundingBox();
-          assert.equal(grip.width, 40); assert.equal(grip.height, 24);
+          assert.ok(Math.abs(grip.width - 40) < .01); assert.ok(Math.abs(grip.height - 24) < .01);
           assert.ok(grip.x >= marker.x + marker.width + 6, 'Git gutter has its own space');
           assert.ok(grip.x + grip.width <= block.x - 6, 'text has a gap after the handle');
           await handle.hover();

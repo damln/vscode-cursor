@@ -31,7 +31,7 @@ Use the **palette** button to choose among ten light and dark editor themes.
 The centered picker previews each palette and remembers your choice across files.
 
 Use **Width** and the adjacent **font-size** control to adjust the reading layout.
-Text size ranges from 12 to 24 pixels; Reset restores 17 pixels. These choices
+Text size ranges from 10 to 36 pixels; Reset restores 17 pixels. These choices
 are remembered across files and never change the Markdown source.
 
 Drag from empty space beside or between blocks to select an area, then drag a
