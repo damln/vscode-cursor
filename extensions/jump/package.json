@@ -2,12 +2,12 @@
   "name": "jump",
   "displayName": "Damln Jump",
   "description": "Jump or select to the start or end of a word in VS Code.",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "publisher": "damln",
   "icon": "images/icon.png",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.100.0"
   },
   "categories": [
     "Other"
