@@ -2,7 +2,7 @@
   "name": "file-actions",
   "displayName": "Damln File Actions",
   "description": "Copy content, file paths and parent folder paths from every editor title bar.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "damln",
   "license": "MIT",
   "engines": {
@@ -58,6 +58,13 @@
         "category": "File",
         "icon": "$(link-external)",
         "enablement": "resourceScheme == file && resourceExtname =~ /\\.html?$/i && isWorkspaceTrusted"
+      },
+      {
+        "command": "damlnFileActions.editHtmlSource",
+        "title": "Edit HTML source",
+        "category": "File",
+        "icon": "$(code)",
+        "enablement": "resource && resourceExtname =~ /\\.html?$/i"
       }
     ],
     "menus": {
@@ -81,6 +88,11 @@
           "command": "damlnFileActions.openInBrowser",
           "when": "resourceScheme == file && resourceExtname =~ /\\.html?$/i",
           "group": "navigation@13"
+        },
+        {
+          "command": "damlnFileActions.editHtmlSource",
+          "when": "resource && resourceExtname =~ /\\.html?$/i",
+          "group": "navigation@9"
         }
       ],
       "commandPalette": [
@@ -99,6 +111,10 @@
         {
           "command": "damlnFileActions.openInBrowser",
           "when": "resourceScheme == file && resourceExtname =~ /\\.html?$/i"
+        },
+        {
+          "command": "damlnFileActions.editHtmlSource",
+          "when": "resource && resourceExtname =~ /\\.html?$/i"
         }
       ],
       "explorer/context": [
@@ -106,6 +122,11 @@
           "command": "damlnFileActions.openInBrowser",
           "when": "resourceScheme == file && resourceExtname =~ /\\.html?$/i",
           "group": "navigation@20"
+        },
+        {
+          "command": "damlnFileActions.editHtmlSource",
+          "when": "resource && resourceExtname =~ /\\.html?$/i",
+          "group": "navigation@19"
         }
       ]
     }

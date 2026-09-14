@@ -14,6 +14,13 @@ before copying their serialized content.
 Install or remove this extension independently; it does not change settings.
 See [package.json](package.json) for commands and editor integration.
 
+## Edit HTML source
+
+Click the **Edit HTML source** (`</>`) title-bar icon to open an HTML file in
+VS Code's editable text editor, including when it normally opens in the Integrated
+Browser. The action is also in the Explorer context menu and Command Palette.
+Your default HTML association and unsaved edits are preserved.
+
 ## Open HTML in external default browser
 
 Local `.html` and `.htm` files get an external-link arrow action in the editor title,

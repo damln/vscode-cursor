@@ -34,6 +34,19 @@ exports.run = async () => {
     await command('copyFilePath', undefined, 'page.html');
     await command('copyParentFolderPath', undefined, '.');
     checks.push('HTML file and parent paths');
+    await vscode.commands.executeCommand('vscode.openWith', uri('page.html'), 'workbench.editor.browser');
+    assert.equal(await vscode.commands.executeCommand('damlnFileActions.editHtmlSource', uri('page.html')), true);
+    assert.equal(vscode.window.activeTextEditor.document.uri.toString(), uri('page.html').toString());
+    const htmlEditor = vscode.window.activeTextEditor;
+    await htmlEditor.edit(builder => builder.insert(new vscode.Position(0, 0), '<!-- unsaved -->\n'));
+    const dirtyHtml = htmlEditor.document.getText();
+    await vscode.commands.executeCommand('vscode.openWith', uri('page.html'), 'workbench.editor.browser');
+    assert.equal(await vscode.commands.executeCommand('damlnFileActions.editHtmlSource'), true);
+    assert.equal(vscode.window.activeTextEditor.document.getText(), dirtyHtml);
+    assert.equal(vscode.window.activeTextEditor.document.isDirty, true);
+    checks.push('native browser title and palette source actions preserve unsaved HTML');
+    await vscode.commands.executeCommand('workbench.action.files.revert');
+
     await command('copyContent', doc.uri, doc.getText());
     checks.push('explicit inactive-group resource');
     const untitled = await vscode.workspace.openTextDocument({content: 'Untitled content'});

@@ -31,6 +31,21 @@ async function copyContent(uri) {
 }
 
 function activate(context) {
+  context.subscriptions.push(vscode.commands.registerCommand("damlnFileActions.editHtmlSource", async resource => {
+    try {
+      const uri = targetUri(resource);
+      if (uri) {
+        if (!/\.html?$/i.test(uri.path)) throw new Error("Choose an HTML file to edit its source.");
+        await vscode.commands.executeCommand("vscode.openWith", uri, "default", { preview: false });
+      } else {
+        await vscode.commands.executeCommand("reopenActiveEditorWith", "default");
+      }
+      return true;
+    } catch (error) {
+      await vscode.window.showErrorMessage(`Could not edit HTML source: ${error.message || error}`);
+      return false;
+    }
+  }));
   const { BrowserPreview } = require("./browser-preview");
   const browser = new BrowserPreview();
   context.subscriptions.push(browser, vscode.commands.registerCommand("damlnFileActions.openInBrowser", async resource => {

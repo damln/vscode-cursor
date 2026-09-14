@@ -15,12 +15,12 @@ class Uri {
 function harness() {
   const commands = new Map(), copied = [], opened = [], errors = [], statuses = [];
   const file = new Uri("file", "/work/read me.txt");
-  const browserUrls = [], external = [];
+  const browserUrls = [], external = [], executed = [];
   class BrowserPreview { async url(file, root) {browserUrls.push({file,root});return "http://127.0.0.1:1234/token/index.html";} dispose() {} }
   const vscode = {
     Uri,
     extensions: {getExtension: () => undefined},
-    commands: {registerCommand(id, callback) {commands.set(id, callback);return {dispose() {}};}},
+    commands: {async executeCommand(...args) {executed.push(args);}, registerCommand(id, callback) {commands.set(id, callback);return {dispose() {}};}},
     env: {openExternal: async uri => {external.push(uri); return true;}, clipboard: {async writeText(value) {copied.push(value);}}},
     workspace: {
       isTrusted: true,
@@ -40,7 +40,7 @@ function harness() {
   const mod = {exports: {}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../extensions/file-actions/extension.js"), "utf8"), {module: mod, require: id => id === "./browser-preview" ? {BrowserPreview} : vscode});
   mod.exports.activate({subscriptions: []});
-  return {vscode, file, browserUrls, external, copied, opened, errors, statuses, run: (action, uri) => commands.get(`damlnFileActions.${action}`)(uri)};
+  return {vscode, executed, file, browserUrls, external, copied, opened, errors, statuses, run: (action, uri) => commands.get(`damlnFileActions.${action}`)(uri)};
 }
 
 test("copies the clicked group's current content, independent of the active text editor", async () => {
@@ -177,4 +177,27 @@ test("browser action respects cancelled or failed saves and opener failures", as
   h.vscode.workspace.openTextDocument=async()=>({isDirty:true,save:async()=>true});
   h.vscode.env.openExternal=async()=>false;
   assert.equal(await h.run("openInBrowser",uri),false);assert.match(h.errors.at(-1),/could not be opened/);
+});
+
+
+test("HTML source bypasses browser associations and targets the requested file", async () => {
+  const h = harness(), uri = new Uri("vscode-remote", "/work/page.HTML");
+  assert.equal(await h.run("editHtmlSource", uri), true);
+  assert.equal(h.executed[0][0], "vscode.openWith");
+  assert.equal(h.executed[0][1], uri);
+  assert.equal(h.executed[0][2], "default");
+  assert.equal(h.executed[0][3].preview, false);
+  assert.equal(h.external.length, 0);
+  assert.equal(await h.run("editHtmlSource", h.file), false);
+  assert.equal(h.executed.length, 1);
+});
+
+test("native browser palette action uses native reopen without a stale text URI", async () => {
+  const h = harness();
+  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {};
+  assert.equal(await h.run("editHtmlSource"), true);
+  assert.deepEqual(h.executed, [["reopenActiveEditorWith", "default"]]);
+  h.vscode.commands.executeCommand = async () => {throw new Error("Cannot reopen");};
+  assert.equal(await h.run("editHtmlSource"), false);
+  assert.match(h.errors.at(-1), /Cannot reopen/);
 });
