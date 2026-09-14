@@ -23,6 +23,7 @@ const {
 
 const VIEW_TYPE = "damln.markdownInline";
 const THEME_STATE_KEY = "damlnMarkdownInline.theme";
+const READING_STATE_KEY = "damlnMarkdownInline.readingPreferences";
 const { findTheme, isInlineTheme, themeStyles } = require("./themes");
 const CUSTOM_EDITOR_OPTIONS = Object.freeze({
   webviewOptions: Object.freeze({ enableFindWidget: true }),
@@ -77,6 +78,22 @@ class MarkdownInlineProvider {
     const kind = vscode.window?.activeColorTheme?.kind;
     const light = kind === 1 || kind === 4;
     this.theme = findTheme(context.globalState.get(THEME_STATE_KEY) || "auto", light).id;
+    this.readingPreferences = {fontSize: 17, contentWidth: "normal"};
+    const saved = context.globalState.get(READING_STATE_KEY);
+    for (const key of Object.keys(this.readingPreferences)) {
+      const preference = parseEditorMessage({type: "setReadingPreference", key, value: saved?.[key]});
+      if (preference) this.readingPreferences[key] = preference.value;
+    }
+  }
+
+  async setReadingPreference(key, value) {
+    const preference = parseEditorMessage({type: "setReadingPreference", key, value});
+    if (!preference) return;
+    this.readingPreferences = {...this.readingPreferences, [key]: preference.value};
+    await this.context.globalState.update(READING_STATE_KEY, this.readingPreferences);
+    await Promise.all([...this.panels].map(panel => panel.webview.postMessage({
+      type: "readingPreferences", ...this.readingPreferences,
+    })));
   }
 
   async setTheme(theme) {
@@ -354,6 +371,7 @@ class MarkdownInlineProvider {
         return;
       }
       if (message.type === "ready") {
+        await panel.webview.postMessage({type: "readingPreferences", ...this.readingPreferences});
         void gitBaseline.start();
         const recovered = firstReady && this.drafts.recover(key, message.session, active, document.getText());
         if (recovered) await this.backupRecovery(document, recovered.draft.text);
@@ -389,6 +407,10 @@ class MarkdownInlineProvider {
       }
       if (message.type === "setTheme") {
         await this.setTheme(message.theme);
+        return;
+      }
+      if (message.type === "setReadingPreference") {
+        await this.setReadingPreference(message.key, message.value);
         return;
       }
       if (message.type === "openRaw") {
