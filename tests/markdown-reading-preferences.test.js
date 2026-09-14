@@ -32,7 +32,7 @@ test('reading preferences persist across providers and merge independent control
 });
 
 test('invalid preference messages and persisted values cannot change CSS or unrelated state', async () => {
-  for (const [key, value] of [['fontSize', 11], ['fontSize', 25], ['fontSize', 17.5], ['fontSize', '20'],
+  for (const [key, value] of [['fontSize', 9], ['fontSize', 37], ['fontSize', 17.5], ['fontSize', '20'],
     ['contentWidth', '900px'], ['__proto__', {}]]) {
     assert.equal(parseEditorMessage({type: 'setReadingPreference', key, value}), null);
   }
@@ -43,4 +43,16 @@ test('invalid preference messages and persisted values cannot change CSS or unre
   assert.equal(provider.readingPreferences.fontSize, 17);
   assert.equal(provider.readingPreferences.contentWidth, 'normal');
   await provider.setReadingPreference('fontSize', '999px');
+});
+
+test('font size endpoints persist and restore without falling back to the default', async () => {
+  for (const fontSize of [10, 36]) {
+    let stored;
+    const context = {workspaceState: {get: () => ({})}, globalState: {
+      get: () => stored, update: async (_, value) => {stored = structuredClone(value);},
+    }};
+    const provider = new mod.exports.MarkdownInlineProvider(context);
+    await provider.setReadingPreference('fontSize', fontSize);
+    assert.equal(new mod.exports.MarkdownInlineProvider(context).readingPreferences.fontSize, fontSize);
+  }
 });
