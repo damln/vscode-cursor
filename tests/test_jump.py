@@ -36,21 +36,15 @@ class DamlnJumpTests(unittest.TestCase):
             commands,
         )
 
-    def test_preserves_upstream_attribution(self):
-        upstream = json.loads(
-            (self.extension_root / "UPSTREAM.json").read_text(encoding="utf-8")
-        )
-        self.assertEqual("damln.jump", upstream["forkId"])
-        self.assertEqual(
-            "37ba0cb1845018958042bafb50e32e9bb3a2ec5e",
-            upstream["commit"],
-        )
-        self.assertTrue((self.extension_root / "LICENSE").is_file())
+    def test_preserves_mit_license(self):
+        license_text = (self.extension_root / "LICENSE").read_text(encoding="utf-8")
+        self.assertIn("Copyright (c) 2021-Present Wenfang Du", license_text)
+        self.assertIn("The above copyright notice and this permission notice", license_text)
 
     def test_uses_only_damln_branding_in_public_metadata(self):
         readme = (self.extension_root / "README.md").read_text(encoding="utf-8")
-        self.assertNotIn("wenfangdu", readme.lower())
-        self.assertNotIn("vscode-jump", readme.lower())
+        self.assertIn("# Damln Jump", readme)
+        self.assertEqual("https://github.com/damln/vscode-cursor.git", self.package["repository"]["url"])
         self.assertEqual("images/icon.png", self.package["icon"])
         self.assertTrue((self.extension_root / "assets/icon.svg").is_file())
 
