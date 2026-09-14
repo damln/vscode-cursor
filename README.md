@@ -84,5 +84,5 @@ or `npm audit --omit=dev --audit-level=high` in Jump after installing dependenci
 
 ## Licenses
 
-The three original extensions and their SVG artwork use [MIT](LICENSE). Jump retains [MIT and upstream attribution](extensions/jump/UPSTREAM.json),
+The three original extensions and their SVG artwork use [MIT](LICENSE). Jump uses [MIT](extensions/jump/LICENSE),
 fonts retain OFL, and bundled libraries retain their notices.

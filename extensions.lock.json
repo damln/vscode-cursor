@@ -27,10 +27,10 @@
     },
     {
       "id": "damln.jump",
-      "version": "0.8.3",
+      "version": "0.8.4",
       "source": "extensions/jump",
-      "package": "dist/damln.jump-0.8.3.vsix",
-      "sha256": "ec114765248ec4f1951139b7044b284b613616fbaa3ff5788fa5d80a15b521da",
+      "package": "dist/damln.jump-0.8.4.vsix",
+      "sha256": "e7cbfc3d97fc25c01d2b2c2458478cac62c7837a6f15b5e584665ab29e0789c7",
       "remote": true
     }
   ]
