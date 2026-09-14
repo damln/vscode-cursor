@@ -49,3 +49,22 @@ test("allows local, remote, and inline browser assets", () => {
   assert.match(policy, /script-src .*'unsafe-inline'/);
   assert.match(policy, /connect-src .* ws: wss:/);
 });
+
+const { resolveLink } = require('../extensions/html-preview/navigation');
+const path = require('node:path');
+const uri = pathname => ({path:pathname, scheme:'vscode-remote',authority:'ssh-remote+test'});
+const Uri = {joinPath:(base,relative)=>({...base,path:path.posix.join(base.path,relative)}),parse:value=>value};
+const webview = {asWebviewUri:root=>({toString:()=> 'https://vscode-remote+test.vscode-resource.vscode-cdn.net'+encodeURI(root.path)})};
+test('preview links map resource URLs back to local or remote document URIs',()=>{
+  const root=uri('/workspace'),doc=uri('/workspace/gallery/index.html');
+  const result=resolveLink('https://vscode-remote+test.vscode-resource.vscode-cdn.net/workspace/gallery/pages/ornaments.html#details',doc,[uri('/workspace/gallery'),root],webview,Uri);
+  assert.equal(result.kind,'local');assert.equal(result.uri.path,'/workspace/gallery/pages/ornaments.html');
+  assert.equal(result.uri.scheme,'vscode-remote');assert.equal(result.fragment,'details');
+  assert.equal(resolveLink('https://vscode-remote+test.vscode-resource.vscode-cdn.net/workspace/another%20page.html',doc,[root],webview,Uri).uri.path,'/workspace/another page.html');
+  assert.equal(resolveLink('https://example.com',doc,[root],webview,Uri).kind,'external');
+});
+test('preview navigation blocks command links, foreign resource hosts and out-of-root paths',()=>{
+  for (const href of ['command:workbench.action.closeWindow','file:///etc/passwd','https://file+.vscode-resource.vscode-cdn.net/workspace/file.html','https://vscode-remote+test.vscode-resource.vscode-cdn.net/elsewhere/file.html','https://vscode-remote+test.vscode-resource.vscode-cdn.net/workspace/%2e%2e%2foutside.html']) {
+    assert.throws(()=>resolveLink(href,uri('/workspace/index.html'),[uri('/workspace')],webview,Uri),/supported|outside|Invalid/);
+  }
+});

@@ -2,7 +2,7 @@
   "name": "html-preview",
   "displayName": "Damln HTML Preview",
   "description": "Preview HTML files in a supported VS Code custom editor.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "damln",
   "license": "MIT",
   "engines": {
@@ -26,7 +26,8 @@
     "preview-html.js",
     "LICENSE",
     "icon.svg",
-    "icon.png"
+    "icon.png",
+    "navigation.js"
   ],
   "contributes": {
     "customEditors": [
@@ -36,6 +37,9 @@
         "selector": [
           {
             "filenamePattern": "*.html"
+          },
+          {
+            "filenamePattern": "*.htm"
           }
         ],
         "priority": "option"
