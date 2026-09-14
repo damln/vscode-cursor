@@ -54,7 +54,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     const dialog=page.getByRole('dialog',{name:'Make yourself at home'});
     const rgb=hex=>'rgb('+hex.slice(1).match(/../g).map(v=>parseInt(v,16)).join(', ')+')';
     await trigger.click();await dialog.waitFor();
-    assert.equal(await dialog.getByRole('radio').count(),6);
+    assert.equal(await dialog.getByRole('radio').count(),10);
     for(const theme of THEMES) {
       const radio=dialog.getByRole('radio',{name:theme.name+', '+theme.mode,exact:true});
       assert.equal(await radio.locator('.theme-preview').evaluate(el=>getComputedStyle(el).backgroundColor),rgb(theme.colors[0]));
@@ -65,22 +65,22 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
       assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),rgb(theme.colors[0]));
       assert.equal(await dialog.locator('[aria-checked=true]').count(),1);
       assert.equal(await radio.getAttribute('aria-checked'),'true');
-      if(['linen','midnight'].includes(theme.id)) {
+      if(['dune','glacier','obsidian','cocoa'].includes(theme.id)) {
         await page.waitForTimeout(180);
         await page.screenshot({path:path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'themes-'+theme.id+'.png')});
       }
     }
     await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
     assert.equal(await trigger.evaluate(el=>el===document.activeElement),true);
-    assert.equal(saved,'forest');
+    assert.equal(saved,'cocoa');
     await load();
-    await page.waitForFunction(()=>document.documentElement.dataset.editorTheme==='forest');
+    await page.waitForFunction(()=>document.documentElement.dataset.editorTheme==='cocoa');
     await trigger.focus();await page.keyboard.press('Space');await dialog.waitFor();
-    assert.equal(await page.locator(':focus').getAttribute('data-theme'),'forest');
+    assert.equal(await page.locator(':focus').getAttribute('data-theme'),'cocoa');
     await page.keyboard.press('Home');assert.equal(saved,'linen');
     await page.keyboard.press('ArrowRight');assert.equal(saved,'paper');
-    await page.keyboard.press('ArrowDown');assert.equal(saved,'midnight');
-    await page.keyboard.press('End');assert.equal(saved,'forest');
+    await page.keyboard.press('ArrowDown');assert.equal(saved,'glacier');
+    await page.keyboard.press('End');assert.equal(saved,'cocoa');
     for(let i=0;i<5;i++) {await page.keyboard.press('Tab');assert.equal(await dialog.evaluate(el=>el.contains(document.activeElement)),true);}
     await dialog.getByRole('button',{name:'Done',exact:true}).click();
     await trigger.click();await page.mouse.click(2,2);await dialog.waitFor({state:'hidden'});
@@ -98,6 +98,6 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     assert.equal(await dialog.getByRole('radio',{name:'Paper, light',exact:true}).getAttribute('aria-checked'),'true');
     assert.deepEqual(edits,[]);
     assert.deepEqual(errors,[]);
-    console.log('PASS six theme previews, persistence/broadcast, host validation, immediate application, keyboard, modal focus, Escape/backdrop, narrow layout, reduced motion and no document edits');
+    console.log('PASS ten theme previews, persistence/broadcast, host validation, immediate application, keyboard, modal focus, Escape/backdrop, narrow layout, reduced motion and no document edits');
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

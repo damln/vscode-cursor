@@ -2,9 +2,9 @@
   "name": "markdown-inline",
   "displayName": "Damln Markdown Inline",
   "description": "A native VS Code custom editor for inline Markdown editing.",
-  "version": "0.7.53",
+  "version": "0.8.0",
   "publisher": "damln",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -74,7 +74,10 @@
     "media/mermaid.js",
     "MERMAID-LICENSE.md",
     "git-baseline.js",
-    "DIFF-LICENSE.md"
+    "DIFF-LICENSE.md",
+    "LICENSE",
+    "icon.svg",
+    "icon.png"
   ],
   "contributes": {
     "commands": [
@@ -263,5 +266,15 @@
         "priority": "default"
       }
     ]
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#141414",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/damln/vscode.git",
+    "directory": "extensions/markdown-inline"
   }
 }

@@ -8,7 +8,7 @@ export function setupThemePicker(trigger: HTMLButtonElement, changed: (theme: st
   dialog.setAttribute("aria-labelledby", "editor-theme-title");
   dialog.setAttribute("aria-describedby", "editor-theme-description");
   dialog.innerHTML = `<div class="theme-picker-heading"><div><h2 id="editor-theme-title">Make yourself at home</h2>
-    <p id="editor-theme-description">Six ways to read and write. Choose a theme to apply it.</p></div>
+    <p id="editor-theme-description">Ten ways to read and write. Choose a theme to apply it.</p></div>
     <button class="theme-picker-close" type="button" aria-label="Close theme picker" data-toolbar-hint="Close theme picker">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
     </button></div>`;

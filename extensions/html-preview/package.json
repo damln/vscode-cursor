@@ -2,9 +2,9 @@
   "name": "html-preview",
   "displayName": "Damln HTML Preview",
   "description": "Preview HTML files in a supported VS Code custom editor.",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "publisher": "damln",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -23,7 +23,10 @@
   "files": [
     "README.md",
     "extension.js",
-    "preview-html.js"
+    "preview-html.js",
+    "LICENSE",
+    "icon.svg",
+    "icon.png"
   ],
   "contributes": {
     "customEditors": [
@@ -72,5 +75,15 @@
       "supported": false,
       "description": "HTML previews execute authored scripts and load remote resources."
     }
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#141414",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/damln/vscode.git",
+    "directory": "extensions/html-preview"
   }
 }

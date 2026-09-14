@@ -1,10 +1,10 @@
 {
   "name": "minimal-theme",
   "displayName": "Damln Minimal Theme",
-  "description": "A quiet dark color theme for standard VS Code.",
-  "version": "0.5.8",
+  "description": "Quiet dark and light color themes for standard VS Code.",
+  "version": "0.6.0",
   "publisher": "damln",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -18,11 +18,16 @@
     "damln",
     "dark",
     "minimal",
-    "theme"
+    "theme",
+    "light"
   ],
   "files": [
     "README.md",
-    "themes/minimal-color-theme.json"
+    "themes/minimal-color-theme.json",
+    "LICENSE",
+    "icon.svg",
+    "icon.png",
+    "themes/minimal-light-color-theme.json"
   ],
   "contributes": {
     "themes": [
@@ -30,7 +35,22 @@
         "label": "Damln Minimal",
         "uiTheme": "vs-dark",
         "path": "./themes/minimal-color-theme.json"
+      },
+      {
+        "label": "Damln Minimal Light",
+        "uiTheme": "vs",
+        "path": "./themes/minimal-light-color-theme.json"
       }
     ]
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#141414",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/damln/vscode.git",
+    "directory": "extensions/minimal-theme"
   }
 }

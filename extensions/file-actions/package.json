@@ -2,9 +2,9 @@
   "name": "file-actions",
   "displayName": "Damln File Actions",
   "description": "Copy content, file paths and parent folder paths from every editor title bar.",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "publisher": "damln",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -23,7 +23,10 @@
   "main": "./extension.js",
   "files": [
     "README.md",
-    "extension.js"
+    "extension.js",
+    "LICENSE",
+    "icon.svg",
+    "icon.png"
   ],
   "contributes": {
     "commands": [
@@ -82,5 +85,15 @@
         }
       ]
     }
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#141414",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/damln/vscode.git",
+    "directory": "extensions/file-actions"
   }
 }

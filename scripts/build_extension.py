@@ -30,6 +30,11 @@ class ExtensionPackageBuilder:
         categories = ",".join(self.package.get("categories", []))
         extension_kind = ",".join(self.package.get("extensionKind", []))
         dependencies = ",".join(self.package.get("extensionDependencies", []))
+        optional_assets = ""
+        if self.package.get("icon"):
+            optional_assets += f'    <Asset Type="Microsoft.VisualStudio.Services.Icons.Default" Path="extension/{escape(self.package["icon"])}" Addressable="true" />\n'
+        if "LICENSE" in self.package.get("files", []):
+            optional_assets += '    <Asset Type="Microsoft.VisualStudio.Services.Content.License" Path="extension/LICENSE" Addressable="true" />\n'
         return f'''<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
@@ -52,14 +57,14 @@ class ExtensionPackageBuilder:
   <Assets>
     <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
     <Asset Type="Microsoft.VisualStudio.Services.Content.Details" Path="extension/README.md" Addressable="true" />
-  </Assets>
+{optional_assets}  </Assets>
 </PackageManifest>
 '''
 
     @staticmethod
     def content_types() -> str:
         return '''<?xml version="1.0" encoding="utf-8"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension=".css" ContentType="text/css"/><Default Extension=".js" ContentType="application/javascript"/><Default Extension=".json" ContentType="application/json"/><Default Extension=".md" ContentType="text/markdown"/><Default Extension=".vsixmanifest" ContentType="text/xml"/></Types>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension=".png" ContentType="image/png"/><Default Extension=".svg" ContentType="image/svg+xml"/><Default Extension=".css" ContentType="text/css"/><Default Extension=".js" ContentType="application/javascript"/><Default Extension=".json" ContentType="application/json"/><Default Extension=".md" ContentType="text/markdown"/><Default Extension=".vsixmanifest" ContentType="text/xml"/></Types>
 '''
 
     @staticmethod
