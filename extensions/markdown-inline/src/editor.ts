@@ -1,4 +1,4 @@
-import { setupThemePicker } from "./lib/theme-picker";
+import { setupEditorSettings } from "./lib/theme-picker";
 import { isInlineTheme } from "../themes";
 import { fontSize, setupFontSize } from './lib/font-size';
 import { GitGutter, type RenderedBlock } from './lib/git-gutter';
@@ -74,12 +74,13 @@ interface EditorSnapshot {
 }
 
 const vscode = acquireVsCodeApi();
-const stored = vscode.getState() as { fontSize?: unknown; contentWidth?: unknown; metadataExpanded?: boolean; session?: string; draft?: { text?: unknown; baseText?: unknown; conflicted?: boolean; sourceError?: string } } | null;
+const stored = vscode.getState() as { fontSize?: unknown; contentWidth?: unknown; codeWrap?: unknown; metadataExpanded?: boolean; session?: string; draft?: { text?: unknown; baseText?: unknown; conflicted?: boolean; sourceError?: string } } | null;
 const restoredDraft = typeof stored?.draft?.text === 'string' && typeof stored.draft.baseText === 'string'
   ? { text: stored.draft.text, baseText: stored.draft.baseText, conflicted: stored.draft.conflicted, sourceError: stored.draft.sourceError } : null;
 let metadataExpanded = stored?.metadataExpanded === true;
 let width = contentWidth(stored?.contentWidth);
 let textSize = fontSize(stored?.fontSize);
+let codeWrap = stored?.codeWrap !== false;
 const session = stored?.session || crypto.randomUUID();
 const sync = new SyncClient(crypto.randomUUID(), restoredDraft);
 let typingTimer: number | null = null;
@@ -114,12 +115,12 @@ const root = rootElement;
 const openRaw = openRawElement;
 const applyContentWidth = setupContentWidth(width, value => {
   width = value;
-  vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+  vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize, codeWrap });
   vscode.postMessage({type: "setReadingPreference", key: "contentWidth", value});
 });
 const applyFontSize = setupFontSize(textSize, value => {
   textSize = value;
-  vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+  vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize, codeWrap });
   vscode.postMessage({type: "setReadingPreference", key: "fontSize", value});
 });
 setupHeaderPopovers();
@@ -159,9 +160,14 @@ const jumpController = new InlineJumpController(message => {
   statusTimeout = window.setTimeout(() => setStatus(""), 1200);
 });
 
-const applyInlineTheme = setupThemePicker(inlineThemeElement, theme => {
+const {applyTheme: applyInlineTheme, applyCodeWrap} = setupEditorSettings(inlineThemeElement, theme => {
   vscode.postMessage({type: "setTheme", theme});
+}, value => {
+  codeWrap = value;
+  vscode.setState({session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize, codeWrap});
+  vscode.postMessage({type: "setReadingPreference", key: "codeWrap", value});
 });
+applyCodeWrap(codeWrap);
 
 function setStatus(value: string, error = false) {
   const status = improving ? "Improving…" : improvementError || value;
@@ -228,7 +234,7 @@ function sendNextEdit() {
   const draftMessage = JSON.stringify({ session, draft: sync.draft });
   if (draftMessage !== lastDraftMessage) {
     lastDraftMessage = draftMessage;
-    vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+    vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize, codeWrap });
     vscode.postMessage({ type: "retainDraft", draft: sync.draft });
   }
   recovery.hidden = !sync.error;
@@ -294,7 +300,7 @@ const metadata = new FrontmatterEditor(frontmatterCard, frontmatterFieldsRoot, a
   queueEdit();
 }, metadataExpanded, expanded => {
   metadataExpanded = expanded;
-  vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+  vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize, codeWrap });
 });
 
 function captureEditorSnapshot(): EditorSnapshot | null {
@@ -508,7 +514,8 @@ window.addEventListener("message", event => {
   if (message?.type === 'readingPreferences') {
     width = contentWidth(message.contentWidth); textSize = fontSize(message.fontSize);
     applyContentWidth(width); applyFontSize(textSize);
-    vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize });
+    codeWrap = message.codeWrap !== false; applyCodeWrap(codeWrap);
+    vscode.setState({ session, draft: sync.draft, metadataExpanded, contentWidth: width, fontSize: textSize, codeWrap });
     return;
   }
   if (message?.type === 'gitBaseline' && (message.text === null || typeof message.text === 'string')) {

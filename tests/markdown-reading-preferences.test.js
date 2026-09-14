@@ -22,10 +22,13 @@ test('reading preferences persist across providers and merge independent control
   provider.panels.add({webview: {postMessage: message => messages.push(message)}});
   await provider.setReadingPreference('fontSize', 21);
   await provider.setReadingPreference('contentWidth', 'large');
+  assert.equal(provider.readingPreferences.codeWrap, true);
+  await provider.setReadingPreference('codeWrap', false);
   const reopened = new mod.exports.MarkdownInlineProvider(context);
   assert.equal(reopened.readingPreferences.fontSize, 21);
   assert.equal(reopened.readingPreferences.contentWidth, 'large');
-  assert.equal(messages.length, 4);
+  assert.equal(messages.length, 6);
+  assert.equal(reopened.readingPreferences.codeWrap, false);
   assert.equal(messages[3].type, 'readingPreferences');
   assert.equal(messages[3].fontSize, 21);
   assert.deepEqual([...storage.keys()], ['damlnMarkdownInline.readingPreferences']);
@@ -33,7 +36,7 @@ test('reading preferences persist across providers and merge independent control
 
 test('invalid preference messages and persisted values cannot change CSS or unrelated state', async () => {
   for (const [key, value] of [['fontSize', 9], ['fontSize', 37], ['fontSize', 17.5], ['fontSize', '20'],
-    ['contentWidth', '900px'], ['__proto__', {}]]) {
+    ['contentWidth', '900px'], ['codeWrap', 'false'], ['codeWrap', 0], ['codeWrap', null], ['__proto__', {}]]) {
     assert.equal(parseEditorMessage({type: 'setReadingPreference', key, value}), null);
   }
   const provider = new mod.exports.MarkdownInlineProvider({workspaceState: {get: () => ({})}, globalState: {

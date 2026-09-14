@@ -56,7 +56,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await page.getByRole('button',{name:'Full screen',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'Mermaid diagram viewer'});await dialog.waitFor();
   assert.equal(await dialog.evaluate(el=>el.getBoundingClientRect().width),1200);
-  await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.querySelector('dialog').contains(document.activeElement)));
+  await page.keyboard.press('Tab');assert.ok(await dialog.evaluate(el=>el.contains(document.activeElement)));
   await viewport.focus();await page.keyboard.press('+');await page.keyboard.press('0');
   await page.waitForTimeout(160);
   await page.screenshot({path:path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'mermaid-fullscreen-dark.png')});

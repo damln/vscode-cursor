@@ -1,4 +1,5 @@
 import { MermaidBlock } from "./mermaid-block";
+import { codeGutter } from "./code-gutter";
 import { copyCode } from "../lib/code-clipboard";
 import { Selection, TextSelection } from "@milkdown/kit/prose/state";
 import { FloatingPanel, positionMenu } from "./floating-panel";
@@ -126,6 +127,7 @@ export const codeBlockLangView = $view(codeBlockSchema.node, () => {
     const code = document.createElement("code");
     pre.append(gutter, code);
     wrapper.append(bar, pre);
+    const disposeGutter = codeGutter(code, gutter);
 
     const mermaid = new MermaidBlock(wrapper, bar, pre, () => {
       const pos = getPos();
@@ -142,8 +144,6 @@ export const codeBlockLangView = $view(codeBlockSchema.node, () => {
     function updateGutter() {
       clearBtn.disabled = !node.textContent;
       clearBtn.title = clearBtn.disabled ? "Code is already empty" : "Clear code";
-      const lines = (node.textContent || "").split("\n").length;
-      gutter.textContent = Array.from({ length: lines }, (_, i) => String(i + 1)).join("\n");
     }
     updateGutter();
     mermaid.update(node.attrs.language || "", node.textContent);
@@ -226,6 +226,7 @@ export const codeBlockLangView = $view(codeBlockSchema.node, () => {
       },
       destroy: () => {
         disposed = true; copyController?.abort(); clearTimeout(copyReset);
+        disposeGutter();
         mermaid.destroy(); document.removeEventListener("selectionchange", revealSource);
         panel.destroy();
         document.removeEventListener("mousedown", outside);

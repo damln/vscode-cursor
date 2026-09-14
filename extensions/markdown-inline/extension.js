@@ -78,7 +78,7 @@ class MarkdownInlineProvider {
     const kind = vscode.window?.activeColorTheme?.kind;
     const light = kind === 1 || kind === 4;
     this.theme = findTheme(context.globalState.get(THEME_STATE_KEY) || "auto", light).id;
-    this.readingPreferences = {fontSize: 17, contentWidth: "normal"};
+    this.readingPreferences = {fontSize: 17, contentWidth: "normal", codeWrap: true};
     const saved = context.globalState.get(READING_STATE_KEY);
     for (const key of Object.keys(this.readingPreferences)) {
       const preference = parseEditorMessage({type: "setReadingPreference", key, value: saved?.[key]});
@@ -536,8 +536,8 @@ class MarkdownInlineProvider {
         ${icon('<path d="m3 19 6-14 6 14M5 14h8m3-3h6m-3 0v8"/>', "action-icon")}
         <span class="header-action-label">17px</span>
       </button>
-      <button id="inline-theme" class="header-button header-icon-button" type="button" aria-label="Choose editor theme" data-tooltip="Choose editor theme" aria-haspopup="dialog" aria-expanded="false">
-        ${icon('<path d="M12 3a9 9 0 1 0 0 18h1.4a2.1 2.1 0 0 0 1.4-3.7 1.6 1.6 0 0 1 1-2.8h1.5A3.7 3.7 0 0 0 21 11 9 9 0 0 0 12 3Z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="10" cy="6.8" r=".8"/><circle cx="14" cy="6.8" r=".8"/><circle cx="17" cy="10" r=".8"/>', "action-icon")}
+      <button id="inline-theme" class="header-button header-icon-button" type="button" aria-label="Editor settings" data-tooltip="Editor settings" aria-haspopup="dialog" aria-expanded="false">
+        ${icon('<path d="M4 7h6m4 0h6M4 17h2m4 0h10"/><circle cx="12" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>', "action-icon")}
       </button>
       <button id="open-raw" class="header-button header-icon-button" type="button" aria-label="Edit source" data-tooltip="Open this document as Markdown source in VS Code.">
         ${icon('<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16"/>', "action-icon")}
