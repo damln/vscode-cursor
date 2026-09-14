@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "audits": {
     "jump-production": {
-      "lockfileSha256": "24613372fc6e91a482e4977f9d710508f1d9e74b30a6b69dfec87ad56e98c44b",
+      "lockfileSha256": "013dd991cdb58e78e39ade783eb9aeb9bd42d7d60636a539948fed09f75345f7",
       "result": "no-known-vulnerabilities",
       "auditedAt": "2026-09-14"
     },
