@@ -87,6 +87,16 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   assert.equal(text, original); assert.equal(history.length, 0);
   await page.locator('.ProseMirror h1').first().hover();
   assert.equal(await page.locator('.block-type').textContent(),'h1');
+  // Selection is visible while the mouse is still held, before click or dragstart.
+  await alpha.hover(); await page.locator('.block-group-handle').hover();
+  const beforePress = await alpha.boundingBox();
+  await page.mouse.down();
+  assert.equal(await alpha.getAttribute('data-block-selected'), 'true', 'press selects immediately');
+  assert.equal(await page.locator('.ProseMirror').getAttribute('data-block-dragging'), null);
+  assert.deepEqual(await alpha.boundingBox(), beforePress, 'highlight does not shift content');
+  assert.equal(await alpha.evaluate(el => getComputedStyle(el).borderTopLeftRadius), '8px');
+  assert.equal(text, original); assert.equal(history.length, 0);
+  await page.mouse.up(); await page.keyboard.press('Escape');
   await alpha.hover(); await page.locator('.block-group-handle').click();
   await code.hover(); await page.keyboard.down('Shift'); await page.locator('.block-group-handle').click(); await page.keyboard.up('Shift');
   assert.equal(await page.locator('[data-block-selected]').count(),1,'Shift-click selects only the clicked block');
@@ -155,6 +165,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   const target = await page.locator('.ProseMirror h1').last().boundingBox();
   const grip = await page.locator('.block-group-handle').boundingBox();
   await page.mouse.move(grip.x+10,grip.y+10); await page.mouse.down();
+  assert.equal(await page.locator('[data-block-selected]').count(), 2, 'press preserves the selected group');
   await page.mouse.move(grip.x+18,grip.y+18,{steps:3});
   await page.mouse.move(target.x+20,target.y+30,{steps:8});
   await page.mouse.move(target.x+21,target.y+31); await page.mouse.up();
@@ -205,6 +216,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await page.emulateMedia({reducedMotion:'reduce'});
   await margin(alpha); await page.getByRole('button',{name:'Move down',exact:true}).click();
   assert.equal(await page.locator('.ProseMirror').getAttribute('data-block-motion'),null,'reduced motion keeps movement instant');
+  assert.equal(await page.locator('[data-block-selected]').first().evaluate(el => getComputedStyle(el).animationName), 'none');
 
   assert.deepEqual(errors, []);
   console.log('PASS no drag tooltip/Shift-click extension, mouse areas from either margin, whole tables, group drag/history, nested items, area auto-scroll/cancellation and keyboard movement');

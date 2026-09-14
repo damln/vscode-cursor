@@ -62,11 +62,11 @@ class BlockControls {
     document.addEventListener('pointerup', this.pointerUp, options);
     document.addEventListener('pointercancel', this.cancelArea, options);
     this.scroller.addEventListener('lostpointercapture', this.cancelArea, options);
+    this.handle.addEventListener('pointerdown', event => {
+      if (event.button === 0 && !this.handle.disabled) this.selectHovered();
+    }, options);
     this.handle.addEventListener('click', () => {
-      if (!this.hovered || !view.editable) return;
-      this.select({parent: this.hovered.parent,
-        anchor: this.hovered.from,
-        head: this.hovered.from}); view.focus();
+      if (this.selectHovered()) this.view.focus();
     }, options);
     this.handle.addEventListener('dragstart', this.dragStart, options);
     this.scroller.addEventListener('pointerleave', event => {
@@ -105,6 +105,15 @@ class BlockControls {
     const previous = blockSelectionKey.getState(this.view.state);
     if (previous?.parent === group?.parent && previous?.anchor === group?.anchor && previous?.head === group?.head) return;
     this.view.dispatch(this.view.state.tr.setMeta(blockSelectionKey, group));
+  }
+  private selectHovered() {
+    if (!this.hovered || !this.view.editable) return null;
+    const group = blockSelectionKey.getState(this.view.state);
+    if (selectedUnits(this.view.state.doc, group).some(unit =>
+      unit.from === this.hovered!.from && unit.parent === this.hovered!.parent)) return group;
+    const next = {parent: this.hovered.parent, anchor: this.hovered.from, head: this.hovered.from};
+    this.select(next);
+    return next;
   }
   private rect(unit: BlockUnit) {
     const cached = this.dragRects.get(unit.from);
@@ -239,11 +248,9 @@ class BlockControls {
     const previous = this.rubber.previous; this.pointerUp(); this.select(previous);
   };
   private dragStart = (event: DragEvent) => {
-    if (!this.hovered || !event.dataTransfer || !this.view.editable) {event.preventDefault(); return;}
-    let group = blockSelectionKey.getState(this.view.state);
-    if (!selectedUnits(this.view.state.doc, group).some(unit => unit.from === this.hovered!.from && unit.parent === this.hovered!.parent)) {
-      group = {parent: this.hovered.parent, anchor: this.hovered.from, head: this.hovered.from}; this.select(group);
-    }
+    if (!event.dataTransfer) {event.preventDefault(); return;}
+    const group = this.selectHovered();
+    if (!group) {event.preventDefault(); return;}
     cancelBlockMotion(this.view);
     this.dragRects.clear(); this.dragScroll = this.scroller.scrollTop;
     for (const unit of blockUnits(this.view.state.doc, group!.parent)) {const rect = this.rect(unit); if (rect) this.dragRects.set(unit.from, rect);}

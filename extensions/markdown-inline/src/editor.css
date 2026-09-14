@@ -1595,7 +1595,12 @@ header, .header-actions { min-width: 0; }
 .improving #document-scroll { opacity: 0.65; }
 
 /* Block groups occupy the margin; text selection keeps its native behavior. */
-.block-group-selected { background: color-mix(in srgb, #FA5D19 12%, transparent); outline: 1px solid color-mix(in srgb, #FA5D19 45%, transparent); outline-offset: 2px; }
+.block-group-selected { background: color-mix(in srgb, #FA5D19 12%, transparent); outline: 1px solid color-mix(in srgb, #FA5D19 45%, transparent); outline-offset: 2px; border-radius: 8px; animation: block-selection-reveal 140ms ease-out; }
+@keyframes block-selection-reveal {
+  from { background-color: color-mix(in srgb, #FA5D19 4%, transparent); outline-color: color-mix(in srgb, #FA5D19 20%, transparent); }
+  to { background-color: color-mix(in srgb, #FA5D19 12%, transparent); outline-color: color-mix(in srgb, #FA5D19 45%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .block-group-selected { animation: none; } }
 .block-group-handle { position: fixed; z-index: 45; width: 40px; height: 24px; display: flex; align-items: center; gap: 2px; border: 0; border-radius: 5px; color: var(--text-secondary); background: var(--page-background); cursor: grab; padding: 3px; }
 .block-group-handle { user-select: none; transition: background-color 120ms ease, color 120ms ease; }
 .block-group-handle:disabled { pointer-events: none; }
