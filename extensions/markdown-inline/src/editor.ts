@@ -161,10 +161,14 @@ const applyInlineTheme = setupThemePicker(inlineThemeElement, theme => {
   vscode.postMessage({type: "setTheme", theme});
 });
 
-function setStatus(value: string) {
+function setStatus(value: string, error = false) {
   const status = improving ? "Improving…" : improvementError || value;
-  saveState.textContent = status;
+  if (saveState.textContent !== status) saveState.textContent = status;
   saveState.title = status;
+  saveState.dataset.state = error || improvementError || sync.error ? 'error'
+    : improving || status === 'Synchronizing' ? 'saving'
+    : status === 'Modified' ? 'modified'
+    : status === 'Saved' ? 'saved' : 'idle';
 }
 
 function setImproving(running: boolean) {
@@ -668,12 +672,12 @@ window.addEventListener("message", event => {
       });
     });
   }
-  if (message?.type === "navigationError" && typeof message.error === "string") setStatus(message.error);
+  if (message?.type === "navigationError" && typeof message.error === "string") setStatus(message.error, true);
   if (message?.type === "navigateHeading" && typeof message.fragment === "string") {
     updates = updates.then(() => {
       if (!editor) return;
       editor.action(ctx => {
-        if (!navigateHeading(ctx.get(editorViewCtx), message.fragment)) setStatus(`Heading not found: ${message.fragment}`);
+        if (!navigateHeading(ctx.get(editorViewCtx), message.fragment)) setStatus(`Heading not found: ${message.fragment}`, true);
       });
     });
   }

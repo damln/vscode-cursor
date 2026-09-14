@@ -101,8 +101,53 @@ header {
 }
 
 #save-state {
+  --status-saved: #247544;
+  --status-saving: #9b590b;
+  --status-error: #c33038;
+  position: relative;
+  padding-left: 12px;
   font-size: 10px;
-  text-align: right;
+  text-align: left;
+  transition: color 180ms ease;
+}
+
+html[data-inline-theme="dark"] #save-state {
+  --status-saved: #77d99b;
+  --status-saving: #efba65;
+  --status-error: #ff9299;
+}
+
+#save-state::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+#save-state:empty::before { display: none; }
+#save-state[data-state="saved"] { color: var(--status-saved); }
+#save-state[data-state="saving"], #save-state[data-state="modified"] { color: var(--status-saving); }
+#save-state[data-state="error"] { color: var(--status-error); }
+#save-state[data-state="saved"]::before { animation: status-settle 380ms ease-out; }
+#save-state[data-state="saving"]::before { animation: status-pulse 1.2s ease-in-out infinite; }
+
+@keyframes status-settle {
+  from { opacity: .45; transform: scale(.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes status-pulse {
+  50% { opacity: .4; transform: scale(.8); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #save-state { transition: none; }
+  #save-state::before { animation: none !important; }
+}
+@media (forced-colors: active) {
+  #save-state[data-state] { color: CanvasText; }
 }
 
 button {
@@ -173,7 +218,6 @@ textarea:focus-visible {
 }
 @media (pointer: coarse) {
   .header-icon-button { flex-basis: 44px; width: 44px; height: 44px; }
-  .header-actions #save-state { min-width: 0; flex-shrink: 1; }
 }
 @media (forced-colors: active) {
   .header-icon-button { border-color: ButtonText; }
@@ -1539,7 +1583,7 @@ pre.code-with-gutter > code {
 header, .header-actions { min-width: 0; }
 .header-actions { flex-wrap: nowrap; }
 .header-actions { gap: 2px; }
-#save-state { width: 14ch; flex: 0 0 14ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#save-state { width: 16ch; min-width: 0; flex: 0 1 16ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .floating-panel button, .floating-panel input { color: var(--floating-foreground); }
 @media (max-width: 767px) {
   header { padding-inline: 8px; }
@@ -1547,7 +1591,6 @@ header, .header-actions { min-width: 0; }
 }
 #improve-text[hidden] { display: none; }
 .improving #document-scroll { opacity: 0.65; }
-.header-actions:has(#improve-text:not([hidden])) #save-state { flex: 0 1 14ch; min-width: 0; }
 
 /* Block groups occupy the margin; text selection keeps its native behavior. */
 .block-group-selected { background: color-mix(in srgb, #FA5D19 12%, transparent); outline: 1px solid color-mix(in srgb, #FA5D19 45%, transparent); outline-offset: 2px; }

@@ -496,9 +496,11 @@ class MarkdownInlineProvider {
 </head>
 <body>
   <header>
-    <div class="header-navigation"><span id="contents-slot"></span></div>
+    <div class="header-navigation">
+      <span id="contents-slot"></span>
+      <span id="save-state" role="status" aria-live="polite" aria-atomic="true"></span>
+    </div>
     <div class="header-actions">
-      <span id="save-state" role="status" aria-live="polite"></span>
       <button id="improve-text" class="header-button header-icon-button" type="button" hidden aria-label="Improve text" data-tooltip="Improve and save this file using Codex with GPT-5.6 Luna">
         ${icon('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="m15 5 3 3"/>', "action-icon")}
         <span class="header-action-label">Improve text</span>
