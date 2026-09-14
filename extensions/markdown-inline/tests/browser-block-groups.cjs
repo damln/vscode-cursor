@@ -89,7 +89,9 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   assert.equal(await page.locator('.block-type').textContent(),'h1');
   await alpha.hover(); await page.locator('.block-group-handle').click();
   await code.hover(); await page.keyboard.down('Shift'); await page.locator('.block-group-handle').click(); await page.keyboard.up('Shift');
-  assert.equal(await page.locator('[data-block-selected]').count(),2,'Shift-click a visible grip extends a group');
+  assert.equal(await page.locator('[data-block-selected]').count(),1,'Shift-click selects only the clicked block');
+  assert.equal(await page.locator('.block-group-handle').getAttribute('data-toolbar-hint'), null);
+  assert.equal(await page.locator('.block-group-handle').getAttribute('title'), null);
   await page.keyboard.press('Escape');
   // Clicking the margin never edits the source, and Shift+Arrow extends the group.
   await margin(alpha); assert.equal(await page.locator('[data-block-selected]').count(), 1);
@@ -107,6 +109,31 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await page.waitForTimeout(200); assert.equal(text, original);
   await page.evaluate(()=>window.postMessage({type:'history',action:'redo'},'*'));
   await page.waitForTimeout(200); assert.ok(text.indexOf('| Name') < text.indexOf('Alpha'));
+  await page.evaluate(()=>window.postMessage({type:'history',action:'undo'},'*')); await page.waitForTimeout(200);
+  // An area can start in right-side whitespace and intersect complete blocks, including a table.
+  await page.keyboard.press('Escape');
+  const areaStart = await alpha.boundingBox();
+  const areaTable = await page.locator('.ProseMirror table').boundingBox();
+  await page.mouse.move(areaStart.x + areaStart.width + 12, areaStart.y + 3);
+  await page.mouse.down();
+  await page.mouse.move(areaTable.x + 20, areaTable.y + areaTable.height / 2, {steps: 10});
+  assert.equal(await page.locator('.block-group-rectangle').isVisible(), true);
+  await page.mouse.up();
+  assert.equal(await page.locator('[data-block-selected]').count(), 3, 'right-side area covers paragraph, code and table');
+  assert.equal(await page.locator('table[data-block-selected]').count(), 1);
+  assert.equal(text, original); assert.equal(history.length, 0);
+  await page.keyboard.press('Escape');
+  // Dragging upward from a gap also selects an area; text itself keeps native selection.
+  const gapCode = await code.boundingBox();
+  await page.mouse.move(areaStart.x+30,gapCode.y-3);await page.mouse.down();
+  await page.mouse.move(areaStart.x+80,areaStart.y+3,{steps:8});await page.mouse.up();
+  assert.equal(await page.locator('[data-block-selected]').count(),1);
+  assert.equal(await alpha.getAttribute('data-block-selected'),'true');
+  await page.keyboard.press('Escape');
+  await alpha.dblclick({position:{x:15,y:8}});
+  assert.ok(await page.evaluate(()=>Boolean(window.getSelection()?.toString())), 'text remains selectable');
+  assert.equal(await page.locator('[data-block-selected]').count(),0);
+  assert.equal(await page.locator('.block-group-rectangle').isVisible(),false);
   // A rectangle begins in the margin and includes a whole code block.
   await page.evaluate(()=>window.postMessage({type:'history',action:'undo'},'*')); await page.waitForTimeout(200);
   const a = await alpha.boundingBox();
@@ -136,7 +163,10 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await page.keyboard.press('Escape'); assert.equal(await page.locator('[data-block-selected]').count(), 0);
   // Sibling list items form their own group and keep the nested list attached.
   const one = page.locator('.ProseMirror > ul > li').filter({hasText:/^one$/});
-  await margin(one); await page.keyboard.press('Shift+ArrowDown');
+  const firstItem = await one.boundingBox();
+  const secondItem = await page.locator('.ProseMirror > ul > li').nth(1).boundingBox();
+  await page.mouse.move(firstItem.x-2,firstItem.y+4);await page.mouse.down();
+  await page.mouse.move(secondItem.x+20,secondItem.y+8,{steps:8});await page.mouse.up();
   assert.match(await page.locator('.block-group-toolbar').textContent(), /2 list items/);
   await page.getByRole('button',{name:'Move down',exact:true}).click(); await page.waitForTimeout(350);
   assert.ok(text.indexOf('three') < text.indexOf('one') && text.indexOf('two') < text.indexOf('nested'));
@@ -145,6 +175,17 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await page.evaluate(m=>window.postMessage(m,'*'),{type:'update',text,version,dirty:false});
   await margin(alpha);
   const edits = history.length, beforeLongDrag = text;
+  const marqueeStart = await alpha.boundingBox();
+  const scrollBounds = await page.locator('#document-scroll').boundingBox();
+  await page.mouse.move(marqueeStart.x-2,marqueeStart.y+3);await page.mouse.down();
+  await page.mouse.move(marqueeStart.x+80,scrollBounds.y+scrollBounds.height-3,{steps:8});
+  await page.waitForTimeout(220);
+  assert.ok(await page.locator('#document-scroll').evaluate(el=>el.scrollTop)>0,'area selection scrolls near the edge');
+  await page.keyboard.press('Escape');await page.mouse.up();
+  assert.equal(await page.locator('.block-group-rectangle').isVisible(),false);
+  assert.equal(await page.locator('[data-block-selected]').count(),1,'Escape restores selection before the area drag');
+  assert.equal(text,beforeLongDrag);assert.equal(history.length,edits);
+  await margin(alpha);
   await page.evaluate(() => {
     const scroller = document.querySelector('#document-scroll'); scroller.scrollTop = 0;
     document.querySelector('.block-group-handle').dispatchEvent(new DragEvent('dragstart',{bubbles:true,dataTransfer:new DataTransfer()}));
@@ -166,6 +207,6 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   assert.equal(await page.locator('.ProseMirror').getAttribute('data-block-motion'),null,'reduced motion keeps movement instant');
 
   assert.deepEqual(errors, []);
-  console.log('PASS margin, Shift/keyboard, rectangle, whole-table boundary, grouped drag, native-history routing and nested-list movement');
+  console.log('PASS no drag tooltip/Shift-click extension, mouse areas from either margin, whole tables, group drag/history, nested items, area auto-scroll/cancellation and keyboard movement');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
