@@ -1,25 +1,20 @@
 # Damln HTML Preview
 
-This extension offers a preview for `.html` files using the
-supported VS Code custom editor API. The editor title contains an Edit HTML
-Source action, and an HTML source editor contains an Open HTML Preview action.
+A Command Palette shortcut to **Open HTML in Integrated Browser**, using VS Code's
+built-in browser. Requires VS Code desktop 1.121+ with that feature available;
+Cursor compatibility depends on whether its build includes the native browser.
 
-Relative CSS, JavaScript, image, font, and media resources are resolved from the
-HTML file directory. The preview refreshes when the underlying text document
-changes. Because this is a UI extension, the same installed extension handles
-local files and documents opened through Remote SSH.
+VS Code supplies the globe button and **Open in Integrated Browser** context menu
+for local `.html` and `.htm` files. Navigation, history, zoom, reload and DevTools
+belong to the native browser. This extension adds no custom editor, webview,
+injected HTML, server or settings changes. It is optional if you use the native action.
 
-The preview runs authored JavaScript and can load remote resources. Only preview
-HTML you trust. It does not change editor associations or user settings. Use
-**Reopen Editor With… → Configure default editor** to opt in to HTML Preview.
+The shortcut offers **Save and open** for unsaved HTML. For Remote SSH sites, open
+a forwarded HTTP URL in the browser instead of a remote filesystem path.
 
-Relative links to `.html` and `.htm` pages open that file in HTML Preview. Anchor
-links scroll within the page; links to other local files use their normal editor.
-HTTP(S) and email links open externally. Navigation stays within the preview's
-resource folders and preserves Remote SSH document URIs.
+To open local HTML in the browser by default, use **Reopen Editor With… →
+Configure default editor → Integrated Browser** on versions offering that option.
+Remove any old `damln.htmlPreview` editor association when upgrading from 0.3.
 
-For a full browser with an address bar and browser history, recent VS Code versions
-also offer **Open in Integrated Browser** in the file's context menu. HTML Preview
-keeps the VS Code 1.100.0+ baseline and does not depend on that newer feature.
-
-Install File Actions separately for **Open HTML in default browser**.
+Install File Actions separately for **Open HTML in external default browser**,
+shown with an external-link arrow.

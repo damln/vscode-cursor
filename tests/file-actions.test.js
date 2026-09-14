@@ -51,9 +51,9 @@ test("copies the clicked group's current content, independent of the active text
   assert.equal(h.statuses.length, 1);
 });
 
-test("HTML preview actions use its URI even when a stale native editor exists", async () => {
+test("Custom-editor actions use its URI even when a stale native editor exists", async () => {
   const h = harness(), html = new Uri("file", "/work/site/index.html");
-  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {uri: html, viewType: "damln.htmlPreview"};
+  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {uri: html, viewType: "example.customEditor"};
   await h.run("copyContent"); await h.run("copyFilePath"); await h.run("copyParentFolderPath");
   assert.equal(h.opened[0], html);
   assert.deepEqual(h.copied.slice(1), ["site/index.html", "site"]);
@@ -151,7 +151,7 @@ test("paths use the file's workspace root in multi-root and Remote SSH workspace
 
 test("browser action uses the selected HTML file and starts a browser URL", async () => {
   const h = harness(), uri = new Uri("file", "/work/site/page.htm");
-  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {uri, viewType:"damln.htmlPreview"};
+  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {uri, viewType:"example.customEditor"};
   assert.equal(await h.run("openInBrowser"), true);
   assert.deepEqual(h.browserUrls, [{file:"/work/site/page.htm",root:"/work"}]);
   assert.equal(h.external[0].scheme,"http");

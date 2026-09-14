@@ -1,12 +1,12 @@
 {
   "name": "html-preview",
   "displayName": "Damln HTML Preview",
-  "description": "Preview HTML files in a supported VS Code custom editor.",
-  "version": "0.3.0",
+  "description": "Open local HTML files in VS Code's built-in Integrated Browser.",
+  "version": "0.4.0",
   "publisher": "damln",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.121.0"
   },
   "categories": [
     "Other"
@@ -15,61 +15,31 @@
     "ui"
   ],
   "activationEvents": [
-    "onCustomEditor:damln.htmlPreview",
-    "onCommand:damlnHtmlPreview.editSource",
     "onCommand:damlnHtmlPreview.openPreview"
   ],
   "main": "./extension.js",
   "files": [
     "README.md",
     "extension.js",
-    "preview-html.js",
     "LICENSE",
     "icon.svg",
-    "icon.png",
-    "navigation.js"
+    "icon.png"
   ],
   "contributes": {
-    "customEditors": [
-      {
-        "viewType": "damln.htmlPreview",
-        "displayName": "HTML Preview",
-        "selector": [
-          {
-            "filenamePattern": "*.html"
-          },
-          {
-            "filenamePattern": "*.htm"
-          }
-        ],
-        "priority": "option"
-      }
-    ],
     "commands": [
       {
-        "command": "damlnHtmlPreview.editSource",
-        "title": "Edit HTML Source",
-        "category": "HTML Preview",
-        "icon": "$(edit)"
-      },
-      {
         "command": "damlnHtmlPreview.openPreview",
-        "title": "Open HTML Preview",
+        "title": "Open HTML in Integrated Browser",
         "category": "HTML Preview",
-        "icon": "$(open-preview)"
+        "icon": "$(globe)",
+        "enablement": "resourceScheme == file && resourceExtname =~ /\\.html?$/i && isWorkspaceTrusted"
       }
     ],
     "menus": {
-      "editor/title": [
-        {
-          "command": "damlnHtmlPreview.editSource",
-          "when": "activeCustomEditorId == damln.htmlPreview",
-          "group": "navigation@1"
-        },
+      "commandPalette": [
         {
           "command": "damlnHtmlPreview.openPreview",
-          "when": "editorLangId == html && activeCustomEditorId != damln.htmlPreview",
-          "group": "navigation@1"
+          "when": "resourceScheme == file && resourceExtname =~ /\\.html?$/i"
         }
       ]
     }
@@ -77,7 +47,11 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": false,
-      "description": "HTML previews execute authored scripts and load remote resources."
+      "description": "HTML files run authored scripts in the built-in browser."
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "The built-in browser opens local files. Use a forwarded HTTP URL for remote sites."
     }
   },
   "icon": "icon.png",

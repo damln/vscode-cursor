@@ -6,18 +6,18 @@ Hover over the editor title-bar icons for explanations:
 - Copy the file path relative to its workspace folder.
 - Copy the parent folder path relative to its workspace folder (`.` at the root).
 
-Outside a workspace, paths are absolute. Works with Markdown Inline and HTML
-Preview; Markdown visual edits synchronize before copying. A sync error leaves
+Outside a workspace, paths are absolute. Works with Markdown Inline and
+other file editors; Markdown visual edits synchronize before copying. A sync error leaves
 the clipboard unchanged. Binary files support paths only; save dirty notebooks
 before copying their serialized content.
 
 Install or remove this extension independently; it does not change settings.
 See [package.json](package.json) for commands and editor integration.
 
-## Open HTML in default browser
+## Open HTML in external default browser
 
-Local `.html` and `.htm` files get a globe action in the editor title, Explorer
-context menu and Command Palette. Unsaved HTML offers **Save and open** first.
+Local `.html` and `.htm` files get an external-link arrow action in the editor title,
+Explorer context menu and Command Palette. Unsaved HTML offers **Save and open** first.
 
 The action starts a read-only HTTP preview bound to `127.0.0.1` on a random port,
 then uses VS Code's standard external-browser API. This opens a browser even when
