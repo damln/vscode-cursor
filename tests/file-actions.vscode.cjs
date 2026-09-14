@@ -27,13 +27,13 @@ exports.run = async () => {
     checks.push('current unsaved text without save or selection change');
     const html = '<!doctype html><html><body><h1>HTML preview</h1></body></html>\n';
     fs.writeFileSync(path.join(root, 'page.html'), html);
-    await vscode.commands.executeCommand('vscode.openWith', uri('page.html'), 'damln.htmlPreview');
+    await vscode.commands.executeCommand('vscode.openWith', uri('page.html'), 'default');
     await command('copyContent', undefined, html);
-    assert.equal(vscode.window.tabGroups.activeTabGroup.activeTab.input.viewType, 'damln.htmlPreview');
-    checks.push('HTML preview source using the active custom editor');
+    assert.equal(vscode.window.tabGroups.activeTabGroup.activeTab.input.uri.toString(), uri('page.html').toString());
+    checks.push('HTML source using the active editor');
     await command('copyFilePath', undefined, 'page.html');
     await command('copyParentFolderPath', undefined, '.');
-    checks.push('HTML preview file and parent paths');
+    checks.push('HTML file and parent paths');
     await command('copyContent', doc.uri, doc.getText());
     checks.push('explicit inactive-group resource');
     const untitled = await vscode.workspace.openTextDocument({content: 'Untitled content'});
@@ -42,7 +42,7 @@ exports.run = async () => {
     await vscode.commands.executeCommand('vscode.diff', doc.uri, uri('page.html'));
     await command('copyContent', undefined, html);
     checks.push('diff modified side');
-    await vscode.commands.executeCommand('vscode.openWith', uri('page.html'), 'damln.htmlPreview');
+    await vscode.commands.executeCommand('vscode.openWith', uri('page.html'), 'default');
     fs.writeFileSync(path.join(root, 'native-result.json'), JSON.stringify({passed: true, checks, extensionPath: extension.extensionPath}));
     if (process.env.FILE_ACTIONS_UI_HOLD === '1') {
       const deadline = Date.now() + 120000;

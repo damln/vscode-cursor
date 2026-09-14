@@ -1,13 +1,14 @@
 # Damln VS Code extensions
 
-Five independent extensions for **VS Code 1.100.0+**, including compatible Cursor
-classic IDE versions. Install only what you need. No profile replacement,
+Five independent extensions. Most support **VS Code 1.100.0+** and compatible
+Cursor classic IDE versions; HTML Preview requires the native browser in **1.121+**.
+Install only what you need. No profile replacement,
 automatic settings changes, font installation, remote setup or workbench patches.
 
 | Extension | Purpose |
 | --- | --- |
 | [Markdown Inline](extensions/markdown-inline/) | Visual Markdown, tables, Mermaid, frontmatter and ten themes |
-| [HTML Preview](extensions/html-preview/) | Preview HTML, follow page links and load assets |
+| [HTML Preview](extensions/html-preview/) | Shortcut to VS Code’s native HTML browser |
 | [File Actions](extensions/file-actions/) | Copy content and paths; open HTML in your browser |
 | [Jump](extensions/jump/) | Keyboard navigation to word boundaries |
 | [Minimal Theme](extensions/minimal-theme/) | Optional dark and light VS Code themes |
@@ -45,8 +46,7 @@ Nothing below is applied automatically. Merge only what you want into
 {
   "workbench.colorTheme": "Damln Minimal",
   "workbench.editorAssociations": {
-    "*.md": "damln.markdownInline", // Use "default" for the source editor.
-    "*.html": "damln.htmlPreview"
+    "*.md": "damln.markdownInline" // Use "default" for the source editor.
   },
   "workbench.diffEditorAssociations": { "*.md": "default" },
   "files.autoSave": "afterDelay",
@@ -65,8 +65,10 @@ remap shortcuts in **Keyboard Shortcuts**. Optional source-editor settings inclu
 ## Privacy and builds
 
 Personal profiles, SSH setup, trusted-domain overrides, old packages and workspace
-history are excluded. Markdown images can contact their hosts. HTML Preview runs
-authored scripts and loads remote resources, so it requires a trusted workspace.
+history are excluded. Markdown images can contact their hosts. HTML Preview
+delegates local HTML to the native browser and requires a trusted
+workspace. For HTML defaults, choose Integrated Browser under Reopen Editor With
+on VS Code versions offering it; remove old `damln.htmlPreview` associations.
 Mermaid renders locally. **Improve text** requires an external CLI, absent here;
 when explicitly used, that CLI may send document text to its AI provider.
 

@@ -11,10 +11,10 @@
     },
     {
       "id": "damln.file-actions",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "source": "extensions/file-actions",
-      "package": "dist/damln.file-actions-0.3.0.vsix",
-      "sha256": "13ccb51bdd7d6a6b1cb20394d13e0520a719c98cbbcac7fca2b7b0d24de25435",
+      "package": "dist/damln.file-actions-0.3.1.vsix",
+      "sha256": "c6a096d1e7a138494ceaf2b1dfc8bf73e42a8c110cf3abcb0b573b307370afe4",
       "remote": false
     },
     {
@@ -27,10 +27,10 @@
     },
     {
       "id": "damln.html-preview",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "source": "extensions/html-preview",
-      "package": "dist/damln.html-preview-0.3.0.vsix",
-      "sha256": "9feee76e8a8569e06bd0b6f20de80f9d05ed81aec1936216fb1b78cbb438895b",
+      "package": "dist/damln.html-preview-0.4.0.vsix",
+      "sha256": "ca63b6237188049971f2a3fc5f882d093b8878031fdcfaf86604e14a8086338c",
       "remote": false
     },
     {
