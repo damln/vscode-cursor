@@ -32,7 +32,11 @@ The centered picker previews each palette and remembers your choice across files
 
 Use **Width** and the adjacent **font-size** control to adjust the reading layout.
 Text size ranges from 12 to 24 pixels; Reset restores 17 pixels. These choices
-are remembered for the editor and never change the Markdown source.
+are remembered across files and never change the Markdown source.
+
+Drag from empty space beside or between blocks to select an area, then drag a
+selected handle to move the highlighted blocks together. Escape cancels the
+selection. Ordinary text selection remains available inside blocks.
 
 The left gutter compares the current document, including unsaved edits, with
 Git HEAD: green marks additions, orange marks edits, and red triangles mark

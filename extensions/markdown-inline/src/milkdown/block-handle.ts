@@ -27,7 +27,8 @@ class BlockControls {
   private dragScroll = 0;
   private previewNodes = new Map<HTMLElement, Animation>();
   private previewDestination: number | null = null;
-  private rubber: {x: number; y: number; unit: BlockUnit} | null = null;
+  private rubber: {x: number; y: number; currentX: number; currentY: number; scrollTop: number;
+    parent: number; pointerId: number; active: boolean; previous: BlockGroup | null} | null = null;
   private dragging: {group: BlockGroup; doc: EditorView['state']['doc']; y: number; destination: number | null} | null = null;
   private frame = 0;
   private scroller: HTMLElement;
@@ -42,15 +43,12 @@ class BlockControls {
     this.handle.type = 'button'; this.handle.draggable = true;
     this.handle.innerHTML = ICON_GRIP;
     this.label.className = 'block-type'; this.label.setAttribute('aria-hidden', 'true'); this.handle.append(this.label);
-    this.handle.setAttribute('aria-label', 'Select block; Shift extends selection. Drag to move.');
-    this.handle.dataset.toolbarHint = 'Click to select · Shift-click to extend · Drag to move';
+    this.handle.setAttribute('aria-label', 'Select block. Drag to move selected blocks.');
     this.handle.hidden = true;
     this.toolbar.className = 'block-group-toolbar'; this.toolbar.setAttribute('role', 'group');
     this.toolbar.setAttribute('aria-label', 'Selected blocks'); this.toolbar.hidden = true;
     this.count.setAttribute('role', 'status'); this.count.setAttribute('aria-live', 'polite');
     this.toolbar.append(this.count);
-    const hint = document.createElement('small'); hint.textContent = 'Shift-click another handle to select more';
-    this.toolbar.append(hint);
     this.up = this.button('Move up', () => moveCurrentBlock(this.view, -1));
     this.down = this.button('Move down', () => moveCurrentBlock(this.view, 1));
     this.button('Cancel selection', () => {this.select(null); this.view.focus();});
@@ -59,15 +57,15 @@ class BlockControls {
     this.preview.className = 'block-group-preview';
     document.body.append(this.handle, this.toolbar, this.indicator, this.rectangle, this.preview);
     const options = {signal: this.abort.signal, capture: true};
-    this.scroller.addEventListener('pointermove', this.pointerMove, options);
+    document.addEventListener('pointermove', this.pointerMove, options);
     this.scroller.addEventListener('pointerdown', this.pointerDown, options);
     document.addEventListener('pointerup', this.pointerUp, options);
-    document.addEventListener('pointercancel', this.pointerUp, options);
-    this.handle.addEventListener('click', event => {
+    document.addEventListener('pointercancel', this.cancelArea, options);
+    this.scroller.addEventListener('lostpointercapture', this.cancelArea, options);
+    this.handle.addEventListener('click', () => {
       if (!this.hovered || !view.editable) return;
-      const current = blockSelectionKey.getState(view.state);
       this.select({parent: this.hovered.parent,
-        anchor: event.shiftKey && current?.parent === this.hovered.parent ? current.anchor : this.hovered.from,
+        anchor: this.hovered.from,
         head: this.hovered.from}); view.focus();
     }, options);
     this.handle.addEventListener('dragstart', this.dragStart, options);
@@ -82,16 +80,19 @@ class BlockControls {
     document.addEventListener('drop', this.drop, options);
     document.addEventListener('dragend', this.endDrag, options);
     window.addEventListener('blur', this.endDrag, options);
+    window.addEventListener('blur', this.cancelArea, options);
     window.addEventListener('keydown', event => {
       if (event.altKey && !event.ctrlKey && !event.metaKey && ['ArrowUp', 'ArrowDown'].includes(event.key) && view.hasFocus()) {
         event.preventDefault(); moveCurrentBlock(view, event.key === 'ArrowUp' ? -1 : 1); return;
       }
-      if (event.key === 'Escape' && this.rubber) this.pointerUp();
+      if (event.key === 'Escape' && this.rubber) {
+        event.preventDefault(); event.stopImmediatePropagation(); this.cancelArea(); return;
+      }
       if (event.key === 'Escape' && this.dragging) {event.preventDefault(); event.stopImmediatePropagation(); this.endDrag();}
       else if (event.key === 'Escape' && this.toolbar.contains(document.activeElement)) {this.select(null); view.focus();}
     }, options);
     this.scroller.addEventListener('scroll', () => {this.hideHandle(true); if (this.dragging) this.locateDrop();}, options);
-    window.addEventListener('resize', () => {this.hideHandle(true); this.endDrag();}, options);
+    window.addEventListener('resize', () => {this.hideHandle(true); this.cancelArea(); this.endDrag();}, options);
     const layout = new ResizeObserver(() => {this.hideHandle(true); this.endDrag();});
     layout.observe(view.dom);
     this.abort.signal.addEventListener('abort', () => layout.disconnect(), {once: true});
@@ -100,7 +101,11 @@ class BlockControls {
     const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
     button.addEventListener('click', () => action(), {signal: this.abort.signal}); this.toolbar.append(button); return button;
   }
-  private select(group: BlockGroup | null) {this.view.dispatch(this.view.state.tr.setMeta(blockSelectionKey, group));}
+  private select(group: BlockGroup | null) {
+    const previous = blockSelectionKey.getState(this.view.state);
+    if (previous?.parent === group?.parent && previous?.anchor === group?.anchor && previous?.head === group?.head) return;
+    this.view.dispatch(this.view.state.tr.setMeta(blockSelectionKey, group));
+  }
   private rect(unit: BlockUnit) {
     const cached = this.dragRects.get(unit.from);
     if (this.dragging && cached) return new DOMRect(cached.x, cached.y + this.dragScroll - this.scroller.scrollTop, cached.width, cached.height);
@@ -116,14 +121,15 @@ class BlockControls {
     return all.reverse().find(unit => {const rect = this.rect(unit); return rect && x >= rect.left - (unit.parent === -1 ? 64 : 36) && x < rect.left && y >= rect.top && y <= rect.bottom;});
   }
   private pointerMove = (event: PointerEvent) => {
+    if (!this.rubber && !(event.target instanceof Node && this.scroller.contains(event.target))) return;
     if (!this.view.editable || this.dragging || (event.buttons && !this.rubber)) return;
     if (this.rubber) {
-      const {x, y, unit} = this.rubber;
-      this.rectangle.hidden = false;
-      Object.assign(this.rectangle.style, {left: Math.min(x, event.clientX) + 'px', top: Math.min(y, event.clientY) + 'px', width: Math.abs(event.clientX - x) + 'px', height: Math.abs(event.clientY - y) + 'px'});
-      const units = blockUnits(this.view.state.doc, unit.parent);
-      const end = units.find(candidate => {const rect = this.rect(candidate); return rect && event.clientY >= rect.top && event.clientY <= rect.bottom;});
-      if (end) this.select({parent: unit.parent, anchor: unit.from, head: end.from});
+      this.rubber.currentX = event.clientX; this.rubber.currentY = event.clientY;
+      if (!this.rubber.active && Math.hypot(event.clientX - this.rubber.x, event.clientY - this.rubber.y) >= 4) {
+        this.rubber.active = true; this.hideHandle(true);
+        this.frame = requestAnimationFrame(this.autoScroll);
+      }
+      if (this.rubber.active) this.selectArea();
       event.preventDefault(); return;
     }
     const unit = this.marginUnit(event.clientX, event.clientY) || blockUnits(this.view.state.doc).find(candidate => {
@@ -189,16 +195,49 @@ class BlockControls {
   private pointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || !this.view.editable) return;
     const unit = this.marginUnit(event.clientX, event.clientY);
-    if (!unit) return;
+    const target = event.target;
+    const blank = target === this.scroller || target === this.view.dom || target === this.view.dom.parentElement ||
+      target === document.getElementById('editor');
+    if (!unit && (!blank || event.clientY < this.view.dom.getBoundingClientRect().top - 12 ||
+        event.clientX < this.scroller.getBoundingClientRect().left + 18)) return;
     event.preventDefault(); event.stopPropagation();
-    this.showHandle(unit);
-    const current = blockSelectionKey.getState(this.view.state);
-    const anchor = event.shiftKey && current?.parent === unit.parent ? current.anchor : unit.from;
-    this.select({parent: unit.parent, anchor, head: unit.from});
-    this.rubber = {x: event.clientX, y: event.clientY, unit: {...unit, from: anchor}};
+    const previous = blockSelectionKey.getState(this.view.state) ?? null;
+    if (unit) {this.showHandle(unit); this.select({parent: unit.parent, anchor: unit.from, head: unit.from});}
+    else this.select(null);
+    this.rubber = {x: event.clientX, y: event.clientY, currentX: event.clientX, currentY: event.clientY,
+      scrollTop: this.scroller.scrollTop, parent: unit?.parent ?? -1, pointerId: event.pointerId, active: false, previous};
+    this.scroller.setPointerCapture(event.pointerId);
     this.view.focus();
   };
-  private pointerUp = () => {this.rubber = null; this.rectangle.hidden = true;};
+  private selectArea() {
+    const area = this.rubber; if (!area?.active) return;
+    const bounds = this.scroller.getBoundingClientRect();
+    const startY = area.y + area.scrollTop - this.scroller.scrollTop;
+    const endX = Math.max(bounds.left, Math.min(bounds.right, area.currentX));
+    const endY = Math.max(bounds.top, Math.min(bounds.bottom, area.currentY));
+    const left = Math.min(area.x, endX), right = Math.max(area.x, endX);
+    const top = Math.min(startY, endY), bottom = Math.max(startY, endY);
+    this.rectangle.hidden = false;
+    Object.assign(this.rectangle.style, {left: left + 'px', top: Math.max(bounds.top, top) + 'px',
+      width: right - left + 'px', height: Math.max(0, Math.min(bounds.bottom, bottom) - Math.max(bounds.top, top)) + 'px'});
+    const units = blockUnits(this.view.state.doc, area.parent).filter(unit => {
+      const rect = this.rect(unit);
+      return rect && rect.bottom > top && rect.top < bottom &&
+        rect.right + 8 >= left && rect.left - (area.parent === -1 ? 64 : 36) <= right;
+    });
+    this.select(units.length ? {parent: area.parent, anchor: units[0].from, head: units.at(-1)!.from} : null);
+  }
+  private pointerUp = () => {
+    if (this.rubber) {
+      if (this.scroller.hasPointerCapture(this.rubber.pointerId)) this.scroller.releasePointerCapture(this.rubber.pointerId);
+      cancelAnimationFrame(this.frame); this.rubber = null;
+    }
+    this.rectangle.hidden = true;
+  };
+  private cancelArea = () => {
+    if (!this.rubber) return;
+    const previous = this.rubber.previous; this.pointerUp(); this.select(previous);
+  };
   private dragStart = (event: DragEvent) => {
     if (!this.hovered || !event.dataTransfer || !this.view.editable) {event.preventDefault(); return;}
     let group = blockSelectionKey.getState(this.view.state);
@@ -280,10 +319,13 @@ class BlockControls {
     }
   }
   private autoScroll = () => {
-    if (!this.dragging) return;
-    const rect = this.scroller.getBoundingClientRect(), y = this.dragging.y;
+    if (!this.dragging && !this.rubber?.active) return;
+    const rect = this.scroller.getBoundingClientRect(), y = this.dragging?.y ?? this.rubber!.currentY;
     const speed = y < rect.top + 48 ? -Math.min(14, (rect.top + 48 - y) / 4) : y > rect.bottom - 48 ? Math.min(14, (y - rect.bottom + 48) / 4) : 0;
-    if (speed) {this.scroller.scrollTop += speed; this.locateDrop();}
+    if (speed) {
+      this.scroller.scrollTop += speed;
+      if (this.dragging) this.locateDrop(); else this.selectArea();
+    }
     this.frame = requestAnimationFrame(this.autoScroll);
   };
   private drop = (event: DragEvent) => {
@@ -317,5 +359,5 @@ class BlockControls {
     }
     if (!view.editable) this.hideHandle(true);
   }
-  destroy() {this.hideHandle(true); cancelBlockMotion(this.view); this.endDrag(); this.abort.abort(); this.handle.remove(); this.toolbar.remove(); this.indicator.remove(); this.rectangle.remove(); this.preview.remove();}
+  destroy() {this.pointerUp(); this.hideHandle(true); cancelBlockMotion(this.view); this.endDrag(); this.abort.abort(); this.handle.remove(); this.toolbar.remove(); this.indicator.remove(); this.rectangle.remove(); this.preview.remove();}
 }

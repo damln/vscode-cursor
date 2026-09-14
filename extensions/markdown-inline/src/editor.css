@@ -1601,7 +1601,6 @@ header, .header-actions { min-width: 0; }
 .block-group-handle > * { pointer-events: none; }
 .block-group-handle svg { width: 12px; height: 12px; flex-shrink: 0; }
 .block-type { font: 9px/1 var(--vscode-font-family, system-ui); opacity: .7; overflow: hidden; text-overflow: ellipsis; }
-.block-group-toolbar small { color: var(--text-secondary); font: 11px/1.4 var(--vscode-font-family, system-ui); }
 .block-group-handle:active { cursor: grabbing; background: var(--control-hover); }
 .block-group-toolbar { position: fixed; z-index: 70; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; max-width: calc(100vw - 24px); padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--floating-surface); color: var(--foreground); box-shadow: 0 4px 16px #0003; font: 12px/1.4 var(--vscode-font-family); }
 .block-group-toolbar span { min-width: 62px; font-variant-numeric: tabular-nums; }
