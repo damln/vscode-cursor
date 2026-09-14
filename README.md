@@ -7,8 +7,8 @@ automatic settings changes, font installation, remote setup or workbench patches
 | Extension | Purpose |
 | --- | --- |
 | [Markdown Inline](extensions/markdown-inline/) | Visual Markdown, tables, Mermaid, frontmatter and ten themes |
-| [HTML Preview](extensions/html-preview/) | Preview HTML and its assets |
-| [File Actions](extensions/file-actions/) | Copy content, file path or parent path |
+| [HTML Preview](extensions/html-preview/) | Preview HTML, follow page links and load assets |
+| [File Actions](extensions/file-actions/) | Copy content and paths; open HTML in your browser |
 | [Jump](extensions/jump/) | Keyboard navigation to word boundaries |
 | [Minimal Theme](extensions/minimal-theme/) | Optional dark and light VS Code themes |
 

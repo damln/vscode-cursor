@@ -8,18 +8,22 @@ class Uri {
   constructor(scheme, pathname) { this.scheme = scheme; this.path = pathname; this.fsPath = pathname; }
   toString() { return `${this.scheme}://${this.path}`; }
   with(changes) { return Object.assign(new Uri(this.scheme, this.path), changes); }
+  static parse(value) { const url = new URL(value); return new Uri(url.protocol.slice(0,-1), url.pathname); }
   static joinPath(uri, suffix) { return uri.with({path: path.posix.join(uri.path, suffix), fsPath: path.posix.join(uri.path, suffix)}); }
 }
 
 function harness() {
   const commands = new Map(), copied = [], opened = [], errors = [], statuses = [];
   const file = new Uri("file", "/work/read me.txt");
+  const browserUrls = [], external = [];
+  class BrowserPreview { async url(file, root) {browserUrls.push({file,root});return "http://127.0.0.1:1234/token/index.html";} dispose() {} }
   const vscode = {
     Uri,
     extensions: {getExtension: () => undefined},
     commands: {registerCommand(id, callback) {commands.set(id, callback);return {dispose() {}};}},
-    env: {clipboard: {async writeText(value) {copied.push(value);}}},
+    env: {openExternal: async uri => {external.push(uri); return true;}, clipboard: {async writeText(value) {copied.push(value);}}},
     workspace: {
+      isTrusted: true,
       notebookDocuments: [],
       getWorkspaceFolder: () => ({uri: new Uri("file", "/work")}),
       asRelativePath: uri => path.posix.relative("/work", uri.path),
@@ -34,9 +38,9 @@ function harness() {
     },
   };
   const mod = {exports: {}};
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../extensions/file-actions/extension.js"), "utf8"), {module: mod, require: () => vscode});
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../extensions/file-actions/extension.js"), "utf8"), {module: mod, require: id => id === "./browser-preview" ? {BrowserPreview} : vscode});
   mod.exports.activate({subscriptions: []});
-  return {vscode, file, copied, opened, errors, statuses, run: (action, uri) => commands.get(`damlnFileActions.${action}`)(uri)};
+  return {vscode, file, browserUrls, external, copied, opened, errors, statuses, run: (action, uri) => commands.get(`damlnFileActions.${action}`)(uri)};
 }
 
 test("copies the clicked group's current content, independent of the active text editor", async () => {
@@ -142,4 +146,35 @@ test("paths use the file's workspace root in multi-root and Remote SSH workspace
   };
   await h.run("copyFilePath", uri); await h.run("copyParentFolderPath", uri);
   assert.deepEqual(h.copied, ["docs/read me.md", "docs"]);
+});
+
+
+test("browser action uses the selected HTML file and starts a browser URL", async () => {
+  const h = harness(), uri = new Uri("file", "/work/site/page.htm");
+  h.vscode.window.tabGroups.activeTabGroup.activeTab.input = {uri, viewType:"damln.htmlPreview"};
+  assert.equal(await h.run("openInBrowser"), true);
+  assert.deepEqual(h.browserUrls, [{file:"/work/site/page.htm",root:"/work"}]);
+  assert.equal(h.external[0].scheme,"http");
+});
+
+test("browser action rejects unsupported files, remote paths and untrusted workspaces", async () => {
+  const h = harness();
+  assert.equal(await h.run("openInBrowser", h.file),false);
+  assert.equal(await h.run("openInBrowser",new Uri("vscode-remote","/work/index.html")),false);
+  h.vscode.workspace.isTrusted=false;
+  assert.equal(await h.run("openInBrowser",new Uri("file","/work/index.html")),false);
+  assert.equal(h.browserUrls.length,0);assert.equal(h.external.length,0);
+});
+
+test("browser action respects cancelled or failed saves and opener failures", async () => {
+  const h=harness(), uri=new Uri("file","/work/index.html");let saves=0;
+  h.vscode.workspace.openTextDocument=async()=>({isDirty:true,save:async()=>{saves++;return false;}});
+  h.vscode.window.showInformationMessage=async()=>"Cancel";
+  assert.equal(await h.run("openInBrowser",uri),false);assert.equal(saves,0);
+  h.vscode.window.showInformationMessage=async()=>"Save and open";
+  assert.equal(await h.run("openInBrowser",uri),false);assert.equal(saves,1);
+  assert.equal(h.browserUrls.length,0);
+  h.vscode.workspace.openTextDocument=async()=>({isDirty:true,save:async()=>true});
+  h.vscode.env.openExternal=async()=>false;
+  assert.equal(await h.run("openInBrowser",uri),false);assert.match(h.errors.at(-1),/could not be opened/);
 });

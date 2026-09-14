@@ -1,3 +1,4 @@
+const { navigationScript } = require("./navigation");
 const CSP_META_PATTERN = /<meta\s+[^>]*http-equiv\s*=\s*["']?content-security-policy["']?[^>]*>/gi;
 const BASE_PATTERN = /<base\s+[^>]*>/gi;
 
@@ -23,9 +24,9 @@ function previewHead(baseUri, cspSource) {
   ].join("\n");
 }
 
-function renderPreviewHtml(source, baseUri, cspSource) {
+function renderPreviewHtml(source, baseUri, cspSource, fragment = "") {
   const cleaned = source.replace(CSP_META_PATTERN, "").replace(BASE_PATTERN, "");
-  const injected = previewHead(baseUri, cspSource);
+  const injected = previewHead(baseUri, cspSource) + "\n" + navigationScript(fragment);
   const headMatch = /<head(?:\s[^>]*)?>/i.exec(cleaned);
   if (headMatch) {
     const end = headMatch.index + headMatch[0].length;

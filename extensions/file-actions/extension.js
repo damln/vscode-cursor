@@ -31,6 +31,28 @@ async function copyContent(uri) {
 }
 
 function activate(context) {
+  const { BrowserPreview } = require("./browser-preview");
+  const browser = new BrowserPreview();
+  context.subscriptions.push(browser, vscode.commands.registerCommand("damlnFileActions.openInBrowser", async resource => {
+    const uri = targetUri(resource);
+    try {
+      if (!uri || uri.scheme !== "file" || !/\.html?$/i.test(uri.path)) throw new Error("Choose a local HTML file. For remote sites, open a forwarded HTTP URL.");
+      if (!vscode.workspace.isTrusted) throw new Error("Trust this workspace before running HTML in a browser.");
+      const document = await vscode.workspace.openTextDocument(uri);
+      if (document.isDirty) {
+        const choice = await vscode.window.showInformationMessage("Save your HTML changes before opening them in the browser?", "Save and open", "Cancel");
+        if (choice !== "Save and open" || !await document.save()) return false;
+      }
+      const folder = vscode.workspace.getWorkspaceFolder(uri)?.uri;
+      const root = folder?.scheme === "file" ? folder.fsPath : vscode.Uri.joinPath(uri, "..").fsPath;
+      const url = await browser.url(uri.fsPath, root);
+      if (!await vscode.env.openExternal(vscode.Uri.parse(url))) throw new Error("The browser could not be opened.");
+      return true;
+    } catch (error) {
+      await vscode.window.showErrorMessage(`Could not open HTML in browser: ${error.message || error}`);
+      return false;
+    }
+  }));
   for (const [action, label] of [["copyContent", "Content"], ["copyFilePath", "File path"], ["copyParentFolderPath", "Parent folder path"]]) {
     context.subscriptions.push(vscode.commands.registerCommand(`damlnFileActions.${action}`, async resource => {
       const uri = targetUri(resource);
