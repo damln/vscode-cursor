@@ -1,3 +1,4 @@
+const { flushEditor } = require('./browser-flush.cjs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -32,7 +33,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
         await send({type: 'editResult', status: 'applied', requestId: m.requestId, text, version: ++version, dirty: true});
       }
       if (m.type === 'save') saved = text;
-      if (m.type === 'copyDocument') {copied = text; await send({type: 'copyComplete', target: 'document', requestId: m.requestId});}
+      if (m.type === 'flushComplete' && !m.error) {copied = text; }
     });
     await page.addInitScript(() => {window.acquireVsCodeApi = () => ({postMessage: m => window.bridge(m), getState: () => null, setState: () => {}});});
     await page.goto('file://' + output); await page.waitForSelector('.ProseMirror');
@@ -80,8 +81,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     assert.equal(await cell.locator('a').textContent(), 'Login flow');
     assert.equal(await cell.locator('a').getAttribute('href'), './login.md');
     assert.ok(text.includes('[Login flow](./login.md)'));
-    await page.keyboard.press('Control+s'); await page.locator('#copy-document').click();
-    await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'success');
+    await page.keyboard.press('Control+s'); await flushEditor(page);
     assert.equal(saved, text); assert.equal(copied, text);
     await cell.locator('a').click(); await destination.fill('./changed.md'); await page.keyboard.press('Escape');
     assert.equal(await cell.locator('a').getAttribute('href'), './login.md');
@@ -114,8 +114,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     await synced();
     assert.ok(!text.includes('<br'), 'cleared cells stay empty');
     assert.ok(text.includes('[Guide](./guide.md)'), 'neighboring links survive table changes');
-    await page.keyboard.press('Control+s'); await page.locator('#copy-document').click();
-    await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'success');
+    await page.keyboard.press('Control+s'); await flushEditor(page);
     assert.equal(saved, text); assert.equal(copied, text);
     await reset(saved);
     assert.equal(await page.locator('th').count(), 3, 'blank cells reload in the visual editor');

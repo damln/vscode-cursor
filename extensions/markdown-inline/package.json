@@ -2,7 +2,7 @@
   "name": "markdown-inline",
   "displayName": "Damln Markdown Inline",
   "description": "A native VS Code custom editor for inline Markdown editing.",
-  "version": "0.7.52",
+  "version": "0.7.53",
   "publisher": "damln",
   "license": "UNLICENSED",
   "engines": {

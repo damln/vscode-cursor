@@ -1,3 +1,4 @@
+const { flushEditor } = require('./browser-flush.cjs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -33,7 +34,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
           await send({type: 'editResult', status: 'applied', requestId: m.requestId, text, version: ++version, dirty: true});
         }
         if (m.type === 'save') saved = text;
-        if (m.type === 'copyDocument') {copied = text; await send({type: 'copyComplete', target: 'document', requestId: m.requestId});}
+        if (m.type === 'flushComplete' && !m.error) {copied = text; }
       });
       await page.addInitScript(() => {window.acquireVsCodeApi = () => ({postMessage: m => window.bridge(m), getState: () => null, setState: () => {}});});
       await page.goto('file://' + output); await page.waitForSelector('.ProseMirror li');
@@ -46,8 +47,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
       await page.waitForTimeout(300);
       const expected = source.replace(`${marker} First`, `${marker} First edited\n${marker} Added`);
       assert.equal(text, expected, 'new items inherit their list marker');
-      await page.keyboard.press('Control+s'); await page.locator('#copy-document').click();
-      await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'success');
+      await page.keyboard.press('Control+s'); await flushEditor(page);
       assert.equal(saved, expected); assert.equal(copied, expected);
       // External source updates establish the next authored style.
       text = '# Heading\n\n- Parent\n  + Nested\n  + Other\n';

@@ -11,18 +11,18 @@
     },
     {
       "id": "damln.file-actions",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "source": "extensions/file-actions",
-      "package": "dist/damln.file-actions-0.1.1.vsix",
-      "sha256": "3e400c3f5de2184e1a15800d2bb6beb60b5aae0338eb36c5519a8383e1d9856d",
+      "package": "dist/damln.file-actions-0.1.2.vsix",
+      "sha256": "17780a19f94eb20a899c69c53a79477697ba51461ce161954d2502aac81d4957",
       "remote": false
     },
     {
       "id": "damln.markdown-inline",
-      "version": "0.7.52",
+      "version": "0.7.53",
       "source": "extensions/markdown-inline",
-      "package": "dist/damln.markdown-inline-0.7.52.vsix",
-      "sha256": "08fef011cb2803e185aa515a39a8916425ec8044e5bdcfd3bf35b986c8ce1130",
+      "package": "dist/damln.markdown-inline-0.7.53.vsix",
+      "sha256": "f78adc393ccec3f3f3d3f298a1248c314468eb64675594e0fda3b0bf82bbd131",
       "remote": false
     },
     {

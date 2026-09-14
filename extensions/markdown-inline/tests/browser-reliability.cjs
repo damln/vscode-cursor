@@ -1,3 +1,4 @@
+const { flushEditor } = require('./browser-flush.cjs');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs=require('fs'); const path=require('path'); const vm=require('vm'); const {createRequire}=require('module'); const assert=require('assert/strict');
 const root=path.resolve(__dirname,'..');
@@ -29,7 +30,7 @@ try {
    if(message.type==='edit') {requestIds.push(message.requestId);assert.equal(message.version,version);text=action.endsWith('CRLF')?message.text.replace(/\r?\n/g,'\r\n'):message.text;version++;dirty=true;edits.push(text);await page.evaluate(m=>window.postMessage(m,'*'),{...update(),type:'editResult',requestId:message.requestId,status:'applied'});}
    if(message.type==='save'&&action==='saveError'){await page.evaluate(()=>window.postMessage({type:'operationError',error:'No write permission'},'*'));return;}
    if(message.type==='save') {saved=text;dirty=false;await page.evaluate(m=>window.postMessage(m,'*'),update());}
-   if(message.type==='copyDocument') copied=text;
+   if(message.type==='flushComplete'&&!message.error) copied=text;
   });
   await page.addInitScript(()=>{window.acquireVsCodeApi=()=>({postMessage:m=>window.bridge(m),getState:()=>JSON.parse(localStorage.getItem('vscode-state')||'null'),setState:state=>localStorage.setItem('vscode-state',JSON.stringify(state))});});
   await page.goto('file://'+output);await page.waitForSelector('.milkdown .ProseMirror',{state:'attached'});
@@ -45,7 +46,7 @@ try {
     if(fallback) await page.locator('.source-fallback').fill(original.replace('# Heading','# Heading edited'));
     else {await page.locator('.ProseMirror h1').first().click();await page.keyboard.press('End');await page.keyboard.type(' edited');}
   }
-  await page.keyboard.press('Control+s');await page.locator('#copy-document').click();
+  await page.keyboard.press('Control+s');await flushEditor(page);
   await page.waitForTimeout(400);
   if(action==='draftError'){assert.equal(await page.locator('#save-state').innerText(),'Draft retained');assert.ok(draftMessages<20,'storage failures must not cause a feedback loop');assert.ok((await page.locator('.ProseMirror').innerText()).includes('edited'));await page.close();console.log('PASS draftError');continue;}
   if(action==='conflict'){assert.equal(text,'external');assert.equal(await page.locator('.sync-recovery').isVisible(),true);assert.ok((await page.locator('.ProseMirror').innerText()).includes('edited'));await page.close();console.log('PASS conflict');continue;}

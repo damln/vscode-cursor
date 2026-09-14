@@ -9,6 +9,9 @@ native editor. The supported VS Code API version is declared in
 [package.json](package.json); Cursor support is limited to its compatible
 classic IDE window.
 
+Install [Damln File Actions](../file-actions/) for content and workspace-relative
+path copying in VS Code’s editor title bar. Copying waits for pending visual edits.
+
 Run **Markdown Inline: New Markdown** from the Command Palette to create an
 empty note in the workspace root and open it inline. Names use local time:
 `YYYY-MM-DD-HHhmm-note-1.md`, then `-note-2.md`, `-note-3.md` if occupied.

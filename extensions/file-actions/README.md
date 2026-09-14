@@ -1,10 +1,15 @@
 # Damln File Actions
 
-Copy content, file path or parent-folder path from an editor's title bar.
+Hover over the editor title-bar icons for explanations:
 
-Content includes unsaved text. Binary files support path copying only; save
-dirty notebooks before copying their serialized content. Markdown Inline uses
-its own controls to synchronize visual edits before copying.
+- Copy full file content, including unsaved text.
+- Copy the file path relative to its workspace folder.
+- Copy the parent folder path relative to its workspace folder (`.` at the root).
 
-See [extension.js](extension.js) for behavior and
-[package.json](package.json) for commands and editor integration.
+Outside a workspace, paths are absolute. Works with Markdown Inline and HTML
+Preview; Markdown visual edits synchronize before copying. A sync error leaves
+the clipboard unchanged. Binary files support paths only; save dirty notebooks
+before copying their serialized content.
+
+Install or remove this extension independently; it does not change settings.
+See [package.json](package.json) for commands and editor integration.

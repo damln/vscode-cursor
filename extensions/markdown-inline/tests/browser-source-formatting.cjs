@@ -1,3 +1,4 @@
+const { flushEditor } = require('./browser-flush.cjs');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs=require('fs'); const path=require('path'); const vm=require('vm'); const {createRequire}=require('module'); const assert=require('assert/strict');
 const root=process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname,'..');
@@ -33,9 +34,8 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'source-formatting.
           await page.evaluate(m => window.postMessage(m, '*'), {type: 'editResult', status: 'applied', requestId: message.requestId, text, version, dirty: true});
         }
         if (message.type === 'save') saved = text;
-        if (message.type === 'copyDocument') {
+        if (message.type === 'flushComplete' && !message.error) {
           copied = text;
-          await page.evaluate(m => window.postMessage(m, '*'), {type: 'copyComplete', target: 'document', requestId: message.requestId});
         }
       });
       await page.addInitScript(() => { window.acquireVsCodeApi = () => ({postMessage: message => window.bridge(message), getState: () => null, setState: () => {}}); });
@@ -46,8 +46,7 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'source-formatting.
       const heading = source.match(/^# .+$/m)[0];
       await page.locator('.ProseMirror h1').click();
       await page.keyboard.press('End'); await page.keyboard.type(' edited');
-      await page.keyboard.press('Control+s'); await page.locator('#copy-document').click();
-      await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'success');
+      await page.keyboard.press('Control+s'); await flushEditor(page);
       assert.equal(text, source.replace(heading, heading + ' edited'), name + ': every other byte is preserved');
       assert.equal(saved, text); assert.equal(copied, text);
       // An external edit must also pass the visual representation check.
@@ -64,8 +63,7 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'source-formatting.
         await page.keyboard.press('Backspace');
         await page.waitForFunction(() => !document.querySelector('.ProseMirror h1'));
         await page.keyboard.press('Control+s');
-        await page.locator('#copy-document').click();
-        await page.waitForFunction(() => document.querySelector('#copy-document').dataset.state === 'success');
+        await flushEditor(page);
         assert.equal(text, source.replace('# Heading\n', 'Heading external\n\n'));
         assert.equal(saved, text, 'heading conversion can be saved');
         assert.equal(copied, text, 'heading conversion can be copied');
