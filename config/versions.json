@@ -1,0 +1,21 @@
+{
+  "tools_version": [
+    {
+      "name": "node",
+      "version_needed": "24.20.0",
+      "docker_image": "docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0",
+      "repo": "https://github.com/nodejs/node",
+      "note": "keep_lts_versions"
+    },
+    {
+      "name": "corepack",
+      "version_needed": "0.36.0",
+      "npm_registry": "https://registry.npmjs.org/corepack/latest"
+    },
+    {
+      "name": "pnpm",
+      "version_needed": "11.25.0",
+      "npm_registry": "https://registry.npmjs.org/pnpm/latest"
+    }
+  ]
+}

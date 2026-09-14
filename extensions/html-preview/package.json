@@ -1,0 +1,76 @@
+{
+  "name": "html-preview",
+  "displayName": "Damln HTML Preview",
+  "description": "Preview HTML files in a supported VS Code custom editor.",
+  "version": "0.1.2",
+  "publisher": "damln",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.135.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onCustomEditor:damln.htmlPreview",
+    "onCommand:damlnHtmlPreview.editSource",
+    "onCommand:damlnHtmlPreview.openPreview"
+  ],
+  "main": "./extension.js",
+  "files": [
+    "README.md",
+    "extension.js",
+    "preview-html.js"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "damln.htmlPreview",
+        "displayName": "HTML Preview",
+        "selector": [
+          {
+            "filenamePattern": "*.html"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "damlnHtmlPreview.editSource",
+        "title": "Edit HTML Source",
+        "category": "HTML Preview",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "damlnHtmlPreview.openPreview",
+        "title": "Open HTML Preview",
+        "category": "HTML Preview",
+        "icon": "$(open-preview)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "damlnHtmlPreview.editSource",
+          "when": "activeCustomEditorId == damln.htmlPreview",
+          "group": "navigation@1"
+        },
+        {
+          "command": "damlnHtmlPreview.openPreview",
+          "when": "editorLangId == html && activeCustomEditorId != damln.htmlPreview",
+          "group": "navigation@1"
+        }
+      ]
+    }
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "HTML previews execute authored scripts and load remote resources."
+    }
+  }
+}

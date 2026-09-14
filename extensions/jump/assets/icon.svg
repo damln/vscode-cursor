@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Damln Jump">
+  <rect x="20" y="20" width="472" height="472" rx="112" fill="#b9fbc0"/>
+  <rect x="32" y="32" width="448" height="448" rx="100" fill="none" stroke="#111713" stroke-width="16"/>
+  <circle cx="118" cy="366" r="28" fill="#111713"/>
+  <circle cx="202" cy="318" r="22" fill="#111713"/>
+  <path d="M252 278 376 154" fill="none" stroke="#111713" stroke-width="44" stroke-linecap="round"/>
+  <path d="M294 154h82v82" fill="none" stroke="#111713" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

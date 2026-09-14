@@ -1,0 +1,267 @@
+{
+  "name": "markdown-inline",
+  "displayName": "Damln Markdown Inline",
+  "description": "A native VS Code custom editor for inline Markdown editing.",
+  "version": "0.7.50",
+  "publisher": "damln",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.128.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onCommand:damlnMarkdownInline.newMarkdown",
+    "onCommand:damlnMarkdownInline.correctText",
+    "onCustomEditor:damln.markdownInline",
+    "onCommand:damlnMarkdownInline.toggleBold",
+    "onCommand:damlnMarkdownInline.toggleItalic",
+    "onCommand:damlnMarkdownInline.toggleStrikethrough",
+    "onCommand:damlnMarkdownInline.toggleInlineCode",
+    "onCommand:damlnMarkdownInline.addLink",
+    "onCommand:damlnMarkdownInline.jumpToStart",
+    "onCommand:damlnMarkdownInline.jumpToEnd",
+    "onCommand:damlnMarkdownInline.selectToStart",
+    "onCommand:damlnMarkdownInline.selectToEnd"
+  ],
+  "main": "./extension.js",
+  "scripts": {
+    "test:tables": "esbuild tests/table-serialization.test.ts --bundle --platform=node --format=cjs --outfile=../../_tmp/vscode-table-tests/test.cjs && node --test ../../_tmp/vscode-table-tests/test.cjs",
+    "test:slash-list": "esbuild tests/slash-list.test.ts --bundle --platform=node --format=cjs --outfile=../../_tmp/vscode-slash-list/test.cjs && node --test ../../_tmp/vscode-slash-list/test.cjs",
+    "build:webview": "esbuild src/editor.ts --bundle --format=iife --platform=browser --target=es2022 --minify-whitespace --outfile=media/editor.js && esbuild src/mermaid-renderer.ts --bundle --format=iife --platform=browser --target=es2022 --minify --legal-comments=inline --outfile=media/mermaid.js",
+    "check": "tsc --noEmit",
+    "test:reliability": "esbuild tests/reliability.test.ts --bundle --platform=node --format=cjs --outfile=../../_tmp/markdown-inline-reliability/tests.cjs && node --test ../../_tmp/markdown-inline-reliability/tests.cjs",
+    "test": "node --test ../../tests/*.test.js && pnpm run test:tables && pnpm run test:slash-list && pnpm run test:reliability && pnpm run test:git",
+    "test:git": "esbuild tests/git-changes.test.ts --bundle --platform=node --format=cjs --outfile=../../_tmp/markdown-inline-git/tests.cjs && node --test ../../_tmp/markdown-inline-git/tests.cjs"
+  },
+  "dependencies": {
+    "@milkdown/kit": "7.21.1",
+    "@milkdown/plugin-clipboard": "7.21.1",
+    "@milkdown/plugin-indent": "7.21.1",
+    "@milkdown/plugin-prism": "7.21.1",
+    "@milkdown/plugin-trailing": "7.21.1",
+    "@milkdown/prose": "7.21.1",
+    "diff": "8.0.4",
+    "mermaid": "11.17.2",
+    "refractor": "4.9.0",
+    "yaml": "2.8.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "typescript": "5.9.3"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "files": [
+    "README.md",
+    "color-preview.js",
+    "document-sync.js",
+    "themes.js",
+    "extension.js",
+    "new-markdown.js",
+    "text-improver.js",
+    "jump-model.js",
+    "markdown-model.js",
+    "toolbar-visibility.js",
+    "media/editor.css",
+    "media/editor.js",
+    "draft-store.js",
+    "link-destination.js",
+    "image-resource.js",
+    "media/mermaid.js",
+    "MERMAID-LICENSE.md",
+    "git-baseline.js",
+    "DIFF-LICENSE.md"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "damlnMarkdownInline.newMarkdown",
+        "title": "New Markdown",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.correctText",
+        "title": "Correct Text",
+        "category": "Markdown Inline",
+        "enablement": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleBold",
+        "title": "Toggle Bold",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleItalic",
+        "title": "Toggle Italic",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleStrikethrough",
+        "title": "Toggle Strikethrough",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleInlineCode",
+        "title": "Toggle Inline Code",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.addLink",
+        "title": "Add or Edit Link",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.jumpToStart",
+        "title": "Jump to the Start of a Word",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.jumpToEnd",
+        "title": "Jump to the End of a Word",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.selectToStart",
+        "title": "Select to the Start of a Word",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.selectToEnd",
+        "title": "Select to the End of a Word",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.save",
+        "title": "Save Document",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.undo",
+        "title": "Undo",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.redo",
+        "title": "Redo",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.focusToolbar",
+        "title": "Focus Editing Toolbar",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.moveBlockUp",
+        "title": "Move Block Up",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.moveBlockDown",
+        "title": "Move Block Down",
+        "category": "Markdown Inline"
+      },
+      {
+        "command": "damlnMarkdownInline.pastePlainText",
+        "title": "Paste as Plain Text",
+        "category": "Markdown Inline"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "damlnMarkdownInline.toggleBold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleItalic",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleStrikethrough",
+        "key": "ctrl+shift+x",
+        "mac": "cmd+shift+x",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.toggleInlineCode",
+        "key": "ctrl+`",
+        "mac": "cmd+`",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.addLink",
+        "key": "ctrl+k",
+        "mac": "cmd+k",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.jumpToStart",
+        "key": "alt+q alt+q",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.jumpToEnd",
+        "key": "alt+q alt+w",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.selectToStart",
+        "key": "alt+q alt+e",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.selectToEnd",
+        "key": "alt+q alt+r",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.save",
+        "key": "ctrl+s",
+        "mac": "cmd+s",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.undo",
+        "key": "ctrl+z",
+        "mac": "cmd+z",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.redo",
+        "key": "ctrl+shift+z",
+        "mac": "cmd+shift+z",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.focusToolbar",
+        "key": "alt+f10",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      },
+      {
+        "command": "damlnMarkdownInline.pastePlainText",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "activeCustomEditorId == damln.markdownInline"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "damln.markdownInline",
+        "displayName": "Markdown Inline",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
+  }
+}

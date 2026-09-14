@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "extensions": [
+    {
+      "id": "damln.minimal-theme",
+      "version": "0.5.7",
+      "source": "extensions/minimal-theme",
+      "package": "dist/damln.minimal-theme-0.5.7.vsix",
+      "sha256": "8d17219ef482bce1a8338dd62605f3c578f2aaeae18903ce510b789bc2f1344b",
+      "remote": false
+    },
+    {
+      "id": "damln.file-actions",
+      "version": "0.1.0",
+      "source": "extensions/file-actions",
+      "package": "dist/damln.file-actions-0.1.0.vsix",
+      "sha256": "d2c8027bf05e4638f3349428195b0a3dc4ea76b1e1c1ff02f880ec650c52377d",
+      "remote": false
+    },
+    {
+      "id": "damln.markdown-inline",
+      "version": "0.7.50",
+      "source": "extensions/markdown-inline",
+      "package": "dist/damln.markdown-inline-0.7.50.vsix",
+      "sha256": "bb39db0eea483b828a83744c9e365d3c15c0f019c28dcb8bca7f2a39a66dc128",
+      "remote": false
+    },
+    {
+      "id": "damln.html-preview",
+      "version": "0.1.2",
+      "source": "extensions/html-preview",
+      "package": "dist/damln.html-preview-0.1.2.vsix",
+      "sha256": "747c275560a39a9f92ddc011afbc55ec736268ddf355e7307622b655e1ea4c36",
+      "remote": false
+    },
+    {
+      "id": "damln.jump",
+      "version": "0.8.2",
+      "source": "extensions/jump",
+      "package": "dist/damln.jump-0.8.2.vsix",
+      "sha256": "2208e68dd38b3f04e271679523eb782ae559fbd7392bef0d46a4b6b68e4e1e36",
+      "remote": true
+    }
+  ]
+}
