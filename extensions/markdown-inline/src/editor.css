@@ -285,9 +285,9 @@ main { min-width: 0; min-height: 0; overflow: auto; }
 .frontmatter-header { display: flex; align-items: center; min-width: 0; }
 #frontmatter-toggle {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-radius: 0;
+  width: 100%; min-height: 28px; padding: 4px 12px; border: 0; border-radius: 0;
   background: transparent; color: var(--text-secondary); text-align: left;
-  font: 12px/20px var(--vscode-font-family, system-ui); cursor: pointer;
+  font: 11px/18px var(--vscode-font-family, system-ui); cursor: pointer;
 }
 #frontmatter-toggle[hidden] { display: none; }
 .metadata-disclosure { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -305,6 +305,8 @@ main { min-width: 0; min-height: 0; overflow: auto; }
 .metadata-remove { margin-left: auto; }
 .metadata-modes .metadata-remove:hover { color: var(--destructive); }
 .frontmatter-row { display: grid; grid-template-columns: minmax(6rem, 28%) minmax(0, 1fr) 74px; align-items: start; gap: 8px; min-width: 0; }
+.frontmatter-row + .frontmatter-row { padding-top: 4px; border-top: 1px solid var(--border); }
+@media (pointer: coarse) { #frontmatter-toggle { min-height: 44px; } }
 .frontmatter-key, .frontmatter-value {
   min-width: 0; max-width: 100%; width: 100%; min-height: 30px; margin: 0; padding: 5px 6px;
   border: 1px solid transparent; border-radius: 4px; color: var(--foreground); background: transparent;
