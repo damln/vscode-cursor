@@ -32,7 +32,8 @@ function parseEditorMessage(value) {
   if (value.type === "pastePlainText") return {type: "pastePlainText"};
   if (value.type === "setReadingPreference" && (
     value.key === "fontSize" && Number.isInteger(value.value) && value.value >= 10 && value.value <= 36 ||
-    value.key === "contentWidth" && ["normal", "large", "full"].includes(value.value)
+    value.key === "contentWidth" && ["normal", "large", "full"].includes(value.value) ||
+    value.key === "codeWrap" && typeof value.value === "boolean"
   )) return {type: "setReadingPreference", key: value.key, value: value.value};
   if (value.type === "flushComplete" && typeof value.flushId === "string" && value.flushId.length <= 128) {
     return { type: "flushComplete", flushId: value.flushId, ...(typeof value.error === "string" ? {error: value.error} : {}) };

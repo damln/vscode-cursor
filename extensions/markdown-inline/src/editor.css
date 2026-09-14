@@ -1063,12 +1063,13 @@ pre.code-with-gutter {
   overflow: hidden !important;
 }
 .code-gutter {
+  position: relative;
   flex-shrink: 0;
-  padding: 0.9375em 0.9375em 0.9375em 1.25em;
+  width: 4ch;
   text-align: right;
   font-family: var(--vscode-editor-font-family);
   font-size: 0.65em;
-  line-height: 2;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   color: color-mix(in srgb, var(--foreground) 15%, transparent);
   user-select: none;
@@ -1076,14 +1077,17 @@ pre.code-with-gutter {
   white-space: pre;
   border-right: 1px solid color-mix(in srgb, var(--foreground) 6%, transparent);
 }
+.code-gutter > span { position: absolute; right: 0.9375em; }
 pre.code-with-gutter > code {
   flex: 1;
   min-width: 0;
   padding: 0.75em 1em 0.75em 0.75em !important;
-  white-space: pre !important;
+  white-space: pre-wrap !important;
   word-break: normal !important;
+  overflow-wrap: anywhere;
   overflow-x: auto;
 }
+html[data-code-wrap="false"] pre.code-with-gutter > code { white-space: pre !important; overflow-wrap: normal; }
 .code-lang-trigger {
   display: inline-flex;
   align-items: center;
@@ -1822,6 +1826,18 @@ header, .header-actions { min-width: 0; }
 .theme-picker-heading h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
 .theme-picker-heading p { margin: 6px 0 0; color: var(--text-secondary); }
 .theme-picker-close { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; padding: 0; background: transparent; border-color: transparent; cursor: pointer; }
+.editor-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.editor-setting-row p { margin: 4px 0 0; color: var(--text-secondary); font-size: 11px; }
+.editor-setting-switch { position: relative; flex-shrink: 0; width: 40px; height: 24px; padding: 0; border-radius: 999px; border: 1px solid var(--border); background: var(--control-background); transition: background-color 120ms ease, border-color 120ms ease; }
+.editor-setting-switch > span { position: absolute; left: 3px; top: calc(50% - 8px); width: 16px; height: 16px; border-radius: 50%; background: var(--text-secondary); transition: transform 120ms ease, background-color 120ms ease; }
+.editor-setting-switch[aria-checked="true"] { background: var(--heat-12); border-color: var(--heat-100); }
+.editor-setting-switch[aria-checked="true"] > span { transform: translateX(16px); background: var(--heat-100); }
+.editor-setting-switch:focus-visible { outline: 2px solid var(--heat-100); outline-offset: 3px; }
+@media (hover: hover) { .editor-setting-switch:hover { border-color: var(--heat-100); } }
+.editor-setting-switch:active > span { opacity: .8; }
+@media (prefers-reduced-motion: reduce) { .editor-setting-switch, .editor-setting-switch > span { transition: none; } }
+@media (pointer: coarse) { .editor-setting-switch { min-height: 44px; min-width: 44px; } }
+@media (forced-colors: active) { .editor-setting-switch { border-color: ButtonText; } .editor-setting-switch > span { background: ButtonText; } .editor-setting-switch[aria-checked="true"] > span { background: Highlight; } }
 .theme-picker-section + .theme-picker-section { margin-top: 18px; }
 .theme-picker-section h3 { margin: 0 0 8px; color: var(--text-secondary); font-size: 11px; font-weight: 500; }
 .theme-picker-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }

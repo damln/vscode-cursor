@@ -1,17 +1,38 @@
 import { THEMES, findTheme } from "../../themes";
 import { FloatingPanel } from "../milkdown/floating-panel";
 
-export function setupThemePicker(trigger: HTMLButtonElement, changed: (theme: string) => void) {
+export function setupEditorSettings(trigger: HTMLButtonElement, changed: (theme: string) => void, wrapChanged: (wrap: boolean) => void) {
   const dialog = document.createElement("dialog");
   dialog.className = "theme-picker";
   dialog.id = "editor-theme-picker";
   dialog.setAttribute("aria-labelledby", "editor-theme-title");
   dialog.setAttribute("aria-describedby", "editor-theme-description");
-  dialog.innerHTML = `<div class="theme-picker-heading"><div><h2 id="editor-theme-title">Make yourself at home</h2>
-    <p id="editor-theme-description">Ten ways to read and write. Choose a theme to apply it.</p></div>
-    <button class="theme-picker-close" type="button" aria-label="Close theme picker" data-toolbar-hint="Close theme picker">
+  dialog.innerHTML = `<div class="theme-picker-heading"><div><h2 id="editor-theme-title">Editor settings</h2>
+    <p id="editor-theme-description">Choose how your Markdown looks. Changes apply immediately.</p></div>
+    <button class="theme-picker-close" type="button" aria-label="Close editor settings" data-toolbar-hint="Close editor settings">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
     </button></div>`;
+  const wrapping = document.createElement("div");
+  wrapping.className = "editor-setting-row";
+  wrapping.innerHTML = '<div><span id="code-wrap-label">Wrap code lines</span><p id="code-wrap-description">Keep long lines inside the code block.</p></div>';
+  const wrapToggle = document.createElement("button");
+  wrapToggle.type = "button";
+  wrapToggle.className = "editor-setting-switch";
+  wrapToggle.setAttribute("role", "switch");
+  wrapToggle.setAttribute("aria-labelledby", "code-wrap-label");
+  wrapToggle.setAttribute("aria-describedby", "code-wrap-description");
+  wrapToggle.innerHTML = '<span aria-hidden="true"></span>';
+  function applyCodeWrap(value: boolean) {
+    document.documentElement.dataset.codeWrap = String(value);
+    wrapToggle.setAttribute("aria-checked", String(value));
+  }
+  wrapToggle.addEventListener("click", () => {
+    const value = wrapToggle.getAttribute("aria-checked") !== "true";
+    applyCodeWrap(value);
+    wrapChanged(value);
+  });
+  applyCodeWrap(true);
+  wrapping.append(wrapToggle);
   const choices = document.createElement("div");
   choices.className = "theme-picker-choices";
   choices.setAttribute("role", "radiogroup");
@@ -54,7 +75,7 @@ export function setupThemePicker(trigger: HTMLButtonElement, changed: (theme: st
   const done = document.createElement("button");
   done.type = "button"; done.textContent = "Done";
   footer.append(status, done);
-  dialog.append(choices, footer);
+  dialog.append(wrapping, choices, footer);
   document.body.append(dialog);
   trigger.setAttribute("aria-controls", dialog.id);
   const panel = new FloatingPanel(dialog, 4, () => {
@@ -66,7 +87,7 @@ export function setupThemePicker(trigger: HTMLButtonElement, changed: (theme: st
     selected = theme.id;
     document.documentElement.dataset.editorTheme = theme.id;
     document.documentElement.dataset.inlineTheme = theme.mode;
-    trigger.dataset.tooltip = "Theme: " + theme.name + ". Choose editor theme.";
+    trigger.dataset.tooltip = "Editor settings · " + theme.name;
     for (const button of buttons) {
       const active = button.dataset.theme === selected;
       button.setAttribute("aria-checked", String(active));
@@ -85,7 +106,8 @@ export function setupThemePicker(trigger: HTMLButtonElement, changed: (theme: st
     if (!panel.show()) return;
     dialog.showModal();
     trigger.setAttribute("aria-expanded", "true");
-    buttons.find(button => button.dataset.theme === selected)?.focus({preventScroll: true});
+    dialog.scrollTop = 0;
+    wrapToggle.focus({preventScroll: true});
   });
   dialog.querySelector(".theme-picker-close")!.addEventListener("click", close);
   done.addEventListener("click", close);
@@ -115,5 +137,5 @@ export function setupThemePicker(trigger: HTMLButtonElement, changed: (theme: st
     choose(buttons[next].dataset.theme!);
   });
   apply(selected);
-  return apply;
+  return {applyTheme: apply, applyCodeWrap};
 }

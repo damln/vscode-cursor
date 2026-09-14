@@ -87,7 +87,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     await theme.focus();
     assert.equal(await theme.evaluate(el => getComputedStyle(el).outlineStyle), 'solid');
     await theme.press('Space');
-    await page.getByRole('dialog', {name:'Make yourself at home'}).waitFor();
+    await page.getByRole('dialog', {name:'Editor settings'}).waitFor();
     assert.equal(await theme.locator('svg:visible').count(), 1);
     await page.keyboard.press('Escape');
     assert.equal(await theme.evaluate(el => el === document.activeElement), true);

@@ -27,8 +27,9 @@ use **Compare retained draft** to inspect both versions, then **Restore retained
 draft** to confirm restoring and saving your work. Restoration and discarding
 both create recovery backups before replacing anything.
 
-Use the **palette** button to choose among ten light and dark editor themes.
-The centered picker previews each palette and remembers your choice across files.
+Use **Editor settings** (the sliders icon) to choose among ten light and dark
+themes and toggle **Wrap code lines**. Code wraps by default; line numbers follow
+the original lines. Both choices are remembered across files and restarts.
 
 Use **Width** and the adjacent **font-size** control to adjust the reading layout.
 Text size ranges from 10 to 36 pixels; Reset restores 17 pixels. These choices
