@@ -44,8 +44,8 @@ class IndependentInstallTests(unittest.TestCase):
             self.assertFalse(package.get("extensionPack"), path)
             self.assertFalse(package["contributes"].get("configurationDefaults"), path)
         theme = json.loads((ROOT / "extensions/minimal-theme/package.json").read_text())
-        self.assertNotIn("main", theme)
-        self.assertNotIn("activationEvents", theme)
+        self.assertEqual("./extension.js", theme["main"])
+        self.assertEqual(["onCommand:damlnMinimalTheme.createSkill"], theme["activationEvents"])
 
     def test_uninstall_all_skips_missing_packages_and_preserves_unrelated_extensions(self):
         calls = []

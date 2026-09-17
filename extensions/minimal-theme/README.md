@@ -5,8 +5,15 @@ and **Damln Minimal Light** (soft white, slate ink). Both use restrained blue ac
 semantic highlighting and coordinated terminal colors.
 
 Install this extension alone, then run **Preferences: Color Theme** to choose either.
-Installation never changes your selected theme or settings. There is no startup code,
-layout automation, workbench patch or dependency on another extension.
+Installation never changes your selected theme or settings. There is no layout
+automation, workbench patch or dependency on another extension.
+
+Run **Damln: Create Skill** from the Command Palette and enter a name. Skills go
+in the workspace's `skills/` folder, created if missing. When it exists, a palette
+picker offers `skills/` and its immediate subfolders. The command creates
+`<name>/SKILL.md` with matching YAML frontmatter and just a human-readable H1,
+then opens the source for editing. Existing folders are never overwritten.
+Spaces and underscores in names become hyphens.
 
 To remove it, select another theme and uninstall through Extensions.
 Requires VS Code 1.100.0+ or a compatible Cursor classic IDE.
