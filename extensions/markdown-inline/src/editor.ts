@@ -91,6 +91,7 @@ const actions = new FlushActions();
 let improving = false;
 let improvementError = "";
 const improveText = document.querySelector<HTMLButtonElement>("#improve-text");
+const cleanup = document.querySelector<HTMLButtonElement>("#cleanup");
 const rootElement = document.getElementById("editor");
 const openRawElement = document.getElementById("open-raw");
 const saveStateElement = document.getElementById("save-state");
@@ -181,6 +182,7 @@ function setStatus(value: string, error = false) {
 
 function setImproving(running: boolean) {
   improving = running;
+  if (cleanup) cleanup.disabled = running || !ready || sync.pending || Boolean(sync.error);
   document.body.classList.toggle("improving", running);
   documentScroll.inert = running;
   recovery.inert = running;
@@ -228,6 +230,7 @@ recovery.append(recoveryText, compareDraft, restoreDraft, retry, useFile);
 documentScroll.before(recovery);
 
 function sendNextEdit() {
+  if (cleanup) cleanup.disabled = improving || !ready || sync.pending || Boolean(sync.error);
   gitGutter.update();
   if (improveText) improveText.disabled = improving || !ready || sync.pending || Boolean(sync.error);
   const request = typingTimer === null ? sync.next() : null;
@@ -735,5 +738,8 @@ for (const type of ["pointerdown", "click", "beforeinput", "paste", "drop"] as c
 }
 improveText?.addEventListener("click", () => {
   if (!improving && !sync.error) vscode.postMessage({ type: "improveText" });
+});
+cleanup?.addEventListener("click", () => {
+  if (ready && !improving && !sync.pending && !sync.error) vscode.postMessage({ type: "cleanup" });
 });
 vscode.postMessage({ type: "ready", session });

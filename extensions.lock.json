@@ -22,7 +22,7 @@
       "version": "0.8.8",
       "source": "extensions/markdown-inline",
       "package": "dist/damln.markdown-inline-0.8.8.vsix",
-      "sha256": "22de7aa32ae37ca2a0d74f13beb906216e31f6796bbc736dd8c5b5e0a6821f74",
+      "sha256": "0ed35ee18520d6a60dc2ef4f70e6ba2dd889ee0f7a5543323aafe47967a148f2",
       "remote": false
     },
     {

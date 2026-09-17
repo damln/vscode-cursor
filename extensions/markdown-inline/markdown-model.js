@@ -50,7 +50,15 @@ function preserveListSpacingJoin(_left, _right, parent) {
   return undefined;
 }
 
+function cleanupMarkdown(source) {
+  const eol = source.includes("\r\n") ? "\r\n" : "\n";
+  const text = source.split(/\r\n|\r|\n/).map(line => line.trim()).join("\n")
+    .replace(/\n{3,}/g, "\n\n").trim();
+  return text.replace(/\n/g, eol) + eol;
+}
+
 module.exports = {
+  cleanupMarkdown,
   editableFrontmatter,
   joinPreservedFrontmatter,
   preserveListSpacingJoin,
