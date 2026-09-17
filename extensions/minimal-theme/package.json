@@ -2,9 +2,17 @@
   "name": "minimal-theme",
   "displayName": "Damln Minimal Theme",
   "description": "Quiet dark and light color themes for standard VS Code.",
-  "version": "0.6.1",
+  "version": "0.7.1",
   "publisher": "damln",
   "license": "MIT",
+  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:damlnMinimalTheme.createSkill"
+  ],
+  "scripts": {
+    "check": "node --check extension.js && node --check create-skill.js",
+    "test": "node --test ../../tests/create-skill.test.js"
+  },
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -22,6 +30,8 @@
     "light"
   ],
   "files": [
+    "extension.js",
+    "create-skill.js",
     "README.md",
     "themes/minimal-color-theme.json",
     "LICENSE",
@@ -30,6 +40,13 @@
     "themes/minimal-light-color-theme.json"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "damlnMinimalTheme.createSkill",
+        "title": "Create Skill",
+        "category": "Damln"
+      }
+    ],
     "themes": [
       {
         "label": "Damln Minimal",

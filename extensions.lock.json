@@ -3,10 +3,10 @@
   "extensions": [
     {
       "id": "damln.minimal-theme",
-      "version": "0.6.1",
+      "version": "0.7.1",
       "source": "extensions/minimal-theme",
-      "package": "dist/damln.minimal-theme-0.6.1.vsix",
-      "sha256": "112bee6701e225d03932a47b329a6ea4af02e5a8750ac778e233791fd343549d",
+      "package": "dist/damln.minimal-theme-0.7.1.vsix",
+      "sha256": "dcf20da56484a897c313f30cc25b34b3894868bfdf3532186064bb8e908ce14e",
       "remote": false
     },
     {
