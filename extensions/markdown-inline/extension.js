@@ -6,6 +6,7 @@ const { createNewMarkdown } = require("./new-markdown");
 const crypto = require("node:crypto");
 const vscode = require("vscode");
 const { findTextImprover, runTextImprover } = require("./text-improver");
+const { cleanupMarkdown } = require("./markdown-model");
 const {
   documentPayload,
   parseEditorMessage,
@@ -201,6 +202,25 @@ class MarkdownInlineProvider {
     ).map(panel => panel.webview.postMessage(message)));
   }
 
+  async cleanup(document, queue) {
+    if (this.improvements.has(document.uri.toString())) return;
+    try {
+      await this.flushDocument(document);
+      await queue.run(async () => {
+        if (this.improvements.has(document.uri.toString())) return;
+        const original = document.getText();
+        const text = cleanupMarkdown(original);
+        if (text === original) return;
+        const edit = new vscode.WorkspaceEdit();
+        edit.replace(document.uri, wholeDocumentRange(document), text);
+        if (!await vscode.workspace.applyEdit(edit)) throw new Error("VS Code rejected the cleanup.");
+      });
+      if (!await document.save()) throw new Error("Cleaned text is in the editor but could not be saved.");
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Cleanup: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   async improveText(document, queue) {
     const key = document.uri.toString();
     if (this.improvements.has(key)) return;
@@ -346,6 +366,7 @@ class MarkdownInlineProvider {
         return;
       }
       if (message?.type === "improveText") return this.improveText(document, queue);
+      if (message?.type === "cleanup") return this.cleanup(document, queue);
       if (message?.type === "restoreDraft") {
         if (this.improvements.has(key)) return panel.webview.postMessage({...documentPayload(document),
           type: "editResult", requestId: message.requestId, status: "error", error: "Wait for text improvement before restoring."});
@@ -527,6 +548,10 @@ class MarkdownInlineProvider {
         ${icon('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="m15 5 3 3"/>', "action-icon")}
         <span class="header-action-label">Improve text</span>
         ${icon('<path d="M12 3a9 9 0 1 1-9 9"/>', "action-loading improve-spinner")}
+      </button>
+      <button id="cleanup" class="header-button header-icon-button" type="button" disabled aria-label="Cleanup" data-tooltip="Trim lines, remove extra blank lines, and save.">
+        ${icon('<path d="M4 5h16M4 12h10M4 19h16m-3-10 3 3-3 3"/>', "action-icon")}
+        <span class="header-action-label">Cleanup</span>
       </button>
       <button id="content-width" class="header-button header-icon-button" type="button" aria-label="Content width: Normal" aria-haspopup="menu" aria-expanded="false">
         ${icon('<path d="M4 4v16M20 4v16M7 8h10M7 12h10M7 16h10"/>', "action-icon")}

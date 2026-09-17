@@ -17,6 +17,7 @@ function parseEditorMessage(value) {
     value.type === "copyFolderPath" ||
     value.type === "save" ||
     value.type === "improveText" ||
+    value.type === "cleanup" ||
     value.type === "undo" ||
     value.type === "redo"
   ) {

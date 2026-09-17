@@ -6,6 +6,20 @@ const { createRequire } = require("node:module");
 const test = require("node:test");
 const { findTextImprover, runTextImprover } = require("../extensions/markdown-inline/text-improver");
 const { DocumentQueue, parseEditorMessage } = require("../extensions/markdown-inline/document-sync");
+const { cleanupMarkdown } = require("../extensions/markdown-inline/markdown-model");
+
+test("cleanup trims every line, collapses blank lines, and leaves a final empty line", () => {
+  for (const [source, expected] of [
+    [" \n\n  # Title  \n \t\n\n text \t\n\n\n", "# Title\n\ntext\n"],
+    ["\r\n  one \r\n\r\n \t\r\n two\r\n", "one\r\n\r\ntwo\r\n"],
+    ["", "\n"], [" \t\n\n", "\n"],
+    ["- first\n\n- second", "- first\n\n- second\n"],
+    ["  code  \n\n\n  more  ", "code\n\nmore\n"],
+  ]) {
+    assert.equal(cleanupMarkdown(source), expected);
+    assert.equal(cleanupMarkdown(expected), expected);
+  }
+});
 
 test("discovers the skill only in trusted local workspace roots", () => {
   const scratch = path.resolve(__dirname, "../_tmp/markdown-improver-validation");
@@ -150,6 +164,30 @@ test("flushes before invoking the CLI and saves an undoable replacement to the s
   assert.deepEqual(f.events, ["flush", "save", "run", "apply", "save"]);
   assert.deepEqual(f.states, [true, false]);
   assert.deepEqual(f.errors, []);
+});
+
+test("cleanup flushes the latest draft, applies an undoable edit, and saves without AI", async () => {
+  assert.deepEqual(parseEditorMessage({type: "cleanup"}), {type: "cleanup"});
+  const f = fixture(async () => { throw new Error("AI must not run"); });
+  await f.provider.cleanup(f.document, f.queue);
+  assert.equal(f.document.text, "latest draft\n");
+  assert.deepEqual(f.events, ["flush", "apply", "save"]);
+  f.events.length = 0;
+  f.provider.flushDocument = async () => {};
+  await f.provider.cleanup(f.document, f.queue);
+  assert.deepEqual(f.events, ["save"]);
+});
+
+test("cleanup preserves drafts on flush failure and refuses to race an improvement", async () => {
+  const f = fixture(async () => "unused");
+  f.provider.flushDocument = async () => { throw new Error("Draft conflict"); };
+  await f.provider.cleanup(f.document, f.queue);
+  assert.equal(f.document.text, "original");
+  assert.deepEqual(f.events, []);
+  assert.equal(f.errors.length, 1);
+  f.provider.improvements.set(f.document.uri.toString(), {});
+  await f.provider.cleanup(f.document, f.queue);
+  assert.equal(f.errors.length, 1);
 });
 
 test("preserves concurrent edits and unlocks after failures", async () => {
