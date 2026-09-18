@@ -21,6 +21,40 @@ test("cleanup trims every line, collapses blank lines, and leaves a final empty 
   }
 });
 
+test("cleanup preserves frontmatter bytes while cleaning only the Markdown body", () => {
+  for (const eol of ["\n", "\r\n"]) {
+    for (const bom of ["", "\uFEFF"]) {
+      const prefix = bom + [
+        "---  ", "name: custom-design-curator", "metadata:",
+        "  category: FRONTEND", '  last_reviewed: "2026-09-17"',
+        "  tags:", "    - design", "description: |", "  First line  ",
+        "", "", "  Last line", "# Keep this comment  ", "---\t", "",
+      ].join(eol);
+      const source = prefix + ["", "  # Heading  ", "", "", " Body \t", "", ""].join(eol);
+      const expected = prefix + ["# Heading", "", "Body", ""].join(eol);
+      assert.equal(cleanupMarkdown(source), expected);
+      assert.equal(cleanupMarkdown(expected), expected);
+    }
+  }
+});
+
+test("cleanup leaves unclosed or unsupported frontmatter untouched", () => {
+  for (const source of [
+    "---\nmetadata:\n  category: FRONTEND\n\n\n",
+    "\uFEFF---\r\nmetadata:\r\n  category: FRONTEND",
+    "---\nmetadata:\n  category: FRONTEND\n...\n\n Body  \n",
+  ]) assert.equal(cleanupMarkdown(source), source);
+});
+
+test("cleanup handles frontmatter-only files and ordinary body separators", () => {
+  const frontmatter = "---\nmetadata:\n  category: FRONTEND\n---\n";
+  for (const source of [frontmatter.slice(0, -1), frontmatter, frontmatter + "\n\n"]) {
+    assert.equal(cleanupMarkdown(source), frontmatter);
+    assert.equal(cleanupMarkdown(cleanupMarkdown(source)), frontmatter);
+  }
+  assert.equal(cleanupMarkdown(" Heading \n\n\n---\n\n Body  "), "Heading\n\n---\n\nBody\n");
+});
+
 test("discovers the skill only in trusted local workspace roots", () => {
   const scratch = path.resolve(__dirname, "../_tmp/markdown-improver-validation");
   fs.mkdirSync(scratch, { recursive: true });
@@ -176,6 +210,16 @@ test("cleanup flushes the latest draft, applies an undoable edit, and saves with
   f.provider.flushDocument = async () => {};
   await f.provider.cleanup(f.document, f.queue);
   assert.deepEqual(f.events, ["save"]);
+});
+
+test("cleanup saves YAML indentation unchanged through the document edit path", async () => {
+  const f = fixture(async () => { throw new Error("AI must not run"); });
+  const prefix = '---\nmetadata:\n  category: FRONTEND\n  last_reviewed: "2026-09-17"\n---\n';
+  f.provider.flushDocument = async () => { f.document.text = prefix + "\n Title  \n\n\n Body  "; };
+  await f.provider.cleanup(f.document, f.queue);
+  assert.equal(f.document.text, prefix + "Title\n\nBody\n");
+  assert.deepEqual(f.events, ["apply", "save"]);
+  assert.deepEqual(f.errors, []);
 });
 
 test("cleanup preserves drafts on flush failure and refuses to race an improvement", async () => {
