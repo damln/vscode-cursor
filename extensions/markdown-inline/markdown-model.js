@@ -51,10 +51,12 @@ function preserveListSpacingJoin(_left, _right, parent) {
 }
 
 function cleanupMarkdown(source) {
-  const eol = source.includes("\r\n") ? "\r\n" : "\n";
-  const text = source.split(/\r\n|\r|\n/).map(line => line.trim()).join("\n")
+  const { prefix, body, eol, hasFrontmatter } = editableFrontmatter(source);
+  if (!hasFrontmatter && /^(?:\uFEFF)?---[ \t]*\r?\n/.test(source)) return source;
+  const text = body.split(/\r\n|\r|\n/).map(line => line.trim()).join("\n")
     .replace(/\n{3,}/g, "\n\n").trim();
-  return text.replace(/\n/g, eol) + eol;
+  if (hasFrontmatter && !text) return prefix.endsWith("\n") ? prefix : prefix + eol;
+  return prefix + text.replace(/\n/g, eol) + eol;
 }
 
 module.exports = {
