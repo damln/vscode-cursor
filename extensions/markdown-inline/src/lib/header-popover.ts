@@ -1,4 +1,4 @@
-import { FloatingPanel, positionMenu } from '../milkdown/floating-panel';
+import { FloatingPanel, hideOnViewportChange, positionMenu } from '../milkdown/floating-panel';
 
 /** One descriptive tooltip shared by the header, including optional actions. */
 export function setupHeaderPopovers() {
@@ -60,7 +60,5 @@ export function setupHeaderPopovers() {
   new MutationObserver(update).observe(document.querySelector('header')!, {
     subtree: true, attributes: true, attributeFilter: ['data-tooltip', 'aria-label'],
   });
-  window.addEventListener('resize', hide);
-  window.addEventListener('blur', hide);
-  document.getElementById('document-scroll')?.addEventListener('scroll', hide, {passive: true});
+  hideOnViewportChange(hide);
 }

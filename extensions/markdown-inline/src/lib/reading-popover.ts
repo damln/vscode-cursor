@@ -1,4 +1,4 @@
-import { FloatingPanel, positionMenu } from '../milkdown/floating-panel';
+import { FloatingPanel, hideOnViewportChange, positionMenu } from '../milkdown/floating-panel';
 
 export function readingPopover(trigger: HTMLButtonElement, menu: HTMLElement, focus: () => void) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -40,8 +40,6 @@ export function readingPopover(trigger: HTMLButtonElement, menu: HTMLElement, fo
   };
   document.addEventListener('pointerdown', outside);
   document.addEventListener('focusin', outside);
-  window.addEventListener('resize', hide);
-  window.addEventListener('blur', hide);
-  document.getElementById('document-scroll')?.addEventListener('scroll', hide, {passive: true});
+  hideOnViewportChange(hide);
   return {hide};
 }

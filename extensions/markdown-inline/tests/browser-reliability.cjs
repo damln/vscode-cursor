@@ -1,14 +1,9 @@
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const assert = require('node:assert/strict');
 const { flushEditor } = require('./browser-flush.cjs');
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fs=require('fs'); const path=require('path'); const vm=require('vm'); const {createRequire}=require('module'); const assert=require('assert/strict');
-const root=path.resolve(__dirname,'..');
-const fixtures=require('./fixtures/reliability.json');
-assert.ok(process.env.MARKDOWN_INLINE_TEST_ROOT, 'Set MARKDOWN_INLINE_TEST_ROOT to a task directory');
-const localRequire=createRequire(path.join(root,'extension.js'));
-const mod={exports:{}};
-vm.runInNewContext(fs.readFileSync(path.join(root,'extension.js'),'utf8'), {module:mod,require:id=>id==='vscode'?{Uri:{joinPath:(base,...parts)=>path.join(base,...parts)}}:localRequire(id)});
-const html=mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call({context:{extensionUri:root}}, {cspSource:'file:',asWebviewUri:value=>'file://'+value},root,'dark').replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/,'');
-const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'harness.html');fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,html);
+const fixtures = require('./fixtures/reliability.json');
+const { webviewPage } = require('./browser-webview.cjs');
+const { output, html } = webviewPage('harness');
 (async()=>{
 const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--allow-file-access-from-files']});
 try {

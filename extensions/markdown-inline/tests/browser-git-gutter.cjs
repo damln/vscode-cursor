@@ -1,13 +1,8 @@
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fs=require('fs'); const path=require('path'); const vm=require('vm'); const {createRequire}=require('module'); const assert=require('assert/strict');
-// Point at an extracted VSIX to verify the shipped parser, not just the checkout.
-const root=process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname,'..');
-assert.ok(process.env.MARKDOWN_INLINE_TEST_ROOT, 'Set MARKDOWN_INLINE_TEST_ROOT to a task directory');
-const localRequire=createRequire(path.join(root,'extension.js'));
-const mod={exports:{}};
-vm.runInNewContext(fs.readFileSync(path.join(root,'extension.js'),'utf8'), {module:mod,require:id=>id==='vscode'?{Uri:{joinPath:(base,...parts)=>path.join(base,...parts)}}:localRequire(id)});
-const html=mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call({context:{extensionUri:root}}, {cspSource:'file:',asWebviewUri:value=>'file://'+value},root,'dark').replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/,'');
-const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'git-gutter.html');fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,html);
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { root, webviewPage } = require('./browser-webview.cjs');
+const { output } = webviewPage('git-gutter');
 
 (async () => {
   const browser = await chromium.launch({executablePath: process.env.CHROME_BIN, headless: true, args: ['--allow-file-access-from-files']});

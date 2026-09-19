@@ -1,14 +1,22 @@
 const { isInlineTheme } = require("./themes");
+
+const validRequestId = value => typeof value === "string" && value.length > 0 && value.length <= 128;
+
+// One coercion for values thrown across the webview boundary.
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function parseEditorMessage(value) {
   if (!value || typeof value !== "object") {
     return null;
   }
   if (value.type === "resolveImage" && typeof value.src === "string" && value.src.length <= 5_000_000 &&
-      typeof value.requestId === "string" && value.requestId.length > 0 && value.requestId.length <= 128) {
+      validRequestId(value.requestId)) {
     return {type: "resolveImage", src: value.src, requestId: value.requestId};
   }
   if (value.type === "copyCode" && typeof value.text === "string" &&
-      typeof value.requestId === "string" && value.requestId.length > 0 && value.requestId.length <= 128) {
+      validRequestId(value.requestId)) {
     return { type: "copyCode", text: value.text, requestId: value.requestId };
   }
   if (
@@ -23,7 +31,7 @@ function parseEditorMessage(value) {
   ) {
     return { type: value.type, ...(
       ["copyDocument", "copyPath", "copyFolderPath"].includes(value.type) &&
-      typeof value.requestId === "string" && value.requestId.length > 0 && value.requestId.length <= 128
+      validRequestId(value.requestId)
         ? { requestId: value.requestId } : {}
     ) };
   }
@@ -73,7 +81,7 @@ function parseEditorMessage(value) {
     Number.isSafeInteger(value.version) &&
     value.version >= 0 &&
     typeof value.text === "string" &&
-    typeof value.requestId === "string" && value.requestId.length > 0 && value.requestId.length <= 128
+    validRequestId(value.requestId)
   ) {
     return { type: value.type, requestId: value.requestId, version: value.version, text: value.text };
   }
@@ -115,13 +123,14 @@ async function applyDocumentRequest(document, message, apply) {
     if (document.getText() !== message.text) return result("conflict", "The file changed during synchronization. Your draft is retained.");
     return result("applied");
   } catch (error) {
-    return result("error", `Could not apply the edit: ${error instanceof Error ? error.message : String(error)}`);
+    return result("error", `Could not apply the edit: ${errorMessage(error)}`);
   }
 }
 
 module.exports = {
   DocumentQueue,
   applyDocumentRequest,
+  errorMessage,
   documentPayload,
   parseEditorMessage,
   shouldApplyDocumentEdit

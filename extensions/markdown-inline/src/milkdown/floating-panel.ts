@@ -106,9 +106,51 @@ export function toolbarPointer(element: HTMLElement): NonNullable<ConstructorPar
   };
 }
 
+/** Any page movement or focus loss dismisses a header popover. */
+export function hideOnViewportChange(hide: () => void) {
+  window.addEventListener('resize', hide);
+  window.addEventListener('blur', hide);
+  document.getElementById('document-scroll')?.addEventListener('scroll', hide, {passive: true});
+}
+
 export function positionMenu(element: HTMLElement, anchor: DOMRect | {left: number; top: number; bottom: number}) {
   const bounds = element.getBoundingClientRect();
   element.style.left = `${Math.max(8, Math.min(anchor.left, innerWidth - bounds.width - 8))}px`;
   element.style.top = `${Math.max(8, anchor.bottom + bounds.height + 8 <= innerHeight
     ? anchor.bottom + 4 : anchor.top - bounds.height - 4)}px`;
+}
+
+/**
+ * Shared plugin-view wiring for the slash menus: a floating panel that follows
+ * the caret, dismisses on outside interaction and tears its listeners back down.
+ */
+export function slashMenuView(
+  view: EditorView,
+  menu: HTMLElement,
+  dismiss: () => void,
+  render: (panel: FloatingPanel) => void,
+) {
+  const panel = new FloatingPanel(menu, 2, dismiss, restore => { if (restore) view.focus(); });
+  document.body.append(menu);
+  const update = () => render(panel);
+  const dismissOutside = (event: Event) => {
+    if (event.target instanceof Node && menu.contains(event.target)) return;
+    dismiss();
+  };
+  document.addEventListener("mousedown", dismissOutside);
+  document.addEventListener("scroll", update, true);
+  window.addEventListener("resize", update);
+  return {
+    panel,
+    update,
+    // The caret menu only makes sense while the editor or the menu holds focus.
+    hidden: () => !view.hasFocus() && !menu.contains(document.activeElement),
+    position: () => positionMenu(menu, view.coordsAtPos(view.state.selection.from)),
+    destroy() {
+      panel.destroy();
+      document.removeEventListener("mousedown", dismissOutside);
+      document.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    },
+  };
 }

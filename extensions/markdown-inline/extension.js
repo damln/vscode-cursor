@@ -9,6 +9,7 @@ const { findTextImprover, runTextImprover } = require("./text-improver");
 const { cleanupMarkdown } = require("./markdown-model");
 const {
   documentPayload,
+  errorMessage,
   parseEditorMessage,
   DocumentQueue,
   applyDocumentRequest
@@ -64,6 +65,20 @@ function wholeDocumentRange(document) {
   return new vscode.Range(new vscode.Position(0, 0), lastLine.rangeIncludingLineBreak.end);
 }
 
+function replaceDocument(document, text) {
+  const edit = new vscode.WorkspaceEdit();
+  edit.replace(document.uri, wholeDocumentRange(document), text);
+  return vscode.workspace.applyEdit(edit);
+}
+
+const activePanel = panels => [...panels].find(panel => panel.active);
+
+const panelsFor = (panels, panelDocuments, key) =>
+  [...panels].filter(panel => panelDocuments.get(panel)?.uri.toString() === key);
+
+const broadcast = (panels, message) =>
+  Promise.all([...panels].map(panel => panel.webview.postMessage(message)));
+
 class MarkdownInlineProvider {
   constructor(context) {
     this.context = context;
@@ -92,9 +107,7 @@ class MarkdownInlineProvider {
     if (!preference) return;
     this.readingPreferences = {...this.readingPreferences, [key]: preference.value};
     await this.context.globalState.update(READING_STATE_KEY, this.readingPreferences);
-    await Promise.all([...this.panels].map(panel => panel.webview.postMessage({
-      type: "readingPreferences", ...this.readingPreferences,
-    })));
+    await broadcast(this.panels, { type: "readingPreferences", ...this.readingPreferences });
   }
 
   async setTheme(theme) {
@@ -102,20 +115,15 @@ class MarkdownInlineProvider {
     theme = findTheme(theme).id;
     this.theme = theme;
     await this.context.globalState.update(THEME_STATE_KEY, theme);
-    await Promise.all(
-      [...this.panels].map(panel =>
-        panel.webview.postMessage({ type: "theme", theme })
-      )
-    );
+    await broadcast(this.panels, { type: "theme", theme });
   }
 
   runFormatCommand(command) {
-    const panel = [...this.panels].find(candidate => candidate.active);
-    return panel?.webview.postMessage({ type: "command", command });
+    return activePanel(this.panels)?.webview.postMessage({ type: "command", command });
   }
 
   runJumpCommand(mode) {
-    const panel = [...this.panels].find(candidate => candidate.active);
+    const panel = activePanel(this.panels);
     const document = panel && this.panelDocuments.get(panel);
     if (!panel || !document) return undefined;
     const jump = vscode.workspace.getConfiguration("jump", document.uri);
@@ -174,11 +182,7 @@ class MarkdownInlineProvider {
       if (answer !== "Restore draft") { await panel.webview.postMessage(result("error", "Restoration cancelled. Your draft is still retained.")); return false; }
       if (message.version !== document.version) { await panel.webview.postMessage(result("conflict", "The file changed. Compare the latest file before restoring.")); return false; }
       await this.backupRecovery(document, message.text);
-      const applied = await applyDocumentRequest(document, message, async text => {
-        const edit = new vscode.WorkspaceEdit();
-        edit.replace(document.uri, wholeDocumentRange(document), text);
-        return vscode.workspace.applyEdit(edit);
-      });
+      const applied = await applyDocumentRequest(document, message, text => replaceDocument(document, text));
       await panel.webview.postMessage(applied);
       if (applied.status === "applied") {
         await panel.webview.postMessage({type: "draftRestored"});
@@ -197,9 +201,7 @@ class MarkdownInlineProvider {
     const key = document.uri.toString();
     const message = { type: "textImprover", available: Boolean(this.textImprover(document)),
       running: this.improvements.has(key), error };
-    await Promise.all([...this.panels].filter(panel =>
-      this.panelDocuments.get(panel)?.uri.toString() === key
-    ).map(panel => panel.webview.postMessage(message)));
+    await broadcast(panelsFor(this.panels, this.panelDocuments, key), message);
   }
 
   async cleanup(document, queue) {
@@ -211,13 +213,11 @@ class MarkdownInlineProvider {
         const original = document.getText();
         const text = cleanupMarkdown(original);
         if (text === original) return;
-        const edit = new vscode.WorkspaceEdit();
-        edit.replace(document.uri, wholeDocumentRange(document), text);
-        if (!await vscode.workspace.applyEdit(edit)) throw new Error("VS Code rejected the cleanup.");
+        if (!await replaceDocument(document, text)) throw new Error("VS Code rejected the cleanup.");
       });
       if (!await document.save()) throw new Error("Cleaned text is in the editor but could not be saved.");
     } catch (error) {
-      void vscode.window.showErrorMessage(`Cleanup: ${error instanceof Error ? error.message : String(error)}`);
+      void vscode.window.showErrorMessage(`Cleanup: ${errorMessage(error)}`);
     }
   }
 
@@ -244,13 +244,11 @@ class MarkdownInlineProvider {
           throw new Error("The file changed during text improvement. Run it again on the latest text.");
         }
         if (text === original) return;
-        const edit = new vscode.WorkspaceEdit();
-        edit.replace(document.uri, wholeDocumentRange(document), text);
-        if (!await vscode.workspace.applyEdit(edit)) throw new Error("VS Code rejected the improved text.");
+        if (!await replaceDocument(document, text)) throw new Error("VS Code rejected the improved text.");
       });
       if (!await document.save()) throw new Error("Improved text is in the editor but could not be saved.");
     } catch (error) {
-      failure = error instanceof Error ? error.message : String(error);
+      failure = errorMessage(error);
     } finally {
       this.improvements.delete(key);
       await this.sendImprovementState(document, failure);
@@ -274,7 +272,7 @@ class MarkdownInlineProvider {
       await vscode.workspace.fs.stat(target);
       if (/\.md$/i.test(target.path)) {
         const key = target.toString();
-        const existing = [...this.panels].find(candidate => this.panelDocuments.get(candidate)?.uri.toString() === key);
+        const [existing] = panelsFor(this.panels, this.panelDocuments, key);
         if (link.fragment && !existing) this.pendingAnchors.set(key, link.fragment);
         await vscode.commands.executeCommand("vscode.openWith", target, VIEW_TYPE);
         if (link.fragment && existing) await existing.webview.postMessage({ type: "navigateHeading", fragment: link.fragment });
@@ -383,7 +381,7 @@ class MarkdownInlineProvider {
           await panel.webview.postMessage({type: "imageResourceResult", requestId: message.requestId, uri});
         } catch (error) {
           await panel.webview.postMessage({type: "imageResourceResult", requestId: message.requestId,
-            error: error instanceof Error ? error.message : String(error)});
+            error: errorMessage(error)});
         }
         return;
       }
@@ -504,11 +502,7 @@ class MarkdownInlineProvider {
         await vscode.commands.executeCommand("vscode.diff", document.uri, draft.uri, "File ↔ retained Markdown draft");
         return;
       }
-      const result = await applyDocumentRequest(document, message, async text => {
-        const edit = new vscode.WorkspaceEdit();
-        edit.replace(document.uri, wholeDocumentRange(document), text);
-        return vscode.workspace.applyEdit(edit);
-      });
+      const result = await applyDocumentRequest(document, message, text => replaceDocument(document, text));
       await panel.webview.postMessage(result);
     }).catch(error => panel.webview.postMessage({ type: "operationError", error: String(error) }));
     });
@@ -604,7 +598,7 @@ function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand("damlnMarkdownInline.newMarkdown", () => createNewMarkdown(vscode)),
     vscode.commands.registerCommand("damlnMarkdownInline.correctText", () => {
-      const panel = [...provider.panels].find(candidate => candidate.active);
+      const panel = activePanel(provider.panels);
       const document = panel && provider.panelDocuments.get(panel);
       if (!document) return;
       return provider.improveText(document, provider.documentQueues.get(document.uri.toString()));
@@ -614,18 +608,12 @@ function activate(context) {
         provider.sourcePositions.set(event.textEditor.document.uri.toString(), event.textEditor.document.offsetAt(event.selections[0].active));
       }
     }),
-    vscode.commands.registerCommand("damlnMarkdownInline.pastePlainText", () => {
-      const panel = [...provider.panels].find(candidate => candidate.active);
-      return panel?.webview.postMessage({type: "requestPlainPaste"});
-    }),
-    ...["undo", "redo"].map(action => vscode.commands.registerCommand(`damlnMarkdownInline.${action}`, () => {
-      const panel = [...provider.panels].find(candidate => candidate.active);
-      return panel?.webview.postMessage({ type: "history", action });
-    })),
-    vscode.commands.registerCommand("damlnMarkdownInline.save", () => {
-      const panel = [...provider.panels].find(candidate => candidate.active);
-      return panel?.webview.postMessage({ type: "flush" });
-    }),
+    vscode.commands.registerCommand("damlnMarkdownInline.pastePlainText", () =>
+      activePanel(provider.panels)?.webview.postMessage({type: "requestPlainPaste"})),
+    ...["undo", "redo"].map(action => vscode.commands.registerCommand(`damlnMarkdownInline.${action}`, () =>
+      activePanel(provider.panels)?.webview.postMessage({ type: "history", action }))),
+    vscode.commands.registerCommand("damlnMarkdownInline.save", () =>
+      activePanel(provider.panels)?.webview.postMessage({ type: "flush" })),
     vscode.workspace.onWillSaveTextDocument(event => {
       event.waitUntil(provider.flushDocument(event.document).catch(error => {
         void vscode.window.showWarningMessage(`The Markdown draft has NOT been saved. ${String(error)}`);

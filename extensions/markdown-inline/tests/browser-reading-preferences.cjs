@@ -1,28 +1,15 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
-const { createRequire } = require('node:module');
 const assert = require('node:assert/strict');
-const root = process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname, '..');
-assert.ok(process.env.MARKDOWN_INLINE_TEST_ROOT, 'Set a task output directory');
-const localRequire = createRequire(path.join(root, 'extension.js'));
-const mod = { exports: {} };
-vm.runInNewContext(fs.readFileSync(path.join(root, 'extension.js'), 'utf8'), {
-  module: mod, require: id => id === 'vscode'
-    ? { Uri: { joinPath: (base, ...parts) => path.join(base, ...parts) } } : localRequire(id),
-});
-const output = path.join(process.env.MARKDOWN_INLINE_TEST_ROOT, 'reading-preferences.html');
-fs.mkdirSync(path.dirname(output), { recursive: true });
-fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call(
-  { context: { extensionUri: root } }, { cspSource: 'file:', asWebviewUri: value => 'file://' + value }, root, 'dark'
-).replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/, ''));
+const { loadExtension, root, webviewPage } = require('./browser-webview.cjs');
+const { output, html } = webviewPage('reading-preferences');
+const extension = loadExtension();
 
 (async () => {
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--allow-file-access-from-files']});
  const storage=new Map(), edits=[], errors=[];
  const context={workspaceState:{get:()=>({})},globalState:{get:k=>storage.get(k),update:async(k,v)=>storage.set(k,structuredClone(v))}};
- let host=new mod.exports.MarkdownInlineProvider(context);
+ let host=new extension.MarkdownInlineProvider(context);
  const open=async options=>{
   const page=await browser.newPage({viewport:{width:1050,height:700},...options});
   page.on('pageerror',e=>errors.push(e.stack));
@@ -88,7 +75,7 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
   await second.keyboard.press('Escape');
   assert.equal(await second.locator('#font-size').evaluate(el=>el===document.activeElement),true);
   await second.close();await page.close();
-  host=new mod.exports.MarkdownInlineProvider(context);
+  host=new extension.MarkdownInlineProvider(context);
   const reopened=await open();
   assert.equal(await reopened.locator('#font-size').innerText(),'19px');
   assert.equal(await reopened.locator('html').getAttribute('data-content-width'),'large');
