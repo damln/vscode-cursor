@@ -152,7 +152,7 @@ for (const sample of fixtures.yaml) {
     const raw = 'editable_title: "Before" # keep\n' + sample + '\n';
     const model = new Frontmatter(raw);
     assert.equal(model.error, '');
-    const next = model.editString(['editable_title'], 'After');
+    const next = model.editValue(['editable_title'], '"After"');
     assert.equal(next, raw.replace('"Before"', '"After"'));
     const beforeValue = parseDocument(raw).toJS();
     beforeValue.editable_title = 'After';
@@ -162,14 +162,14 @@ for (const sample of fixtures.yaml) {
 
 test('literal dotted keys remain distinct from nested paths', () => {
   const model = new Frontmatter('a.b: literal\na:\n  b: nested\n');
-  assert.equal(model.editString(['a.b'], 'changed'), 'a.b: "changed"\na:\n  b: nested\n');
-  assert.equal(model.editString(['a', 'b'], 'changed'), 'a.b: literal\na:\n  b: "changed"\n');
+  assert.equal(model.editValue(['a.b'], '"changed"'), 'a.b: "changed"\na:\n  b: nested\n');
+  assert.equal(model.editValue(['a', 'b'], '"changed"'), 'a.b: literal\na:\n  b: "changed"\n');
 });
 
 test('adding a visual field preserves all existing YAML bytes and string values', () => {
   for (const raw of ['', '# Keep\n', 'name: "Example" # keep\ncount: 3\n', 'name: Example', 'name: Example\r\n']) {
     for (const value of ['', 'false', '0123', 'null', 'first\nsecond\n', '---\n# not a header']) {
-      const next = new Frontmatter(raw).addString('author', value);
+      const next = new Frontmatter(raw).addValue('author', JSON.stringify(value));
       assert.ok(next.startsWith(raw));
       assert.equal(parseDocument(next).get('author'), value);
       assert.equal(new Frontmatter(next).error, '');
@@ -180,8 +180,8 @@ test('adding a visual field preserves all existing YAML bytes and string values'
 
 test('visual additions handle flow maps, empty maps and unusual literal keys', () => {
   for (const raw of ['{}\n', '{ name: Example } # keep\n', '{ name: Example, }\n']) {
-    for (const key of ['true', '__proto__', 'a.b', 'name: other', 'key with spaces', 'quote"key']) {
-      const next = new Frontmatter(raw).addString(key, 'text');
+    for (const key of ['true', '__proto__', 'name: other', 'key with spaces', 'quote"key']) {
+      const next = new Frontmatter(raw).addValue(key, 'text');
       assert.equal(parseDocument(next).get(key), 'text');
       assert.equal(parseDocument(next).get('name'), parseDocument(raw).get('name'));
       assert.equal(new Frontmatter(next).error, '');
@@ -190,15 +190,76 @@ test('visual additions handle flow maps, empty maps and unusual literal keys', (
   }
 });
 
+test('visual values use authored YAML syntax without forced quotes', () => {
+  for (const [value, expected] of [
+    ['[hello]', ['hello']], ['false', false], ['42', 42], ['null', null],
+    ['hello', 'hello'], ['"[hello]"', '[hello]'], ["'hello'", 'hello'],
+  ] as const) {
+    for (const raw of ['', 'foo:\n  existing: keep\n', '{foo: {existing: keep}}']) {
+      const next = new Frontmatter(raw).addValue('foo.bar', value);
+      assert.deepEqual(parseDocument(next).toJS().foo.bar, expected);
+      assert.equal(new Frontmatter(next).fields().find(field => field.label === 'foo.bar')?.value, value);
+      const edited = new Frontmatter(next).editValue(['foo', 'bar'], '[hello, world]');
+      assert.deepEqual(parseDocument(edited).toJS().foo.bar, ['hello', 'world']);
+      assert.equal(parseDocument(edited).toJS().foo.existing, parseDocument(next).toJS().foo.existing);
+    }
+  }
+  assert.equal(new Frontmatter('').addValue('foo.bar', '[hello]'), 'foo:\n  bar: [hello]\n');
+});
+
+test('visual YAML editing preserves indentation, comments, and CRLF', () => {
+  const raw = 'foo:\r\n  bar: "old" # keep\r\nother: yes\r\n';
+  assert.equal(new Frontmatter(raw).editValue(['foo', 'bar'], '[hello]'), raw.replace('"old"', '[hello]'));
+  const block = new Frontmatter('foo:\n  bar: old\nother: keep\n').editValue(['foo', 'bar'], '|\n  hello\n  world');
+  assert.equal(block, 'foo:\n  bar: |\n    hello\n    world\nother: keep\n');
+  assert.equal(new Frontmatter(block).fields().find(field => field.label === 'foo.bar')?.value, '|\n  hello\n  world');
+  assert.throws(() => new Frontmatter(raw).editValue(['foo', 'bar'], '[unfinished'));
+});
+
 test('visual field creation rejects empty names, duplicates and malformed headers', () => {
-  assert.throws(() => new Frontmatter('').addString('  ', 'value'), /field name/);
-  assert.throws(() => new Frontmatter('name: Before\n').addString(' name ', 'After'), /already exists/);
-  assert.throws(() => new Frontmatter('bad: [\n').addString('name', 'After'));
-  assert.throws(() => new Frontmatter('- item\n').addString('name', 'After'), /mapping/);
+  assert.throws(() => new Frontmatter('').addValue('  ', 'value'), /field name/);
+  assert.throws(() => new Frontmatter('name: Before\n').addValue(' name ', 'After'), /already exists/);
+  assert.throws(() => new Frontmatter('bad: [\n').addValue('name', 'After'));
+  assert.throws(() => new Frontmatter('- item\n').addValue('name', 'After'), /mapping/);
   const raw = 'metadata:\n  category: Utility\n';
-  const next = new Frontmatter(raw).addString('metadata.category', 'literal');
-  assert.equal(parseDocument(next).getIn(['metadata', 'category']), 'Utility');
-  assert.equal(parseDocument(next).get('metadata.category'), 'literal');
+  assert.throws(() => new Frontmatter(raw).addValue('metadata.category', 'other'), /already exists/);
+});
+
+test('dotted additions create nested fields and preserve existing source bytes', () => {
+  for (const eol of ['\n', '\r\n']) {
+    const raw = ['name: Example # keep', 'metadata:', '  last_reviewed: "2026-09-18"', 'after: true', ''].join(eol);
+    const next = new Frontmatter(raw).addValue('metadata.priority', 'high');
+    assert.equal(next, raw.replace('after: true', `  priority: high${eol}after: true`));
+    assert.equal(parseDocument(next).getIn(['metadata', 'priority']), 'high');
+    assert.equal(parseDocument(next).has('metadata.priority'), false);
+    assert.equal(new Frontmatter(next).fields().find(field => field.label === 'metadata.priority')?.editable, true);
+  }
+});
+
+test('dotted additions create missing levels and support existing block and flow maps', () => {
+  for (const raw of ['', '# comment\n', '{}', 'metadata: {}\n', 'metadata:\n  category: Utility\n', '{metadata: {category: Utility, }, name: Example}', 'metadata:\n    category: Utility\n# keep\nname: Example\n']) {
+    const model = new Frontmatter(raw);
+    const next = model.addValue('metadata.review.tags', '"false"');
+    assert.equal(new Frontmatter(next).error, '', next);
+    assert.equal(parseDocument(next).getIn(['metadata', 'review', 'tags']), 'false');
+    assert.equal(parseDocument(next).getIn(['metadata', 'category']), model.document.getIn(['metadata', 'category']));
+    const changed = new Frontmatter(next).editValue(['metadata', 'review', 'tags'], 'updated');
+    assert.equal(parseDocument(changed).getIn(['metadata', 'review', 'tags']), 'updated');
+    assert.equal(new Frontmatter(changed).fields().find(field => field.label === 'metadata.review.tags')?.value, 'updated');
+  }
+});
+
+test('nested additions reject invalid paths and occupied parents without overwriting data', () => {
+  for (const name of ['.metadata', 'metadata.', 'metadata..tags', 'metadata. .tags']) {
+    assert.throws(() => new Frontmatter('').addValue(name, 'value'), /nonempty parts/);
+  }
+  for (const raw of ['metadata: text', 'metadata: null', 'metadata: [one]', 'metadata: &meta {}', 'base: &meta {}\nmetadata: *meta']) {
+    assert.throws(() => new Frontmatter(raw).addValue('metadata.tags', 'value'), /mapping/);
+  }
+  const raw = 'metadata.priority: literal\nmetadata:\n  category: Utility\n';
+  const next = new Frontmatter(raw).addValue('metadata.priority', 'nested');
+  assert.equal(parseDocument(next).get('metadata.priority'), 'literal');
+  assert.equal(parseDocument(next).getIn(['metadata', 'priority']), 'nested');
 });
 
 for (const [raw, path, expected] of [
@@ -244,27 +305,27 @@ test('invalid YAML is kept verbatim, with a positioned error and no structured e
   assert.equal(model.raw, raw);
   assert.match(model.error, /line 2, column 1/);
   assert.deepEqual(model.fields(), []);
-  assert.throws(() => model.editString(['tags'], 'oops'));
+  assert.throws(() => model.editValue(['tags'], 'oops'));
 });
 
 test('block string replacement does not join or damage the next property', () => {
   const raw = 'text: |\n  Old\n  text\nnext: "false"\n';
-  const next = new Frontmatter(raw).editString(['text'], 'New\ntext\n');
+  const next = new Frontmatter(raw).editValue(['text'], JSON.stringify('New\ntext\n'));
   assert.equal(next, 'text: "New\\ntext\\n"\nnext: "false"\n');
   assert.equal(parseDocument(next).toJS().next, 'false');
 });
 
-test('anchors and non-string types require explicit source editing', () => {
+test('anchors stay protected while YAML scalars and lists are editable', () => {
   const model = new Frontmatter('a: &a anchored\nb: *a\nc: false\nd: null\ne: []\n');
-  for (const field of model.fields()) assert.equal(field.editable, false);
-  assert.throws(() => model.editString(['c'], 'false'));
+  assert.deepEqual(model.fields().map(field => field.editable), [false, false, true, true, true]);
+  assert.deepEqual(parseDocument(model.editValue(['c'], '[hello]')).toJS().c, ['hello']);
 });
 
 test('metadata edits preserve BOM, CRLF, comments and delimiter whitespace', () => {
   const prefix = '\ufeff--- \t\r\ntitle: "Before" # comment\r\n--- \t\r\n';
   const envelope = metadataEnvelope(prefix, '\r\n');
   assert.equal(envelope.join(envelope.raw), prefix);
-  assert.equal(envelope.join(new Frontmatter(envelope.raw).editString(['title'], 'After')),
+  assert.equal(envelope.join(new Frontmatter(envelope.raw).editValue(['title'], '"After"')),
     prefix.replace('"Before"', '"After"'));
 });
 

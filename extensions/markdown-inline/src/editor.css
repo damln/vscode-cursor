@@ -361,6 +361,7 @@ main { min-width: 0; min-height: 0; overflow: auto; }
 .metadata-confirm .metadata-confirm-remove { color: var(--destructive); border-color: color-mix(in srgb, var(--destructive) 40%, var(--border)); }
 .metadata-confirm .metadata-confirm-remove:hover { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 10%, transparent); }
 .metadata-new-error { grid-column: 1 / -1; margin: 0; font: 12px/20px var(--vscode-font-family, system-ui); color: var(--destructive); }
+.metadata-new-help { grid-column: 1 / -1; margin: 0; font: 12px/20px var(--vscode-font-family, system-ui); color: var(--text-secondary); }
 @media (max-width: 620px) {
   .frontmatter-row { grid-template-columns: minmax(0, 1fr) 74px; gap: 0 8px; }
   .frontmatter-key { grid-column: 1; }
