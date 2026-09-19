@@ -139,7 +139,7 @@ export class FrontmatterEditor {
         input.className = 'frontmatter-value'; input.value = field.value;
         input.rows = Math.min(8, Math.max(1, field.value.split('\n').length));
         input.readOnly = !field.editable;
-        input.title = field.editable ? 'String value' : `${field.type}: edit in YAML source`;
+        input.title = field.editable ? 'YAML value: quotes are optional and control the value type' : `${field.type}: edit in YAML source`;
         input.setAttribute('aria-label', `${field.label} (${field.type})`);
         const value = document.createElement('div'); value.className = 'frontmatter-value-wrap';
         const colors = document.createElement('div'); colors.className = 'metadata-field-colors';
@@ -147,7 +147,7 @@ export class FrontmatterEditor {
         updateColors(); value.append(colors, input);
         input.addEventListener('input', () => {
           updateColors(); resize(input);
-          try { this.publish(this.model.editString(field.path, input.value)); }
+          try { this.publish(this.model.editValue(field.path, input.value)); }
           catch (reason) { this.error.hidden = false; this.error.textContent = String(reason); }
         });
         const removeField = document.createElement('button');
@@ -221,14 +221,16 @@ export class FrontmatterEditor {
     form.setAttribute('aria-label', 'Add metadata field');
     const nameLabel = document.createElement('label'); nameLabel.textContent = 'Field name'; nameLabel.htmlFor = 'metadata-new-name';
     const name = document.createElement('input'); name.id = nameLabel.htmlFor; name.value = draft.name;
-    name.placeholder = 'e.g. author'; name.autocomplete = 'off'; name.spellcheck = false; name.required = true;
+    name.placeholder = 'e.g. author or metadata.tags'; name.autocomplete = 'off'; name.spellcheck = false; name.required = true;
+    const help = document.createElement('p'); help.id = 'metadata-new-help'; help.className = 'metadata-new-help';
+    help.textContent = 'Use dots for nested fields: metadata.tags adds tags inside metadata. Missing levels are created automatically. Values use YAML syntax: [hello] is a list; "[hello]" is text.';
     const valueLabel = document.createElement('label'); valueLabel.textContent = 'Value'; valueLabel.htmlFor = 'metadata-new-value';
     const value = document.createElement('textarea'); value.id = valueLabel.htmlFor; value.value = draft.value; value.rows = 2;
     const actions = document.createElement('div'); actions.className = 'metadata-new-actions';
     const submit = document.createElement('button'); submit.type = 'submit'; submit.textContent = 'Add'; submit.disabled = !draft.name.trim();
     const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = 'Cancel';
     const error = document.createElement('p'); error.className = 'metadata-new-error'; error.id = 'metadata-new-error'; error.hidden = true;
-    error.setAttribute('role', 'alert'); name.setAttribute('aria-describedby', error.id);
+    error.setAttribute('role', 'alert'); name.setAttribute('aria-describedby', `${help.id} ${error.id}`);
     name.addEventListener('input', () => {
       draft.name = name.value; submit.disabled = !name.value.trim(); error.hidden = true; name.removeAttribute('aria-invalid');
     });
@@ -246,17 +248,19 @@ export class FrontmatterEditor {
     form.addEventListener('submit', event => {
       event.preventDefault();
       try {
-        const source = this.model.addString(name.value, value.value);
+        const source = this.model.addValue(name.value, value.value);
         this.newField = null; this.publish(source); this.render();
         const inputs = this.fields.querySelectorAll<HTMLTextAreaElement>('.frontmatter-value');
-        inputs[inputs.length - 1]?.focus();
+        const path = name.value.trim().split('.').map(part => part.trim());
+        const index = this.model.fields().findIndex(field => JSON.stringify(field.path) === JSON.stringify(path));
+        inputs[index]?.focus();
       } catch (reason) {
         error.textContent = reason instanceof Error ? reason.message : String(reason); error.hidden = false;
         name.setAttribute('aria-invalid', 'true'); name.focus();
       }
     });
     actions.append(submit, cancel);
-    form.append(nameLabel, name, valueLabel, value, actions, error);
+    form.append(nameLabel, name, help, valueLabel, value, actions, error);
     this.fields.append(form);
   }
 }

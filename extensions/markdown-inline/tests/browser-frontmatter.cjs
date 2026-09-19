@@ -107,7 +107,7 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'frontmatter.html')
         const value = page.getByRole('textbox', {name: 'Value', exact: true});
         const add = page.getByRole('button', {name: 'Add', exact: true});
         assert.equal(await add.isDisabled(), true);
-        await fieldName.fill('author'); await value.fill('false');
+        await fieldName.fill('author'); await value.fill('"false"');
         await page.locator('#frontmatter-toggle').click(); await page.locator('#frontmatter-toggle').click();
         assert.equal(await fieldName.inputValue(), 'author', 'collapse retains the draft');
         await value.press('Escape');
@@ -118,7 +118,7 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'frontmatter.html')
           assert.ok((await page.locator('.metadata-new-error').textContent()).includes('already exists'));
           assert.equal(edits.length, priorEdits, 'duplicate field does not overwrite data');
         }
-        await fieldName.fill('author'); await value.fill('false');
+        await fieldName.fill('author'); await value.fill('"false"');
         for (const theme of ['light', 'dark']) {
           await page.evaluate(value => document.documentElement.dataset.inlineTheme = value, theme);
           await page.setViewportSize({width: 1000, height: 720});
@@ -133,8 +133,22 @@ const output=path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'frontmatter.html')
         await page.keyboard.press('Control+s');
         await flushEditor(page);
         assert.equal(text, source, 'adding one field retains all existing YAML and body bytes');
-        assert.equal(await page.getByRole('textbox', {name: 'author (string)', exact: true}).inputValue(), 'false');
+        assert.equal(await page.getByRole('textbox', {name: 'author (string)', exact: true}).inputValue(), '"false"');
         metadata = true;
+        if (!creating) {
+          await page.getByRole('button', {name: 'Add field', exact: true}).click();
+          assert.ok((await page.locator('#metadata-new-help').textContent()).includes('metadata.tags'));
+          await fieldName.fill('metadata.review.tags'); await value.fill('[hello]');
+          await add.click();
+          await flushEditor(page);
+          source = source.replace('author: "false"', '  review:\n    tags: [hello]\nauthor: "false"');
+          assert.equal(text, source, 'dotted field creates nested YAML and preserves siblings');
+          assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'metadata.review.tags (YAML)');
+          await page.getByRole('textbox', {name: 'metadata.review.tags (YAML)', exact: true}).fill('[hello, world]');
+          await flushEditor(page);
+          source = source.replace('tags: [hello]', 'tags: [hello, world]');
+          assert.equal(text, source, 'new nested field remains editable');
+        }
       }
       if (name === 'protected anchor') {
         await page.locator('#frontmatter-toggle').click();

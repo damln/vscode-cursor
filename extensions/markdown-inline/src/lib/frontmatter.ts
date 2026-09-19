@@ -1,5 +1,5 @@
 import { editableFrontmatter } from "../../markdown-model";
-import { CST, isMap, isNode, isScalar, parseDocument, stringify, visit, type Node } from "yaml";
+import { CST, isAlias, isMap, isNode, isScalar, parseDocument, stringify, visit, type Node } from "yaml";
 
 export interface MetadataField {
   path: string[];
@@ -29,9 +29,8 @@ export class Frontmatter {
           else {
             const scalar = isScalar(pair.value) ? pair.value : null;
             fields.push({ path: next, label: next.map(key => key.includes('.') ? JSON.stringify(key) : key).join('.'),
-              value: scalar && typeof scalar.value === 'string' ? scalar.value :
-                isNode(pair.value) && pair.value.range ? this.raw.slice(pair.value.range[0], pair.value.range[1]).trimEnd() : 'null',
-              editable: Boolean(scalar && typeof scalar.value === 'string' && !scalar.anchor && !scalar.tag),
+              value: isNode(pair.value) && pair.value.range ? this.valueSource(pair.value) : 'null',
+              editable: Boolean(isNode(pair.value) && !isAlias(pair.value) && !pair.value.anchor && !pair.value.tag && pair.value.range),
               type: scalar ? (scalar.value === null ? 'null' : typeof scalar.value) : 'YAML',
             });
           }
@@ -41,46 +40,81 @@ export class Frontmatter {
     visit(this.document.contents, []);
     return fields;
   }
-  editString(path: string[], value: string): string {
+  private valueSource(node: Node): string {
+    const start = node.range![0];
+    const line = this.raw.slice(this.raw.lastIndexOf('\n', start - 1) + 1, start);
+    const indent = /^ */.exec(line)![0].length;
+    return this.raw.slice(start, node.range![1]).trimEnd().split(/\r?\n/)
+      .map((line, index) => index ? line.slice(Math.min(indent, /^ */.exec(line)![0].length)) : line).join('\n');
+  }
+  editValue(path: string[], value: string): string {
     if (this.error) throw new Error(this.error);
     const node = this.document.getIn(path, true);
-    if (!isScalar(node) || typeof node.value !== 'string' || node.anchor || node.tag || !node.range) {
-      throw new Error('Edit this value in YAML source to preserve its type.');
+    if (!isNode(node) || isAlias(node) || node.anchor || node.tag || !node.range) {
+      throw new Error('Edit this value in YAML source.');
     }
     const [start, end] = node.range;
     const original = this.raw.slice(start, end);
     const eol = this.raw.includes('\r\n') ? '\r\n' : '\n';
-    return this.raw.slice(0, start) + JSON.stringify(value) +
-      (original.endsWith('\n') ? eol : '') + this.raw.slice(end);
+    const line = this.raw.slice(this.raw.lastIndexOf('\n', start - 1) + 1, start);
+    const indent = /^ */.exec(line)![0];
+    const replacement = value.replace(/\r?\n/g, eol + indent);
+    const next = this.raw.slice(0, start) + replacement +
+      (original.endsWith('\n') && !replacement.endsWith(eol) ? eol : '') + this.raw.slice(end);
+    const parsed = new Frontmatter(next);
+    if (parsed.error) throw new Error(parsed.error);
+    return next;
   }
-  addString(name: string, value: string): string {
+  addValue(name: string, value: string): string {
     if (this.error) throw new Error(this.error);
-    const key = name.trim();
-    if (!key) throw new Error('Enter a field name.');
-    const root = this.document.contents;
-    if (root !== null && !isMap(root)) throw new Error('Use a YAML mapping before adding fields.');
-    if (isMap(root) && root.has(key)) throw new Error(`A field named “${key}” already exists.`);
+    const path = name.trim().split('.').map(part => part.trim());
+    if (path.some(part => !part)) throw new Error('Enter a field name with nonempty parts, for example metadata.tags.');
+    let parent: Node | null = this.document.contents;
+    if (parent !== null && !isMap(parent)) throw new Error('Use a YAML mapping before adding fields.');
+    let depth = 0;
+    while (isMap(parent) && parent.has(path[depth])) {
+      if (depth === path.length - 1) throw new Error(`A field named “${name.trim()}” already exists.`);
+      const child: unknown = parent.get(path[depth], true);
+      if (!isMap(child) || child.anchor || child.tag) {
+        throw new Error(`“${path.slice(0, depth + 1).join('.')}” is not an editable mapping. Edit it in YAML before adding a nested field.`);
+      }
+      parent = child;
+      depth++;
+    }
+    const key = path[depth];
+    let nested: string | Map<string, unknown> = value;
+    let flowValue = JSON.stringify(value);
+    for (let index = path.length - 1; index > depth; index--) {
+      nested = new Map([[path[index], nested]]);
+      flowValue = `{${JSON.stringify(path[index])}: ${flowValue}}`;
+    }
     const eol = this.raw.includes('\r\n') ? '\r\n' : '\n';
     let next: string;
-    if (isMap(root) && root.srcToken?.type === 'flow-collection') {
-      const token = root.srcToken;
+    if (isMap(parent) && parent.srcToken?.type === 'flow-collection') {
+      const token = parent.srcToken;
       const closing = token.end.find(item => item.type === 'flow-map-end');
       if (!closing) throw new Error('Close the YAML mapping before adding fields.');
       const last = token.items.at(-1);
       const trailingComma = last && !last.key && last.start.some(item => item.type === 'comma');
-      const comma = root.items.length && !trailingComma ? ',' : '';
-      const pair = `${comma} ${JSON.stringify(key)}: ${JSON.stringify(value)}`;
+      const comma = parent.items.length && !trailingComma ? ',' : '';
+      const pair = `${comma} ${JSON.stringify(key)}: ${flowValue}`;
       next = this.raw.slice(0, closing.offset) + pair + this.raw.slice(closing.offset);
     } else {
-      const pair = stringify(new Map([[key, value]]), {lineWidth: 0}).replace(/\r?\n/g, eol);
-      next = this.raw + (this.raw && !this.raw.endsWith('\n') ? eol : '') + pair;
+      const token = isMap(parent) ? parent.srcToken : undefined;
+      if (depth && token?.type !== 'block-map') throw new Error('Edit this mapping in YAML to preserve its layout.');
+      const offset = depth && token ? token.offset + CST.stringify(token).length : this.raw.length;
+      const indent = depth && token?.type === 'block-map' ? token.indent : 0;
+      const pair = stringify(new Map([[key, nested]]), {lineWidth: 0}).replace(/\n$/, '')
+        .split('\n').map(line => ' '.repeat(indent) + line).join(eol) + eol;
+      const before = this.raw.slice(0, offset);
+      next = before + (before && !before.endsWith('\n') ? eol : '') + pair + this.raw.slice(offset);
     }
     const parsed = new Frontmatter(next);
-    const added = parsed.document.get(key, true);
+    const added = parsed.document.getIn(path, true);
     if (parsed.error || !isScalar(added) || added.value !== value) {
       throw new Error('Edit this header in YAML to preserve its structure.');
     }
-    return next;
+    return new Frontmatter(next).editValue(path, value);
   }
   removeField(path: string[]): string {
     if (this.error) throw new Error(this.error);
