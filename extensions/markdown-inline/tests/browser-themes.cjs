@@ -1,22 +1,9 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
-const { createRequire } = require('node:module');
 const assert = require('node:assert/strict');
-const root = process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname, '..');
-assert.ok(process.env.MARKDOWN_INLINE_TEST_ROOT, 'Set a task output directory');
-const localRequire = createRequire(path.join(root, 'extension.js'));
-const mod = { exports: {} };
-vm.runInNewContext(fs.readFileSync(path.join(root, 'extension.js'), 'utf8'), {
-  module: mod, require: id => id === 'vscode'
-    ? { Uri: { joinPath: (base, ...parts) => path.join(base, ...parts) } } : localRequire(id),
-});
-const output = path.join(process.env.MARKDOWN_INLINE_TEST_ROOT, 'themes.html');
-fs.mkdirSync(path.dirname(output), { recursive: true });
-fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call(
-  { context: { extensionUri: root } }, { cspSource: 'file:', asWebviewUri: value => 'file://' + value }, root, 'dark'
-).replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/, ''));
+const { loadExtension, localRequire, root, webviewPage } = require('./browser-webview.cjs');
+const { output, html } = webviewPage('themes');
+const extension = loadExtension();
 (async () => {
   const {THEMES}=localRequire('./themes');
   const stored=new Map(), notifications=[];
@@ -24,10 +11,10 @@ fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtm
     {webview:{postMessage:async message=>notifications.push(message)}},
     {webview:{postMessage:async message=>notifications.push(message)}},
   ])};
-  await mod.exports.MarkdownInlineProvider.prototype.setTheme.call(host,'midnight');
+  await extension.MarkdownInlineProvider.prototype.setTheme.call(host,'midnight');
   assert.equal(stored.get('damlnMarkdownInline.theme'),'midnight');
   assert.equal(notifications.length,2);
-  await mod.exports.MarkdownInlineProvider.prototype.setTheme.call(host,'<style>');
+  await extension.MarkdownInlineProvider.prototype.setTheme.call(host,'<style>');
   assert.equal(notifications.length,2);
   const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--allow-file-access-from-files']});
   try {

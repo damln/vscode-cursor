@@ -1,30 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
-import json
 import subprocess
 import xml.sax.saxutils
-import zipfile
 from pathlib import Path
 
 from audit_cache import DependencyAuditCache
+from build_extension import ExtensionPackageBuilder, build_to_output
 
 
-class JumpPackageBuilder:
-    TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-
+class JumpPackageBuilder(ExtensionPackageBuilder):
     def __init__(self, root):
-        self.root = Path(root).resolve()
-        self.extension_root = self.root / "extensions/jump"
-        self.package = json.loads((self.extension_root / "package.json").read_text(encoding="utf-8"))
+        super().__init__(Path(root), "jump")
 
-    def archive_name(self):
-        return (
-            f"{self.package['publisher']}.{self.package['name']}-"
-            f"{self.package['version']}.vsix"
-        )
-
-    def compile(self):
+    def prepare(self):
         subprocess.run(
             ["npm", "ci", "--ignore-scripts", "--no-audit"],
             cwd=self.extension_root,
@@ -81,54 +70,33 @@ class JumpPackageBuilder:
 </PackageManifest>
 '''
 
-    def content_types(self):
+    @staticmethod
+    def content_types():
         return '''<?xml version="1.0" encoding="utf-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="gif" ContentType="image/gif"/><Default Extension="js" ContentType="application/javascript"/><Default Extension="json" ContentType="application/json"/><Default Extension="md" ContentType="text/markdown"/><Default Extension="png" ContentType="image/png"/><Default Extension="txt" ContentType="text/plain"/><Default Extension="vsixmanifest" ContentType="text/xml"/></Types>
 '''
 
-    def write_entry(self, archive, name, content):
-        info = zipfile.ZipInfo(name, self.TIMESTAMP)
-        info.compress_type = zipfile.ZIP_DEFLATED
-        info.external_attr = 0o644 << 16
-        archive.writestr(info, content)
-
-    def extension_files(self):
-        files = {
-            "package.json": self.extension_root / "package.json",
-            "README.md": self.extension_root / "README.md",
-            "LICENSE.txt": self.extension_root / "LICENSE",
-        }
+    def package_files(self):
+        files = [
+            (self.extension_root / "package.json", "package.json"),
+            (self.extension_root / "README.md", "README.md"),
+            (self.extension_root / "LICENSE", "LICENSE.txt"),
+        ]
         for path in sorted((self.extension_root / "images").iterdir()):
             if path.is_file():
-                files[path.relative_to(self.extension_root).as_posix()] = path
+                files.append((path, path.relative_to(self.extension_root).as_posix()))
         for path in sorted((self.extension_root / "out").rglob("*.js")):
             if "test" not in path.parts:
-                files[path.relative_to(self.extension_root).as_posix()] = path
+                files.append((path, path.relative_to(self.extension_root).as_posix()))
         return files
-
-    def build(self, destination):
-        self.compile()
-        destination = Path(destination).resolve()
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-            self.write_entry(archive, "extension.vsixmanifest", self.manifest().encode("utf-8"))
-            self.write_entry(archive, "[Content_Types].xml", self.content_types().encode("utf-8"))
-            for relative_path, source in self.extension_files().items():
-                self.write_entry(archive, f"extension/{relative_path}", source.read_bytes())
-        return destination
 
 
 def main():
-    root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Build the Damln Jump extension VSIX.")
     parser.add_argument("--output")
     args = parser.parse_args()
-
-    builder = JumpPackageBuilder(root)
-    destination = Path(args.output) if args.output else root / "dist" / builder.archive_name()
-    output = builder.build(destination)
-    print(f"Built {output}")
-    return 0
+    root = Path(__file__).resolve().parents[1]
+    return build_to_output(JumpPackageBuilder(root), args.output)
 
 
 if __name__ == "__main__":

@@ -1,23 +1,9 @@
-const { flushEditor } = require('./browser-flush.cjs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
-const { createRequire } = require('node:module');
 const assert = require('node:assert/strict');
-const root = process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname, '..');
-assert.ok(process.env.MARKDOWN_INLINE_TEST_ROOT, 'Set a task output directory');
-const localRequire = createRequire(path.join(root, 'extension.js'));
-const mod = { exports: {} };
-vm.runInNewContext(fs.readFileSync(path.join(root, 'extension.js'), 'utf8'), {
-  module: mod, require: id => id === 'vscode'
-    ? { Uri: { joinPath: (base, ...parts) => path.join(base, ...parts) } } : localRequire(id),
-});
-const output = path.join(process.env.MARKDOWN_INLINE_TEST_ROOT, 'table-insert.html');
-fs.mkdirSync(path.dirname(output), { recursive: true });
-fs.writeFileSync(output, mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call(
-  { context: { extensionUri: root } }, { cspSource: 'file:', asWebviewUri: value => 'file://' + value }, root, 'dark'
-).replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/, ''));
+const { flushEditor } = require('./browser-flush.cjs');
+const { webviewPage } = require('./browser-webview.cjs');
+const { output, html } = webviewPage('table-insert');
 (async () => {
   const browser = await chromium.launch({executablePath: process.env.CHROME_BIN, headless: true, args: ['--allow-file-access-from-files']});
   try {

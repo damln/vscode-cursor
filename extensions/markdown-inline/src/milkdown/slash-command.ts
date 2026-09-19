@@ -1,4 +1,4 @@
-import { FloatingPanel, positionMenu } from "./floating-panel";
+import { slashMenuView } from "./floating-panel";
 import { codeBlockSchema } from "@milkdown/kit/preset/commonmark";
 import { createTable } from "@milkdown/kit/preset/gfm";
 import { Plugin, PluginKey, TextSelection } from "@milkdown/kit/prose/state";
@@ -66,9 +66,9 @@ export const slashCommand = $prose(ctx => {
       menu.className = "inline-slash-menu";
       menu.dataset.commandMenu = 'true';
       menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', 'Insert block');
-      const panel = new FloatingPanel(menu, 2, () => {
+      const dismissMenu = () => {
         if (slashKey.getState(view.state)) view.dispatch(view.state.tr.setMeta(slashKey, "dismiss"));
-      }, restore => { if (restore) view.focus(); });
+      };
       const buttons = new Map<string, HTMLButtonElement>();
       for (const command of [
         {id: 'code', label: 'Code block', icon: '&lt;/&gt;'},
@@ -94,11 +94,10 @@ export const slashCommand = $prose(ctx => {
           if (event.key.startsWith('Arrow')) buttons.get(slashKey.getState(view.state)?.selected ?? '')?.focus();
         }
       });
-      document.body.append(menu);
       let rendered = '';
-      const update = () => {
+      const menuView = slashMenuView(view, menu, dismissMenu, panel => {
         const state = slashKey.getState(view.state);
-        if (!state || !view.editable || (!view.hasFocus() && !menu.contains(document.activeElement))) { panel.hide(); return; }
+        if (!state || !view.editable || menuView.hidden()) { panel.hide(); return; }
         const matches = availableCommands(view.state);
         const key = matches.join(',');
         if (rendered !== key) {menu.replaceChildren(...matches.map(id => buttons.get(id)!)); rendered = key;}
@@ -106,25 +105,16 @@ export const slashCommand = $prose(ctx => {
           button.dataset.active = String(id === state.selected);
           button.tabIndex = id === state.selected ? 0 : -1;
         }
-        if (panel.show()) positionMenu(menu, view.coordsAtPos(view.state.selection.from));
-      };
-      const dismiss = (event: Event) => {
-        if (event.target instanceof Node && menu.contains(event.target)) return;
-        if (slashKey.getState(view.state)) view.dispatch(view.state.tr.setMeta(slashKey, "dismiss"));
-      };
-      document.addEventListener("mousedown", dismiss);
-      document.addEventListener("scroll", update, true);
-      window.addEventListener("resize", update);
+        if (panel.show()) menuView.position();
+      });
+      const update = menuView.update;
       const blur = () => queueMicrotask(update);
       view.dom.addEventListener("blur", blur);
       view.dom.addEventListener("focus", update);
       return {
         update,
         destroy() {
-          panel.destroy();
-          document.removeEventListener("mousedown", dismiss);
-          document.removeEventListener("scroll", update, true);
-          window.removeEventListener("resize", update);
+          menuView.destroy();
           view.dom.removeEventListener("blur", blur);
           view.dom.removeEventListener("focus", update);
         },

@@ -1,11 +1,7 @@
-const {chromium} = require(process.env.PLAYWRIGHT_MODULE);
-const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert/strict');
-const {createRequire} = require('module');
-const root = process.env.MARKDOWN_INLINE_EXTENSION_ROOT || path.resolve(__dirname, '..');
-const localRequire = createRequire(path.join(root,'extension.js')), mod = {exports:{}};
-vm.runInNewContext(fs.readFileSync(path.join(root,'extension.js'),'utf8'), {module:mod,require:id=>id==='vscode'?{Uri:{joinPath:(base,...parts)=>path.join(base,...parts)}}:localRequire(id)});
-const output = path.join(process.env.MARKDOWN_INLINE_TEST_ROOT,'recovery.html');
-fs.writeFileSync(output,mod.exports.MarkdownInlineProvider.prototype.webviewHtml.call({context:{extensionUri:root}}, {cspSource:'file:',asWebviewUri:v=>'file://'+v},root,'light').replace(/<meta http-equiv="Content-Security-Policy"[^>]+>/,''));
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const assert = require('node:assert/strict');
+const { webviewPage } = require('./browser-webview.cjs');
+const { output } = webviewPage('recovery', { theme: 'light' });
 (async()=>{
 const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--allow-file-access-from-files']});
 try {

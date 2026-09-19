@@ -19,6 +19,9 @@ class ExtensionPackageBuilder:
             (self.extension_root / "package.json").read_text(encoding="utf-8")
         )
 
+    def prepare(self) -> None:
+        """Subclasses compile sources before the archive is written."""
+
     def archive_name(self) -> str:
         return (
             f"{self.package['publisher']}.{self.package['name']}-"
@@ -75,6 +78,7 @@ class ExtensionPackageBuilder:
         archive.writestr(info, content)
 
     def package_files(self) -> list[tuple[Path, str]]:
+        """Archive members as (source path, path below extension/)."""
         files = [(self.extension_root / "package.json", "package.json")]
         for value in self.package.get("files", []):
             source = (self.extension_root / value).resolve()
@@ -84,6 +88,7 @@ class ExtensionPackageBuilder:
         return files
 
     def build(self, destination: Path) -> Path:
+        self.prepare()
         destination = destination.resolve()
         destination.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(
@@ -100,6 +105,14 @@ class ExtensionPackageBuilder:
         return destination
 
 
+def build_to_output(builder: ExtensionPackageBuilder, output: str | None) -> int:
+    destination = (
+        Path(output) if output else builder.root / "dist" / builder.archive_name()
+    )
+    print(f"Built {builder.build(destination)}")
+    return 0
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Build a local VS Code extension.")
@@ -113,12 +126,7 @@ def main() -> int:
     )
     parser.add_argument("--output")
     args = parser.parse_args()
-    builder = ExtensionPackageBuilder(root, args.extension)
-    destination = (
-        Path(args.output) if args.output else root / "dist" / builder.archive_name()
-    )
-    print(f"Built {builder.build(destination)}")
-    return 0
+    return build_to_output(ExtensionPackageBuilder(root, args.extension), args.output)
 
 
 if __name__ == "__main__":

@@ -19,10 +19,10 @@
     },
     {
       "id": "damln.markdown-inline",
-      "version": "0.8.12",
+      "version": "0.8.13",
       "source": "extensions/markdown-inline",
-      "package": "dist/damln.markdown-inline-0.8.12.vsix",
-      "sha256": "921425f9d7d670ef14387077cdee4275b04b9c98a1bec380123173cdf5ad24d2",
+      "package": "dist/damln.markdown-inline-0.8.13.vsix",
+      "sha256": "b8a75d206a4526fa58d45538b8ad17b82a874b85a85caf52a3f765e9e38dcd06",
       "remote": false
     },
     {
