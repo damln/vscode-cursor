@@ -543,7 +543,7 @@ class MarkdownInlineProvider {
         <span class="header-action-label">Improve text</span>
         ${icon('<path d="M12 3a9 9 0 1 1-9 9"/>', "action-loading improve-spinner")}
       </button>
-      <button id="cleanup" class="header-button header-icon-button" type="button" disabled aria-label="Cleanup" data-tooltip="Trim Markdown body lines, remove extra blank lines, and save. Frontmatter is preserved.">
+      <button id="cleanup" class="header-button header-icon-button" type="button" disabled aria-label="Cleanup" data-tooltip="Remove trailing spaces and extra blank lines, preserve indentation, and save. Frontmatter is preserved.">
         ${icon('<path d="M4 5h16M4 12h10M4 19h16m-3-10 3 3-3 3"/>', "action-icon")}
         <span class="header-action-label">Cleanup</span>
       </button>
