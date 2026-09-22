@@ -10,7 +10,7 @@ import {
   serializerCtx,
 } from "@milkdown/kit/core";
 import { NO_AUTOCORRECT_ATTRS } from "@/lib/autocorrect";
-import { commonmark, remarkPreserveEmptyLinePlugin } from "@milkdown/kit/preset/commonmark";
+import { commonmark, hardbreakClearMarkPlugin, remarkPreserveEmptyLinePlugin } from "@milkdown/kit/preset/commonmark";
 import { gfm, remarkGFMPlugin } from "@milkdown/kit/preset/gfm";
 import { clipboard } from "@milkdown/plugin-clipboard";
 import { indent } from "@milkdown/plugin-indent";
@@ -18,7 +18,7 @@ import { applyEditorTransaction, isTypingTransaction } from '../lib/editor-trans
 import { trailing } from "@milkdown/plugin-trailing";
 import { prism, prismConfig } from "@milkdown/plugin-prism";
 import { $prose } from "@milkdown/kit/utils";
-import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
+import { Plugin, PluginKey, TextSelection } from "@milkdown/kit/prose/state";
 import { refractor } from "refractor";
 
 // Extra language imports
@@ -80,6 +80,38 @@ import {
 } from "../../inline-code-boundary.js";
 import { formatShortcutForEvent } from "../../format-shortcut.js";
 import { preserveListSpacingJoin } from "../../markdown-model.js";
+
+// Soft breaks serialize as a plain newline and round-trip through Milkdown's
+// existing inline-break parser. Explicit Markdown hard breaks stay unchanged.
+const preserveBreakAttributes = $prose(() => new Plugin({
+  key: new PluginKey("preserve-break-attributes"),
+  appendTransaction(transactions, _old, state) {
+    if (!transactions.some(transaction => transaction.docChanged)) return null;
+    const tr = state.tr;
+    state.doc.descendants((node, pos) => {
+      if (node.type.name === "hardbreak" && node.marks.length) {
+        tr.setNodeMarkup(pos, undefined, node.attrs, []);
+      }
+    });
+    return tr.docChanged ? tr : null;
+  },
+}));
+
+const softBreakShortcut = $prose(() => new Plugin({
+  key: new PluginKey("soft-break-shortcut"),
+  props: {
+    handleKeyDown(view, event) {
+      if (event.key !== "Enter" || !event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return false;
+      const { selection, schema, tr } = view.state;
+      if (!(selection instanceof TextSelection) || selection.$from.parent.type.spec.code) return false;
+      const type = schema.nodes.hardbreak;
+      if (!type || !selection.$from.parent.canReplaceWith(selection.$from.index(), selection.$from.index(), type)) return false;
+      view.dispatch(tr.setMeta("hardbreak", true)
+        .replaceSelectionWith(type.create({ isInline: true }), false).scrollIntoView());
+      return true;
+    },
+  },
+}));
 
 const formatShortcutGuard = $prose(
   () =>
@@ -180,11 +212,13 @@ export function getEditorPlugins() {
     smoothCaret,
     actionHints,
     formatShortcutGuard,
+    softBreakShortcut,
+    preserveBreakAttributes,
     slashCommand,
     selectionSlash,
     slashList,
     // Empty paragraphs, including table cells, must not become synthetic <br /> tags.
-    commonmark.filter(plugin => !remarkPreserveEmptyLinePlugin.includes(plugin)),
+    commonmark.filter(plugin => plugin !== hardbreakClearMarkPlugin && !remarkPreserveEmptyLinePlugin.includes(plugin)),
     gfm,
     markdownPastePlugin,
     clipboard,

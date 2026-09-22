@@ -8,13 +8,15 @@ const { findTextImprover, runTextImprover } = require("../extensions/markdown-in
 const { DocumentQueue, parseEditorMessage } = require("../extensions/markdown-inline/document-sync");
 const { cleanupMarkdown } = require("../extensions/markdown-inline/markdown-model");
 
-test("cleanup trims every line, collapses blank lines, and leaves a final empty line", () => {
+test("cleanup trims line endings and preserves indentation, collapses blank lines, and leaves a final empty line", () => {
   for (const [source, expected] of [
-    [" \n\n  # Title  \n \t\n\n text \t\n\n\n", "# Title\n\ntext\n"],
-    ["\r\n  one \r\n\r\n \t\r\n two\r\n", "one\r\n\r\ntwo\r\n"],
+    [" \n\n  # Title  \n \t\n\n text \t\n\n\n", "  # Title\n\n text\n"],
+    ["\r\n  one \r\n\r\n \t\r\n two\r\n", "  one\r\n\r\n two\r\n"],
+    ["    code  \n\tmore\t", "    code\n\tmore\n"],
+    ["- parent  \n  - child \n    - grandchild\t", "- parent\n  - child\n    - grandchild\n"],
     ["", "\n"], [" \t\n\n", "\n"],
     ["- first\n\n- second", "- first\n\n- second\n"],
-    ["  code  \n\n\n  more  ", "code\n\nmore\n"],
+    ["  code  \n\n\n  more  ", "  code\n\n  more\n"],
   ]) {
     assert.equal(cleanupMarkdown(source), expected);
     assert.equal(cleanupMarkdown(expected), expected);
@@ -31,7 +33,7 @@ test("cleanup preserves frontmatter bytes while cleaning only the Markdown body"
         "", "", "  Last line", "# Keep this comment  ", "---\t", "",
       ].join(eol);
       const source = prefix + ["", "  # Heading  ", "", "", " Body \t", "", ""].join(eol);
-      const expected = prefix + ["# Heading", "", "Body", ""].join(eol);
+      const expected = prefix + ["  # Heading", "", " Body", ""].join(eol);
       assert.equal(cleanupMarkdown(source), expected);
       assert.equal(cleanupMarkdown(expected), expected);
     }
@@ -52,7 +54,7 @@ test("cleanup handles frontmatter-only files and ordinary body separators", () =
     assert.equal(cleanupMarkdown(source), frontmatter);
     assert.equal(cleanupMarkdown(cleanupMarkdown(source)), frontmatter);
   }
-  assert.equal(cleanupMarkdown(" Heading \n\n\n---\n\n Body  "), "Heading\n\n---\n\nBody\n");
+  assert.equal(cleanupMarkdown(" Heading \n\n\n---\n\n Body  "), " Heading\n\n---\n\n Body\n");
 });
 
 test("discovers the skill only in trusted local workspace roots", () => {
@@ -217,7 +219,7 @@ test("cleanup saves YAML indentation unchanged through the document edit path", 
   const prefix = '---\nmetadata:\n  category: FRONTEND\n  last_reviewed: "2026-09-17"\n---\n';
   f.provider.flushDocument = async () => { f.document.text = prefix + "\n Title  \n\n\n Body  "; };
   await f.provider.cleanup(f.document, f.queue);
-  assert.equal(f.document.text, prefix + "Title\n\nBody\n");
+  assert.equal(f.document.text, prefix + " Title\n\n Body\n");
   assert.deepEqual(f.events, ["apply", "save"]);
   assert.deepEqual(f.errors, []);
 });
