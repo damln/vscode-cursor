@@ -55,7 +55,7 @@ const { output } = webviewPage('editor-motion');
   await page.locator('.ProseMirror').dispatchEvent('compositionstart',{data:''});
   assert.equal(await caret.isVisible(),false,'composition keeps the native caret');
   await page.locator('.ProseMirror').dispatchEvent('compositionend',{data:''});
-  await page.locator('#frontmatter-toggle').click();
+  await page.locator('.frontmatter-toggle').click();
   await page.locator('.frontmatter-value').focus();
   assert.equal(await caret.isVisible(),false,'metadata inputs retain their native caret');
   await page.locator('.ProseMirror td').first().click();

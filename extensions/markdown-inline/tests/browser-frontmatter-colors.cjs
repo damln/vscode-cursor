@@ -25,7 +25,7 @@ const { output } = webviewPage('phase-c');
     await page.addInitScript(() => {window.acquireVsCodeApi = () => ({postMessage: m => window.bridge(m), getState: () => null, setState: () => {}});});
     await page.goto('file://' + output);
     await page.addStyleTag({content: ':root {--vscode-font-family:system-ui;--vscode-editor-font-family:monospace}'});
-    await page.locator('#frontmatter-toggle').click();
+    await page.locator('.frontmatter-toggle').click();
     const noOverflow = () => page.waitForFunction(() => [...document.querySelectorAll('.frontmatter-value')].every(el =>
       el.clientHeight > 0 && el.scrollHeight <= el.clientHeight && getComputedStyle(el).overflowY === 'hidden'));
     for (const theme of ['light', 'dark']) {
@@ -36,8 +36,8 @@ const { output } = webviewPage('phase-c');
       }
       await page.screenshot({path: path.join(process.env.MARKDOWN_INLINE_TEST_ROOT, `colors-${theme}.png`)});
     }
-    await page.locator('#frontmatter-toggle').click();
-    await page.locator('#frontmatter-toggle').click();
+    await page.locator('.frontmatter-toggle').click();
+    await page.locator('.frontmatter-toggle').click();
     await noOverflow();
     assert.equal(edits.length, 0, 'rendering, resizing and expanding never edit the source');
     if (!process.env.MARKDOWN_INLINE_SOURCE_FIXTURE) {

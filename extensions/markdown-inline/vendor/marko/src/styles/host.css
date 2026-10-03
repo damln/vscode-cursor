@@ -1,0 +1,28 @@
+@layer marko.core, marko.theme, marko.skin;
+@import "./core.css" layer(marko.core);
+@import "./look.css" layer(marko.theme);
+
+/* Bridge the existing Escrito and Markdown Inline host palettes. */
+.marko { display: block; }
+:is(.marko, .marko-overlay) {
+  --marko-background: var(--page-background);
+  --marko-foreground: var(--foreground);
+  --marko-text-secondary: var(--text-secondary);
+  --marko-border: var(--border);
+  --marko-muted: var(--md-muted, var(--muted));
+  --marko-code-bg: var(--code-bg);
+  --marko-floating-surface: var(--floating-surface);
+  --marko-floating-foreground: var(--floating-foreground);
+  --marko-text-muted: var(--text-muted);
+  --marko-accent: var(--heat-100);
+  --marko-accent-40: var(--heat-40);
+  --marko-accent-12: var(--heat-12);
+  --marko-control-background: var(--control-background);
+  --marko-control-hover: var(--control-hover);
+  --marko-destructive: var(--destructive);
+  --marko-font-family: var(--vscode-font-family, system-ui);
+  --marko-code-font-family: var(--vscode-editor-font-family, monospace);
+  --marko-font-size: var(--editor-font-size, 16px);
+  --marko-max-width: var(--editor-max-width, 900px);
+  --marko-inset-start: var(--editor-inset-start, 4.25rem);
+}

@@ -2,6 +2,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const { webviewPage } = require('./browser-webview.cjs');
+const { flushEditor } = require('./browser-flush.cjs');
 const { output, html } = webviewPage('interactions');
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN, headless: true, args: ['--allow-file-access-from-files'] });
@@ -131,13 +132,13 @@ const { output, html } = webviewPage('interactions');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'Remove field title');
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'second (string)');
-    if (await page.locator('#frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('#frontmatter-toggle').click();
+    if (await page.locator('.frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('.frontmatter-toggle').click();
     await page.getByRole('button', {name: 'YAML', exact: true}).click();
     await yaml.fill('title: "One"\ntitle: "Duplicate"\n');
-    await page.locator('#frontmatter-toggle').click();
+    await page.locator('.frontmatter-toggle').click();
     assert.equal(await page.locator('.frontmatter-error').isVisible(), true);
     assert.equal(await page.locator('.frontmatter-source').isVisible(), false);
-    if (await page.locator('#frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('#frontmatter-toggle').click();
+    if (await page.locator('.frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('.frontmatter-toggle').click();
     await page.getByRole('button', {name: 'YAML', exact: true}).click();
     await yaml.fill('title: "One"\nsecond: "Two"\n');
     for (const width of [320, 480, 768, 1440]) {
@@ -149,6 +150,7 @@ const { output, html } = webviewPage('interactions');
       assert.deepEqual(after, before, 'header hover does not change geometry');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     }
+    await flushEditor(page);
     const beforeRemoval = text;
     for (const mode of ['Fields', 'YAML']) {
       await page.getByRole('button', {name: mode, exact: true}).click();

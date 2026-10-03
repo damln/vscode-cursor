@@ -46,10 +46,10 @@ const { output } = webviewPage('frontmatter');
       await page.addInitScript(() => { window.acquireVsCodeApi = () => ({postMessage: message => window.bridge(message), getState: () => null, setState: () => {}}); });
       await page.goto('file://' + output);
       await page.waitForSelector('.ProseMirror h1');
-      assert.equal(await page.locator('#frontmatter-toggle').isVisible(), metadata, name);
+      assert.equal(await page.locator('.frontmatter-toggle').isVisible(), metadata, name);
       assert.equal(edits.length, 0, 'opening never rewrites the file');
       if (name === 'removable fields') {
-        const toggle = page.locator('#frontmatter-toggle');
+        const toggle = page.locator('.frontmatter-toggle');
         assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
         assert.ok((await toggle.textContent()).includes('Show'));
         await toggle.click();
@@ -104,7 +104,7 @@ const { output } = webviewPage('frontmatter');
         const add = page.getByRole('button', {name: 'Add', exact: true});
         assert.equal(await add.isDisabled(), true);
         await fieldName.fill('author'); await value.fill('"false"');
-        await page.locator('#frontmatter-toggle').click(); await page.locator('#frontmatter-toggle').click();
+        await page.locator('.frontmatter-toggle').click(); await page.locator('.frontmatter-toggle').click();
         assert.equal(await fieldName.inputValue(), 'author', 'collapse retains the draft');
         await value.press('Escape');
         assert.equal(edits.length, priorEdits, 'cancel does not create or change metadata');
@@ -133,7 +133,7 @@ const { output } = webviewPage('frontmatter');
         metadata = true;
         if (!creating) {
           await page.getByRole('button', {name: 'Add field', exact: true}).click();
-          assert.ok((await page.locator('#metadata-new-help').textContent()).includes('metadata.tags'));
+          assert.ok((await page.locator('.metadata-new-help').textContent()).includes('metadata.tags'));
           await fieldName.fill('metadata.review.tags'); await value.fill('[hello]');
           await add.click();
           await flushEditor(page);
@@ -147,14 +147,14 @@ const { output } = webviewPage('frontmatter');
         }
       }
       if (name === 'protected anchor') {
-        await page.locator('#frontmatter-toggle').click();
+        await page.locator('.frontmatter-toggle').click();
         await page.getByRole('button', {name: 'Remove field original', exact: true}).click();
         await page.locator('.metadata-confirm-remove').click();
         assert.ok((await page.locator('.frontmatter-error').textContent()).includes('YAML alias'));
         assert.equal(text, source, 'an anchor still in use is not deleted');
       }
       if (name === 'real metadata and body rules') {
-        await page.locator('#frontmatter-toggle').click();
+        await page.locator('.frontmatter-toggle').click();
         assert.equal(await page.getByRole('textbox', {name: 'title (string)', exact: true}).inputValue(), 'Real');
         assert.ok((await page.locator('.ProseMirror').textContent()).includes('body: Markdown'));
       }
@@ -165,12 +165,12 @@ const { output } = webviewPage('frontmatter');
       assert.equal(text, source.replace('# Heading', '# Heading edited'), name + ': every other byte is preserved');
       assert.equal(saved, text); assert.equal(copied, text);
       if (metadata) {
-        if (await page.locator('#frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('#frontmatter-toggle').click();
+        if (await page.locator('.frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('.frontmatter-toggle').click();
         await page.locator('.metadata-remove').click();
         assert.equal(await page.locator('.metadata-confirm').count(), 1);
         text = '# Heading\n\n---\ntitle: Later\n---\n'; version++;
         await page.evaluate(m => window.postMessage(m, '*'), {type: 'update', text, version, dirty: false});
-        await page.locator('#frontmatter-toggle').waitFor({state: 'hidden'});
+        await page.locator('.frontmatter-toggle').waitFor({state: 'hidden'});
         assert.equal(await page.locator('.metadata-confirm').count(), 0, 'external updates cancel stale removal confirmations');
         assert.ok((await page.locator('.ProseMirror').textContent()).includes('title: Later'), 'external updates also respect the first-line rule');
       }
