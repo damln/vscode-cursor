@@ -20,6 +20,12 @@ export const htmlEditableView = $view(htmlSchema.node, () => {
     span.tabIndex = isBrMarker ? -1 : 0;
     disableAutocorrect(span);
     span.textContent = displayValue;
+    span.addEventListener('mousedown', event => {
+      if (event.button !== 0 || !view.editable || isBrMarker || span.contentEditable === 'true') return;
+      event.preventDefault();
+      span.contentEditable = 'true';
+      span.focus();
+    });
 
     function commit() {
       if (isBrMarker || !view.editable) return;
