@@ -1,5 +1,6 @@
 import { $view } from "@milkdown/kit/utils";
 import { htmlSchema } from "@milkdown/kit/preset/commonmark";
+import { TextSelection } from '@milkdown/kit/prose/state';
 import { disableAutocorrect } from "../model/autocorrect";
 
 function getHtmlEditableClass(value: string): string {
@@ -15,6 +16,9 @@ export const htmlEditableView = $view(htmlSchema.node, () => {
     const displayValue = value;
 
     const span = document.createElement("span");
+    const wrapper = document.createElement('span');
+    wrapper.contentEditable = 'false';
+    wrapper.append(span);
     span.className = getHtmlEditableClass(value);
     span.contentEditable = "false";
     span.tabIndex = isBrMarker ? -1 : 0;
@@ -32,6 +36,11 @@ export const htmlEditableView = $view(htmlSchema.node, () => {
       const pos = getPos();
       if (pos == null) return;
       const newValue = span.textContent || "";
+      if (!newValue) {
+        view.dispatch(view.state.tr.delete(pos, pos + node.nodeSize));
+        view.focus();
+        return;
+      }
       if (newValue !== node.attrs.value) {
         const tr = view.state.tr.setNodeMarkup(pos, undefined, {
           ...node.attrs,
@@ -54,11 +63,16 @@ export const htmlEditableView = $view(htmlSchema.node, () => {
       if (e.key === "Enter") {
         e.preventDefault();
         span.blur();
+        const pos = getPos();
+        if (pos != null && view.editable) {
+          view.dispatch(view.state.tr.setSelection(TextSelection.near(view.state.doc.resolve(pos + node.nodeSize))));
+          view.focus();
+        }
       }
     });
 
     return {
-      dom: span,
+      dom: wrapper,
       stopEvent: (e: Event) => {
         return span.contains(e.target as Node);
       },
