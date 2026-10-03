@@ -20,7 +20,7 @@
     "src/model/markdown-model.ts": "b7ed1c8321c776ac516324c41e4dd29758901829c7a3baf25de0d551a04a184c",
     "src/model/metadata-colors.ts": "c34401a5d3767fe9a55200293069ee2ceaa845aecf596910f1bc8870b4215c73",
     "src/model/slash-command.ts": "cc7a2f879cf607039b7814eebee6c8d8fa7baa4c2782d167d1cb87289a8c3607",
-    "src/model/source-markdown.ts": "368b1fac8ded9a5e7e1c3bce5d1f4b0d01769ba95cf63e493482feb326446476",
+    "src/model/source-markdown.ts": "e67b081e1d2a0a977bd9b8fd2f2d86a4db5d518d7cb93855e271257a8c65df75",
     "src/model/toolbar-visibility.ts": "d73827c52f3f24ba00f85d81cd2667b5f9a845cb59503676cc93ef4b6e6c8dfc",
     "src/plugins/action-hints.ts": "6c04774830f394a562b003c25b8f4b41e8bf3e9eb820d36cc37573f62a7ff046",
     "src/plugins/block-handle.ts": "4dc03c936afe9d371ccecdf5553cf56ebe84db6aee4bb5872a1b792ada1c88f1",

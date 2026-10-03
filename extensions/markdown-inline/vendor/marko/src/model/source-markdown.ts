@@ -156,9 +156,15 @@ export class SourceMarkdown {
     const leading = editedGap(old.length ? this.source.slice(0, start(old[0])) : this.source,
       previous.length ? this.canonical.slice(0, start(previous[0])) : this.canonical,
       next.length ? markdown.slice(0, start(next[0])) : markdown, eol);
+    const previousTail = previous.length ? this.canonical.slice(end(previous.at(-1)!)) : "";
+    let nextTail = next.length ? markdown.slice(end(next.at(-1)!)) : "";
+    // Milkdown adds an empty writing paragraph after a terminal non-text block.
+    // Its one extra serializer newline is scaffolding, not an authored blank line.
+    if (previousTail === '\n' && nextTail === '\n\n' &&
+        previous.at(-1)?.type === next.at(-1)?.type &&
+        !['paragraph', 'heading'].includes(next.at(-1)?.type ?? 'paragraph')) nextTail = previousTail;
     const trailing = editedGap(old.length ? this.source.slice(end(old.at(-1)!)) : "",
-      previous.length ? this.canonical.slice(end(previous.at(-1)!)) : "",
-      next.length ? markdown.slice(end(next.at(-1)!)) : "", eol);
+      previousTail, nextTail, eol);
     const blocks = next.map((node, index) => {
       const match = pairs[index];
       if (match < 0 || semanticKey(old[match]) !== semanticKey(node)) {
