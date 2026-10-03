@@ -16,12 +16,13 @@ export const htmlEditableView = $view(htmlSchema.node, () => {
 
     const span = document.createElement("span");
     span.className = getHtmlEditableClass(value);
-    span.contentEditable = "true";
+    span.contentEditable = "false";
+    span.tabIndex = isBrMarker ? -1 : 0;
     disableAutocorrect(span);
     span.textContent = displayValue;
 
     function commit() {
-      if (isBrMarker) return;
+      if (isBrMarker || !view.editable) return;
       const pos = getPos();
       if (pos == null) return;
       const newValue = span.textContent || "";
@@ -34,8 +35,15 @@ export const htmlEditableView = $view(htmlSchema.node, () => {
       }
     }
 
+    span.addEventListener("focus", () => {
+      if (view.editable && !isBrMarker) span.contentEditable = "true";
+    });
+    span.addEventListener("beforeinput", event => { if (!view.editable) event.preventDefault(); });
     span.addEventListener("input", commit);
-    span.addEventListener("blur", commit);
+    span.addEventListener("blur", () => {
+      commit();
+      span.contentEditable = "false";
+    });
     span.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         e.preventDefault();
