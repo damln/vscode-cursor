@@ -24,13 +24,21 @@ function replaceTag(state: EditorState, match: RegExpMatchArray, start: number, 
 export const htmlTagInputRule = $inputRule(ctx => new InputRule(TAG,
   (state, match, start, end) => replaceTag(state, match, start, end, htmlSchema.type(ctx)), {inCodeMark: false}));
 
+function followsTag(state: EditorState, position: number): boolean {
+  const $from = state.doc.resolve(position);
+  const {node, index} = $from.parent.childBefore($from.parentOffset);
+  return Boolean(node?.type.name === 'html' || node?.isText && index > 0 && $from.parent.child(index - 1).type.name === 'html');
+}
+
 export const htmlBoundaryInput = $prose(ctx => new Plugin({
   key: new PluginKey('html-boundary-input'),
   props: {
     handleKeyDown(view, event) {
-      if (event.key !== ' ' || event.metaKey || event.ctrlKey || event.altKey || view.composing ||
-          view.state.selection.$from.nodeBefore?.type.name !== 'html') return false;
-      view.dispatch(view.state.tr.insertText(' ').scrollIntoView());
+      if (event.key.length !== 1 || event.metaKey || event.ctrlKey || event.altKey || view.composing ||
+          !followsTag(view.state, view.state.selection.from)) return false;
+      const {from, to} = view.state.selection;
+      const insert = () => view.state.tr.insertText(event.key, from, to).scrollIntoView();
+      if (!view.someProp('handleTextInput', handler => handler(view, from, to, event.key, insert))) view.dispatch(insert());
       return true;
     },
     handleTextInput(view, from, to, text) {
@@ -45,11 +53,9 @@ export const htmlBoundaryInput = $prose(ctx => new Plugin({
         return true;
       }
       if (/[\r\n]/.test(text)) return false;
-      const {node, index} = $from.parent.childBefore($from.parentOffset);
-      const followsTag = node?.type.name === 'html' || node?.isText && index > 0 && $from.parent.child(index - 1).type.name === 'html';
-      if (!followsTag) return false;
+      if (!followsTag(view.state, from)) return false;
       // Preserve typed spaces when native DOM parsing resumes beside an atom.
-      view.dispatch(view.state.tr.insertText(node?.type.name === 'html' && text === '\u00a0' ? ' ' : text, from, to));
+      view.dispatch(view.state.tr.insertText(text, from, to));
       return true;
     },
   },
