@@ -372,25 +372,29 @@
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .liquid-tag-inline {
   font-family: var(--marko-code-font-family);
   font-size: 0.82em;
-  background: rgba(168, 130, 255, 0.06);
-  border: 1px solid rgba(168, 130, 255, 0.2);
+  background: color-mix(in srgb, var(--marko-tag-color, #a882ff) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--marko-tag-color, #a882ff) 28%, transparent);
   border-radius: 4px;
   padding: 0.1em 0.4em;
-  color: rgba(168, 130, 255, 0.85);
+  color: var(--marko-tag-color, #a882ff);
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .liquid-output-inline {
   font-family: var(--marko-code-font-family);
   font-size: 0.82em;
-  background: rgba(168, 130, 255, 0.06);
-  border: 1px solid rgba(168, 130, 255, 0.15);
+  background: color-mix(in srgb, var(--marko-tag-color, #a882ff) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--marko-tag-color, #a882ff) 28%, transparent);
   border-radius: 4px;
   padding: 0.1em 0.4em;
-  color: rgba(168, 130, 255, 0.85);
+  color: var(--marko-tag-color, #a882ff);
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .html-editable.liquid-tag-inline {
-  background: rgba(168, 130, 255, 0.06);
-  border-color: rgba(168, 130, 255, 0.2);
-  color: rgba(168, 130, 255, 0.85);
+  background: color-mix(in srgb, var(--marko-tag-color, #a882ff) 8%, transparent);
+  border-color: color-mix(in srgb, var(--marko-tag-color, #a882ff) 28%, transparent);
+  color: var(--marko-tag-color, #a882ff);
+}
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .html-editable.liquid-tag-inline:is(:focus, .selected) {
+  background: color-mix(in srgb, var(--marko-tag-color, #a882ff) 12%, transparent);
+  border-color: color-mix(in srgb, var(--marko-tag-color, #a882ff) 60%, transparent);
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .html-editable.br-marker {
   background: rgba(255, 100, 80, 0.08);
