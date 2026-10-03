@@ -16,7 +16,7 @@ test("slash command accepts code block prefixes and leaves ordinary slashes alon
 
 test("disables width alignment in the inline editor's GFM serializer", () => {
   const setup = fs.readFileSync(
-    path.join(__dirname, "../extensions/markdown-inline/src/milkdown/editor-setup.ts"), "utf8"
+    path.join(__dirname, "../extensions/markdown-inline/vendor/marko/src/plugins/editor-setup.ts"), "utf8"
   );
   assert.match(setup, /ctx\.update\(remarkGFMPlugin\.options\.key,[\s\S]*?tablePipeAlign: false/);
 });
@@ -293,7 +293,7 @@ test("uses compact accessible icon controls for contextual table actions", () =>
   const source = fs.readFileSync(
     path.join(
       __dirname,
-      "../extensions/markdown-inline/src/milkdown/table-toolbar.ts"
+      "../extensions/markdown-inline/vendor/marko/src/plugins/table-toolbar.ts"
     ),
     "utf8"
   );

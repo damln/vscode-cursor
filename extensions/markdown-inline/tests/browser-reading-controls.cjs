@@ -36,7 +36,7 @@ const { output, html } = webviewPage('reading-controls');
     assert.equal(await page.locator('#font-size').getAttribute('aria-expanded'), 'false');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'font-size');
     await page.locator('#content-width').click(); await page.getByRole('menuitemradio', {name: 'Large', exact: true}).click();
-    await page.locator('#frontmatter-toggle').click();
+    await page.locator('.frontmatter-toggle').click();
     await page.reload(); await page.waitForSelector('.ProseMirror h1');
     await page.addStyleTag({content: ':root {--vscode-font-family: system-ui; --vscode-editor-font-family: monospace;}'});
     assert.equal(await size(), 18, 'font choice survives width, metadata and reload');
@@ -50,7 +50,7 @@ const { output, html } = webviewPage('reading-controls');
     await openSize(); await page.getByRole('button', {name: 'Reset font size to 17 pixels'}).click();
     assert.equal(await size(), 17);
     await page.keyboard.press('Escape');
-    await page.locator('#frontmatter-toggle').click();
+    await page.locator('.frontmatter-toggle').click();
     for (const theme of ['light', 'dark']) {
       await page.evaluate(theme => document.documentElement.dataset.inlineTheme = theme, theme);
       for (const width of ['normal', 'large', 'full']) {

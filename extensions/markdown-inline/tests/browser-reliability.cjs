@@ -35,8 +35,8 @@ try {
   if(action==='language'){await page.locator('.code-lang-trigger').click();await page.locator('.code-lang-item').filter({hasText:/^python$/}).click();}
   if(action==='clear')await page.getByTitle('Clear code',{exact:true}).click();
   if(action==='delete')await page.getByTitle('Delete block',{exact:true}).click();
-  if(action==='rawYamlCRLF'){if (await page.locator('#frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('#frontmatter-toggle').click();await page.getByRole('button',{name:'YAML',exact:true}).click();await page.locator('.frontmatter-source').fill('title: "After"\ntags: [solo]\n');}
-  if(action==='metadata'){await page.locator('#frontmatter-toggle').click();await page.getByRole('textbox',{name:'title (string)',exact:true}).fill('After');}
+  if(action==='rawYamlCRLF'){if (await page.locator('.frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('.frontmatter-toggle').click();await page.getByRole('button',{name:'YAML',exact:true}).click();await page.locator('.frontmatter-source').fill('title: "After"\ntags: [solo]\n');}
+  if(action==='metadata'){await page.locator('.frontmatter-toggle').click();await page.getByRole('textbox',{name:'title (string)',exact:true}).fill('After');}
   if(['typing','preserve','source','saveError','conflict','recreation','draftError','sourceCRLF'].includes(action)||action.startsWith('fixture')) {
     if(fallback) await page.locator('.source-fallback').fill(original.replace('# Heading','# Heading edited'));
     else {await page.locator('.ProseMirror h1').first().click();await page.keyboard.press('End');await page.keyboard.type(' edited');}
@@ -50,7 +50,7 @@ try {
   if(action==='language')assert.match(text,/```python/);
   if(action==='clear')assert.ok(!text.includes('example()'));
   if(action==='delete')assert.ok(!text.includes('```'));
-  if(action==='rawYamlCRLF'){if (await page.locator('#frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('#frontmatter-toggle').click();await page.getByRole('button',{name:'YAML',exact:true}).click();await page.locator('.frontmatter-source').fill('title: "After"\ntags: [solo]\n');}
+  if(action==='rawYamlCRLF'){if (await page.locator('.frontmatter-toggle').getAttribute('aria-expanded') === 'false') await page.locator('.frontmatter-toggle').click();await page.getByRole('button',{name:'YAML',exact:true}).click();await page.locator('.frontmatter-source').fill('title: "After"\ntags: [solo]\n');}
   if(action==='metadata')assert.match(text,/title: "After"\ntags: \[solo\]/);
   if(action==='preserve')assert.ok(text.endsWith('~~~html\nA<br>B\n~~~\n\n👩‍💻 et français !\n'));
   if(action==='rawYamlCRLF')assert.equal(text,original.replace('Before','After'));

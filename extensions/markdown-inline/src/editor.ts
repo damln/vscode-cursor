@@ -37,6 +37,11 @@ import {
 } from "../markdown-model";
 import { linkClickAction } from "../link-click";
 import { InlineJumpController, type InlineJumpOptions } from "./inline-jump";
+import { registerScope } from '../vendor/marko/src/scope';
+import { imageResource } from './lib/image-resource';
+import { copyCode } from './lib/code-clipboard';
+import { loadMermaid } from './milkdown/mermaid-loader';
+import '../vendor/marko/src/styles/host.css';
 import "./editor.css";
 
 declare function acquireVsCodeApi(): {
@@ -128,6 +133,21 @@ setupHeaderPopovers();
 const saveState = saveStateElement;
 
 const documentScroll = documentScrollElement;
+documentScroll.classList.add('marko');
+const markoOverlay = document.createElement('div');
+markoOverlay.className = 'marko-overlay';
+document.body.append(markoOverlay);
+registerScope({ root: documentScroll, surface: documentScroll, overlay: markoOverlay,
+  dark: () => document.documentElement.dataset.inlineTheme === 'dark',
+  host: { openLink: href => vscode.postMessage({type: 'openLink', href}), resolveImage: imageResource, copyText: copyCode, loadMermaid } });
+const mirrorEditorTheme = () => {
+  documentScroll.dataset.markoScheme = document.documentElement.dataset.inlineTheme || 'dark';
+};
+new MutationObserver(mirrorEditorTheme).observe(document.documentElement, {
+  attributes: true, attributeFilter: ['data-inline-theme', 'data-editor-theme'],
+});
+mirrorEditorTheme();
+
 const frontmatterCard = frontmatterCardElement;
 const frontmatterFieldsRoot = frontmatterFieldsElement;
 const addFrontmatterField = addFrontmatterFieldElement;
@@ -449,13 +469,13 @@ function receiveCommand(message: CommandMessage) {
   if (!editor || improving) return;
   if ((document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement)
     && message.command !== 'focusToolbar') return;
-  if (message.command === "focusToolbar") { focusToolbar(); return; }
+  if (message.command === "focusToolbar") { editor?.action(ctx => focusToolbar(ctx.get(editorViewCtx))); return; }
   if (message.command === "moveBlockUp" || message.command === "moveBlockDown") {
     editor.action(ctx => moveCurrentBlock(ctx.get(editorViewCtx), message.command === "moveBlockUp" ? -1 : 1));
     return;
   }
   if (message.command === "addLink") {
-    openLinkEditor();
+    editor?.action(ctx => openLinkEditor(ctx.get(editorViewCtx)));
     return;
   }
   editor.action((ctx) => {
@@ -508,7 +528,7 @@ window.addEventListener(
 // Let ProseMirror reconcile the DOM caret before choosing the contextual toolbar.
 window.addEventListener("keydown", event => {
   if (!improving && !event.isComposing && event.altKey && event.key === "F10") {
-    event.preventDefault(); focusToolbar();
+    event.preventDefault(); editor?.action(ctx => focusToolbar(ctx.get(editorViewCtx)));
   }
 });
 
@@ -639,7 +659,7 @@ root.addEventListener(
       return;
     }
     moveCursorIntoLink(event, anchor);
-    openLinkEditor();
+    editor?.action(ctx => openLinkEditor(ctx.get(editorViewCtx)));
   },
   true
 );
@@ -647,7 +667,7 @@ root.addEventListener(
 // Let ProseMirror reconcile the DOM caret before choosing the contextual toolbar.
 window.addEventListener("keydown", event => {
   if (!improving && !event.isComposing && event.altKey && event.key === "F10") {
-    event.preventDefault(); focusToolbar();
+    event.preventDefault(); editor?.action(ctx => focusToolbar(ctx.get(editorViewCtx)));
   }
 });
 

@@ -70,7 +70,7 @@ const { output } = webviewPage('git-gutter');
         await page.setViewportSize({width: viewport, height: 760});
         await page.evaluate(width => document.documentElement.dataset.contentWidth = width, width);
         for (const expanded of [true, false]) {
-          const toggle = page.locator('#frontmatter-toggle');
+          const toggle = page.locator('.frontmatter-toggle');
           if (await toggle.getAttribute('aria-expanded') !== String(expanded)) await toggle.click();
           const card = await page.locator('#frontmatter-card').boundingBox();
           const heading = await page.locator('.ProseMirror h1').boundingBox();
