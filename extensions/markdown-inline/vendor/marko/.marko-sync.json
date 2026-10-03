@@ -23,7 +23,7 @@
     "src/model/source-markdown.ts": "89fd9b0cad5a88930302407acf60eee1693ca86783eb074af7da039dbf582541",
     "src/model/toolbar-visibility.ts": "d73827c52f3f24ba00f85d81cd2667b5f9a845cb59503676cc93ef4b6e6c8dfc",
     "src/plugins/action-hints.ts": "6c04774830f394a562b003c25b8f4b41e8bf3e9eb820d36cc37573f62a7ff046",
-    "src/plugins/block-handle.ts": "7ba6efba65b60c4497365c0fe6d9628d5b78d2ace2e4074b635ea9d50df435d3",
+    "src/plugins/block-handle.ts": "4dc03c936afe9d371ccecdf5553cf56ebe84db6aee4bb5872a1b792ada1c88f1",
     "src/plugins/block-motion.ts": "2cf28a05d8e4eca7d1ea59243c97fb0e25e6eed0047c26624edc66b63b77deff",
     "src/plugins/block-movement.ts": "dfc74d65ea1342ab8d4c64a42fb339ff62574e4292b97c78aba112a6f6b8f02c",
     "src/plugins/block-selection.ts": "06336001b15b10cef19acbb748c354326177679e2e74fa70804e0acb0cf63441",
@@ -59,7 +59,7 @@
     "src/skins.ts": "6bc7ca0f2f55e74f324181b03d3b2cd12b17b6d2bcd80316348e4c09ea12602e",
     "src/styles/core.css": "b6d256e0fe9e9dda8e2b09d937d6f1dc0482d4a01abc333a56fcbbea2c53bd37",
     "src/styles/host.css": "b9f3382c726d185e9de21fa986e4a78a45c81a17d900c9efc419413d7f4b5957",
-    "src/styles/look.css": "313e9e9de312c1358d447d6b73a759ee07393e057fca48ccf2f08f6a4cdfca8f",
-    "src/themes.ts": "47d4203d09faf9c72a16291f4fef3f648c102844e1c3648490334c94a53021dc"
+    "src/styles/look.css": "bc23daaf8526176d88c839857bea72004d7a2cc2e2af617e14584ddb25da72d8",
+    "src/themes.ts": "bef01dec5d01891e940628de93b74a84ea0105858e0bec7d636a93c92898b3cf"
   }
 }

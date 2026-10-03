@@ -72,7 +72,7 @@ class BlockControls {
     }, options);
     this.handle.addEventListener('dragstart', this.dragStart, options);
     this.scroller.addEventListener('pointerleave', event => {
-      if (event.relatedTarget !== this.handle && !this.dragging) this.hideHandle();
+      if (!(event.relatedTarget instanceof Node && this.handle.contains(event.relatedTarget)) && !this.dragging) this.hideHandle();
     }, options);
     this.handle.addEventListener('pointerleave', event => {
       if (!(event.relatedTarget instanceof Node && this.scroller.contains(event.relatedTarget)) && !this.dragging) this.hideHandle();

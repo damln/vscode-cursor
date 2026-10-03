@@ -47,5 +47,6 @@ export function themeVariables(theme: MarkoThemeDefinition): Record<string, stri
     "--marko-accent-12": `color-mix(in srgb, ${accent} 12%, transparent)`,
     "--marko-control-background": muted, "--marko-control-hover": `color-mix(in srgb, ${accent} 12%, ${muted})`,
     "--marko-destructive": theme.mode === "light" ? "#b42332" : "#ff909b",
+    "--marko-tag-color": theme.mode === "light" ? "#6d28d9" : "#c4b5fd",
   };
 }
