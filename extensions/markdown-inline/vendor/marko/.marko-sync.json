@@ -38,7 +38,7 @@
     "src/plugins/floating-panel.ts": "e0db93e12ef02857d6b1a7bbb2113539da60540424d385dad504bbdf67fafed5",
     "src/plugins/formatting-actions.ts": "9a336ce6a128647821d81bbb2ea238f3213e566f968837fee5615391eabac479",
     "src/plugins/formatting-state.ts": "0f423f452632fd04a81f29ab89919f83e2f359b79950e2fbf38de79743e5abf4",
-    "src/plugins/html-editable.ts": "77040e72c89e3310eed0f452a39a3c8195671c6e754437ad1f913a1ed543c3bc",
+    "src/plugins/html-editable.ts": "7b8fd65a2f406bdcaf5870a60401a775398ee70a7260e0113510dc1f9a7c9637",
     "src/plugins/html-input.ts": "65b8b8030e63c0f97da8b08e558e58b9366ca67629d865180373336c8f1eaf75",
     "src/plugins/icons.ts": "7fd77e1f26b177503c7d807a8fb0d5bf889b01e3d0e68031a1b1d4890f8fb396",
     "src/plugins/image.ts": "6ea1949303256038891f1de10dfb9246eeb57f40a13f3a6530ecbfb6cbe3808b",
