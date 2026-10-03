@@ -106,6 +106,13 @@ function preserveBulletMarkers(source: string, previous: Block | undefined, mark
   return result.join('');
 }
 
+function editedGap(source: string, previous: string, next: string, eol: string): string {
+  let delta = (next.match(/\n/g)?.length ?? 0) - (previous.match(/\n/g)?.length ?? 0);
+  if (delta >= 0) return source + eol.repeat(delta);
+  while (delta++ < 0) source = source.replace(/[\t ]*\r?\n[\t ]*$/, '');
+  return source;
+}
+
 /** Preserve authored blocks; refuse visual editing when the parser loses meaning. */
 export class SourceMarkdown {
   constructor(private source: string, private canonical: string, private parse: Parse) {}
@@ -140,13 +147,18 @@ export class SourceMarkdown {
     if (markdown === this.canonical) return this.source;
     if (!this.supported) throw new Error("This Markdown requires source editing.");
     const old = this.parse(this.source).children;
+    const previous = this.parse(this.canonical).children;
     const next = this.parse(markdown).children;
     const eol = this.source.includes("\r\n") ? "\r\n" : "\n";
     const pairs = pairBlocks(old, next);
     const start = (node: Block) => node.position?.start.offset ?? 0;
     const end = (node: Block) => node.position?.end.offset ?? 0;
-    const leading = old.length ? this.source.slice(0, start(old[0])) : "";
-    const trailing = old.length ? this.source.slice(end(old.at(-1)!)) : "";
+    const leading = editedGap(old.length ? this.source.slice(0, start(old[0])) : this.source,
+      previous.length ? this.canonical.slice(0, start(previous[0])) : this.canonical,
+      next.length ? markdown.slice(0, start(next[0])) : markdown, eol);
+    const trailing = editedGap(old.length ? this.source.slice(end(old.at(-1)!)) : "",
+      previous.length ? this.canonical.slice(end(previous.at(-1)!)) : "",
+      next.length ? markdown.slice(end(next.at(-1)!)) : "", eol);
     const blocks = next.map((node, index) => {
       const match = pairs[index];
       if (match < 0 || semanticKey(old[match]) !== semanticKey(node)) {
@@ -158,9 +170,11 @@ export class SourceMarkdown {
       if (!index) return leading + block;
       const match = pairs[index];
       const adjacent = match > 0 && pairs[index - 1] === match - 1;
+      const nextGap = markdown.slice(end(next[index - 1]), start(next[index])).replace(/\r?\n/g, eol);
       const gap = preserveGaps && adjacent
-        ? this.source.slice(end(old[match - 1]), start(old[match]))
-        : markdown.slice(end(next[index - 1]), start(next[index])).replace(/\r?\n/g, eol);
+        ? editedGap(this.source.slice(end(old[match - 1]), start(old[match])),
+          this.canonical.slice(end(previous[match - 1]), start(previous[match])), nextGap, eol)
+        : nextGap;
       return gap + block;
     }).join("") + (blocks.length ? trailing : "");
     const expected = semanticKey(next);
