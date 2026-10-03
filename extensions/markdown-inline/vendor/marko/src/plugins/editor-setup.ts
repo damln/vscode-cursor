@@ -64,6 +64,7 @@ import { contentsRail } from "./contents";
 import { taskListView } from "./task-list";
 import { liquidHighlight } from "./liquid-highlight";
 import { htmlEditableView } from "./html-editable";
+import { htmlBoundaryInput, htmlTagInputRule } from "./html-input";
 import { codeBlockLangView } from "./code-lang";
 import { markdownPastePlugin } from "./markdown-paste";
 import { colorPreview } from "./color-preview";
@@ -80,6 +81,7 @@ import { runCommand } from "./commands";
 import { history } from "@milkdown/kit/plugin/history";
 import { preserveListSpacingJoin } from "../model/markdown-model";
 import { relaxEscapes } from "../model/escapes";
+import { escapeHtmlText } from "../model/html";
 
 // Soft breaks serialize as a plain newline and round-trip through Milkdown's
 // existing inline-break parser. Explicit Markdown hard breaks stay unchanged.
@@ -243,6 +245,8 @@ export function getEditorPlugins(options: PluginOptions) {
     taskListView,
     liquidHighlight,
     htmlEditableView,
+    htmlTagInputRule,
+    htmlBoundaryInput,
     codeBlockLangView,
     exitInlineCodePlugin,
     colorPreview,
@@ -284,7 +288,7 @@ export function configureEditor(
         join: [...(prev.join ?? []), preserveListSpacingJoin],
         handlers: {
           ...prev.handlers,
-          text: (node, parent, state, info) => relaxEscapes(prev.handlers!.text!(node, parent, state, info), node.value),
+          text: (node, parent, state, info) => escapeHtmlText(relaxEscapes(prev.handlers!.text!(node, parent, state, info), node.value)),
         },
       }));
 
