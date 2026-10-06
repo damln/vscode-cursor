@@ -11,7 +11,8 @@ import {
 } from "@milkdown/kit/core";
 import { NO_AUTOCORRECT_ATTRS } from "../model/autocorrect";
 import {
-  bulletListSchema, commonmark, hardbreakClearMarkPlugin, listItemSchema, orderedListSchema, remarkPreserveEmptyLinePlugin,
+  bulletListSchema, commonmark, hardbreakClearMarkPlugin, listItemSchema, orderedListSchema, remarkInlineLinkPlugin,
+  remarkPreserveEmptyLinePlugin,
 } from "@milkdown/kit/preset/commonmark";
 import { extendListItemSchemaForTask, gfm, remarkGFMPlugin } from "@milkdown/kit/preset/gfm";
 import { clipboard } from "@milkdown/plugin-clipboard";
@@ -71,6 +72,7 @@ import { colorPreview } from "./color-preview";
 import { slashCommand } from "./slash-command";
 import { slashList } from "./slash-list";
 import { selectionSlash } from "./selection-slash";
+import { configureLinkReferences, definitionJoin, linkDefinitionSchema, remarkResolveReferences } from "./link-reference";
 import {
   isInlineCodeMark,
   outsideMarksAtInlineCodeBoundary,
@@ -228,7 +230,11 @@ export function getEditorPlugins(options: PluginOptions) {
     selectionSlash,
     slashList,
     // Empty paragraphs, including table cells, must not become synthetic <br /> tags.
-    commonmark.filter(plugin => plugin !== hardbreakClearMarkPlugin && !remarkPreserveEmptyLinePlugin.includes(plugin)),
+    // Reference links keep their reference style instead of being inlined.
+    commonmark.filter(plugin => plugin !== hardbreakClearMarkPlugin &&
+      ![...remarkPreserveEmptyLinePlugin, ...remarkInlineLinkPlugin].includes(plugin)),
+    remarkResolveReferences,
+    linkDefinitionSchema,
     gfm,
     markdownPastePlugin,
     clipboard,
@@ -285,7 +291,7 @@ export function configureEditor(
       ctx.update(remarkStringifyOptionsCtx, (prev) => ({
         ...prev,
         rule: "-" as const,
-        join: [...(prev.join ?? []), preserveListSpacingJoin],
+        join: [...(prev.join ?? []), preserveListSpacingJoin, definitionJoin],
         handlers: {
           ...prev.handlers,
           text: (node, parent, state, info) => escapeHtmlText(relaxEscapes(prev.handlers!.text!(node, parent, state, info), node.value)),
@@ -300,6 +306,8 @@ export function configureEditor(
           return {...spec, attrs: {...spec.attrs, spread: {...spec.attrs?.spread, validate: "boolean|string"}}};
         });
       }
+
+      configureLinkReferences(ctx);
 
       ctx.set(prismConfig.key, {
         configureRefractor: () => refractor as any,
