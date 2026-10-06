@@ -8,15 +8,24 @@ type Parse = (source: string) => { children: Block[] };
 
 type Node = { type?: string; children?: Node[]; value?: string; [key: string]: unknown };
 
+const LINK_TARGET: Record<string, string[]> = {
+  link: ['url', 'title'],
+  linkReference: ['identifier', 'label', 'referenceType'],
+};
+
+function sameLinkTarget(a: Node | undefined, b: Node): a is Node {
+  return !!a && a.type === b.type && LINK_TARGET[b.type!].every(key => a?.[key] === b[key]);
+}
+
 // Milkdown can distribute one link around inline code, moving separating
 // whitespace outside the links. Preserve that whitespace while comparing the
 // contiguous label as one link with the same destination and title.
 function appendNormalized(result: Node[], node: Node) {
   const previous = result.at(-1);
-  if (node.type === 'link') {
+  if (node.type === 'link' || node.type === 'linkReference') {
     const gap = previous?.type === 'text' && /^[\t\n\r ]+$/.test(previous.value ?? '') ? previous : undefined;
     const link = gap ? result.at(-2) : previous;
-    if (link?.type === 'link' && link.url === node.url && link.title === node.title) {
+    if (sameLinkTarget(link, node)) {
       if (gap) result.pop();
       const children = link.children ?? (link.children = []);
       for (const child of [...(gap ? [gap] : []), ...(node.children ?? [])]) appendNormalized(children, child);

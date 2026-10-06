@@ -21,7 +21,7 @@
     "src/model/markdown-model.ts": "b7ed1c8321c776ac516324c41e4dd29758901829c7a3baf25de0d551a04a184c",
     "src/model/metadata-colors.ts": "c34401a5d3767fe9a55200293069ee2ceaa845aecf596910f1bc8870b4215c73",
     "src/model/slash-command.ts": "cc7a2f879cf607039b7814eebee6c8d8fa7baa4c2782d167d1cb87289a8c3607",
-    "src/model/source-markdown.ts": "e67b081e1d2a0a977bd9b8fd2f2d86a4db5d518d7cb93855e271257a8c65df75",
+    "src/model/source-markdown.ts": "f9b439f3ffc0bf1e9dd2050b1838188e7f4df040658ee4c4b698c093e74eda93",
     "src/model/toolbar-visibility.ts": "d73827c52f3f24ba00f85d81cd2667b5f9a845cb59503676cc93ef4b6e6c8dfc",
     "src/plugins/action-hints.ts": "6c04774830f394a562b003c25b8f4b41e8bf3e9eb820d36cc37573f62a7ff046",
     "src/plugins/block-handle.ts": "4dc03c936afe9d371ccecdf5553cf56ebe84db6aee4bb5872a1b792ada1c88f1",
@@ -34,7 +34,7 @@
     "src/plugins/color-preview.ts": "7097a41fc19b797abf19432c31f542a10e8e1737825f9d52549485bf34afb7ee",
     "src/plugins/commands.ts": "f3b19e777467da49cdb73e74cccfedeaad6fb118d37eb8a45d2ce48dd9b46845",
     "src/plugins/contents.ts": "52b8c54ed82deba96c13d2e18ef2dccb22920e820951c0babfc7df99dbb4764a",
-    "src/plugins/editor-setup.ts": "4242ed1aff82ec10e7d0bd422779054d044c7ad625f65e06c9b2266a57c32d58",
+    "src/plugins/editor-setup.ts": "53fc32b3d5dc68226e2c6208b45ddfb774a6f06760fd280e4fa62cd8fce4212a",
     "src/plugins/floating-panel.ts": "e0db93e12ef02857d6b1a7bbb2113539da60540424d385dad504bbdf67fafed5",
     "src/plugins/formatting-actions.ts": "9a336ce6a128647821d81bbb2ea238f3213e566f968837fee5615391eabac479",
     "src/plugins/formatting-state.ts": "0f423f452632fd04a81f29ab89919f83e2f359b79950e2fbf38de79743e5abf4",
@@ -43,6 +43,7 @@
     "src/plugins/icons.ts": "7fd77e1f26b177503c7d807a8fb0d5bf889b01e3d0e68031a1b1d4890f8fb396",
     "src/plugins/image.ts": "6ea1949303256038891f1de10dfb9246eeb57f40a13f3a6530ecbfb6cbe3808b",
     "src/plugins/link-boundary.ts": "60239dd5cb18e70e64c62ccfe9526fbeab1550d1ebc56c735e4c8c1ecd60eced",
+    "src/plugins/link-reference.ts": "c76ab901a7634d40a8b1c2805f982e97a3f2be5461390d564d2c3747cf5d308b",
     "src/plugins/link-tooltip.ts": "db579fb3be73d3fae3cb00a83c026f78ae13b8d4b43bf6af55f36c0fb0e9a0dc",
     "src/plugins/liquid-highlight.ts": "3f56810c162691ef8f44a8b6229619c8320ecd6f69cbccae282f290d5e5921a2",
     "src/plugins/markdown-paste.ts": "5be44501e97a8f2e15741fc87e067052cfb212f68c74b44c5d6bebf384ee4942",
@@ -61,7 +62,7 @@
     "src/skins.ts": "6bc7ca0f2f55e74f324181b03d3b2cd12b17b6d2bcd80316348e4c09ea12602e",
     "src/styles/core.css": "b6d256e0fe9e9dda8e2b09d937d6f1dc0482d4a01abc333a56fcbbea2c53bd37",
     "src/styles/host.css": "b9f3382c726d185e9de21fa986e4a78a45c81a17d900c9efc419413d7f4b5957",
-    "src/styles/look.css": "bc23daaf8526176d88c839857bea72004d7a2cc2e2af617e14584ddb25da72d8",
+    "src/styles/look.css": "89333426f9f72b55c42a25ddec4912e4610d971d45b1b255c3e05227fdc2f476",
     "src/themes.ts": "bef01dec5d01891e940628de93b74a84ea0105858e0bec7d636a93c92898b3cf"
   }
 }

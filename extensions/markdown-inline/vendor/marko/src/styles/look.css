@@ -417,6 +417,14 @@
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .html-editable:focus { border-color: rgba(130, 170, 110, 0.5); background: rgba(130, 170, 110, 0.1); }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .html-editable.selected { border-color: rgba(130, 170, 110, 0.5); }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .link-definition {
+  font-family: var(--marko-code-font-family);
+  font-size: 0.82em;
+  color: var(--marko-text-secondary);
+  margin: 0.15em 0;
+  overflow-wrap: anywhere;
+  cursor: default;
+}
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .ProseMirror { outline: none; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .ProseMirror .ProseMirror-selectednode { outline: 2px solid var(--marko-accent-40); border-radius: 4px; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown-selection-toolbar {
