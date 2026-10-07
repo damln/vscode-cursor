@@ -30,7 +30,7 @@
     "src/plugins/block-selection.ts": "06336001b15b10cef19acbb748c354326177679e2e74fa70804e0acb0cf63441",
     "src/plugins/caret-sync.ts": "a6ff30f6f9d5ef87637e029a442ca191a63002755c4cf93f2a3c2985ee36fc36",
     "src/plugins/code-gutter.ts": "7d44c92d8e2467bb3b1892cf20ab24c80dd75c7c5eed3c80f8d16c6ab394d80a",
-    "src/plugins/code-lang.ts": "eec2cf57cbac219aa842f24b024d146cd58389b92549591f86c8dd2b6bac3dae",
+    "src/plugins/code-lang.ts": "c99e3f2007290e0394f5de6a3f9cb41911bb872c9f3bbe42643551b840a7be00",
     "src/plugins/color-preview.ts": "7097a41fc19b797abf19432c31f542a10e8e1737825f9d52549485bf34afb7ee",
     "src/plugins/commands.ts": "f3b19e777467da49cdb73e74cccfedeaad6fb118d37eb8a45d2ce48dd9b46845",
     "src/plugins/contents.ts": "52b8c54ed82deba96c13d2e18ef2dccb22920e820951c0babfc7df99dbb4764a",
@@ -40,7 +40,7 @@
     "src/plugins/formatting-state.ts": "0f423f452632fd04a81f29ab89919f83e2f359b79950e2fbf38de79743e5abf4",
     "src/plugins/html-editable.ts": "7b8fd65a2f406bdcaf5870a60401a775398ee70a7260e0113510dc1f9a7c9637",
     "src/plugins/html-input.ts": "65b8b8030e63c0f97da8b08e558e58b9366ca67629d865180373336c8f1eaf75",
-    "src/plugins/icons.ts": "7fd77e1f26b177503c7d807a8fb0d5bf889b01e3d0e68031a1b1d4890f8fb396",
+    "src/plugins/icons.ts": "e6e9bc1909d654a0887958987ce9cce80b120e73b0523420cd40a91850637f35",
     "src/plugins/image.ts": "6ea1949303256038891f1de10dfb9246eeb57f40a13f3a6530ecbfb6cbe3808b",
     "src/plugins/link-boundary.ts": "60239dd5cb18e70e64c62ccfe9526fbeab1550d1ebc56c735e4c8c1ecd60eced",
     "src/plugins/link-reference.ts": "c76ab901a7634d40a8b1c2805f982e97a3f2be5461390d564d2c3747cf5d308b",
@@ -60,9 +60,9 @@
     "src/plugins/toolbar.ts": "9d3530fb77fdf7e13030e34200ce123798514b51d4c717959cba379b5998ddff",
     "src/scope.ts": "7b51980919e6fbce8380cac0738b4d12ede1af16c2b497c93aca60daeaee2b08",
     "src/skins.ts": "6bc7ca0f2f55e74f324181b03d3b2cd12b17b6d2bcd80316348e4c09ea12602e",
-    "src/styles/core.css": "b6d256e0fe9e9dda8e2b09d937d6f1dc0482d4a01abc333a56fcbbea2c53bd37",
+    "src/styles/core.css": "f03cf143fa61b6649d1bb66c816bc92494236f772ace12a5107820728c73f48c",
     "src/styles/host.css": "b9f3382c726d185e9de21fa986e4a78a45c81a17d900c9efc419413d7f4b5957",
-    "src/styles/look.css": "89333426f9f72b55c42a25ddec4912e4610d971d45b1b255c3e05227fdc2f476",
+    "src/styles/look.css": "bd2d5c6681cc288bf2987594cda490c693845ccbb8362472acb43d4c6f8dce40",
     "src/themes.ts": "bef01dec5d01891e940628de93b74a84ea0105858e0bec7d636a93c92898b3cf"
   }
 }

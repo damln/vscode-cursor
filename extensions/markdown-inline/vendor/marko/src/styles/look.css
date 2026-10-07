@@ -596,17 +596,19 @@
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-actions { transition: opacity 0.15s; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn {
+  padding: 0;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: var(--marko-text-muted);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
 }
-:is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn:hover {
-  color: var(--marko-text-secondary);
-  background: color-mix(in srgb, var(--marko-foreground) 6%, transparent);
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn:enabled:hover {
+  color: var(--marko-foreground);
+  background: color-mix(in srgb, var(--marko-foreground) 10%, transparent);
 }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn[data-state="success"] { color: #22c55e; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn:disabled { cursor: not-allowed; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn[aria-busy="true"] { cursor: progress; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn[data-state="error"] { color: var(--marko-destructive); }
@@ -615,7 +617,7 @@
   :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-actions { transition: none; }
   :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-copy-spinner { animation: none; }
 }
-:is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn--danger:hover { color: var(--marko-destructive); background: rgba(239, 68, 68, 0.1); }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-action-btn--danger:enabled:hover { color: var(--marko-destructive); background: color-mix(in srgb, var(--marko-destructive) 14%, transparent); }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-wrapper > pre {
   border-radius: 0 0 12px 12px !important;
   border-top: 1px solid color-mix(in srgb, var(--marko-foreground) 4%, transparent) !important;
@@ -634,18 +636,16 @@
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-trigger {
   padding: 2px 6px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: var(--marko-text-muted);
-  font-family: var(--marko-code-font-family);
-  font-size: 11px;
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
-  line-height: 1.4;
 }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-name { font-family: var(--marko-code-font-family); font-size: 11px; line-height: 1.4; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-trigger:hover {
-  color: var(--marko-text-secondary);
-  background: color-mix(in srgb, var(--marko-foreground) 6%, transparent);
+  color: var(--marko-foreground);
+  background: color-mix(in srgb, var(--marko-foreground) 10%, transparent);
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-chevron { transition: opacity 0.15s; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .code-lang-dropdown {
@@ -756,8 +756,7 @@
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-lang-bar { border-color: rgba(0, 0, 0, 0.08); }
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-lang-wrapper > pre { border-top-color: rgba(0, 0, 0, 0.06) !important; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-gutter { color: rgba(0, 0, 0, 0.2); border-right-color: rgba(0, 0, 0, 0.08); }
-:is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-lang-trigger:hover { background: rgba(0, 0, 0, 0.05); }
-:is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-lang-action-btn:hover { background: rgba(0, 0, 0, 0.06); }
+:is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-lang-action-btn[data-state="success"] { color: #15803d; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"] .code-lang-dropdown {
   background: var(--marko-floating-surface);
   border-color: rgba(0, 0, 0, 0.12);
