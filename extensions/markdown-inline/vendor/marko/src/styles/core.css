@@ -350,11 +350,13 @@
 :is(.marko, .marko-overlay) .code-lang-actions:has([aria-busy="true"], [data-state="error"]) { opacity: 1; }
 :is(.marko, .marko-overlay) .code-lang-action-btn {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
 }
+:is(.marko, .marko-overlay) .code-lang-action-btn svg { flex-shrink: 0; width: 14px; height: 14px; pointer-events: none; }
 :is(.marko, .marko-overlay) .code-lang-action-btn:disabled { opacity: .4; }
 :is(.marko, .marko-overlay) .code-lang-action-btn[aria-busy="true"] { opacity: 1; }
 :is(.marko, .marko-overlay) .code-lang-action-btn:enabled:active { opacity: .8; }
@@ -380,7 +382,7 @@
 }
 :is(.marko, .marko-overlay)[data-marko-code-wrap="false"] pre.code-with-gutter > code { white-space: pre !important; overflow-wrap: normal; }
 :is(.marko, .marko-overlay) .code-lang-trigger { display: inline-flex; align-items: center; gap: 4px; }
-:is(.marko, .marko-overlay) .code-lang-chevron { display: flex; align-items: center; opacity: 0.5; }
+:is(.marko, .marko-overlay) .code-lang-chevron { display: flex; flex-shrink: 0; align-items: center; opacity: 0.5; }
 :is(.marko, .marko-overlay) .code-lang-trigger:hover .code-lang-chevron { opacity: 0.8; }
 :is(.marko, .marko-overlay) .code-lang-dropdown {
   position: fixed;

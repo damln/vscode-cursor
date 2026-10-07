@@ -5,7 +5,7 @@ import { Selection, TextSelection } from "@milkdown/kit/prose/state";
 import { FloatingPanel, positionMenu } from "./floating-panel";
 import { $view } from "@milkdown/kit/utils";
 import { codeBlockSchema } from "@milkdown/kit/preset/commonmark";
-import { ICON_CHEVRON_DOWN, ICON_COPY, ICON_COPY_SUCCESS, ICON_TRASH, ICON_ERASER } from "./icons";
+import { ICON_CHEVRON_DOWN, ICON_COPY, ICON_COPY_ERROR, ICON_COPY_SUCCESS, ICON_ERASER, ICON_SPINNER, ICON_TRASH } from "./icons";
 
 export const codeBlockLangView = $view(codeBlockSchema.node, () => {
   return (node: any, view: any, getPos: any) => {
@@ -23,6 +23,7 @@ export const codeBlockLangView = $view(codeBlockSchema.node, () => {
     const trigger = document.createElement("button");
     trigger.className = "code-lang-trigger";
     const langName = document.createElement("span");
+    langName.className = "code-lang-name";
     langName.textContent = node.attrs.language || "plain";
     const chevron = document.createElement("span");
     chevron.className = "code-lang-chevron";
@@ -57,7 +58,7 @@ export const codeBlockLangView = $view(codeBlockSchema.node, () => {
       copyBtn.dataset.state = "loading";
       copyBtn.title = "Copying code…";
       copyStatus.textContent = copyBtn.title;
-      copyBtn.innerHTML = '<svg class="code-copy-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a9 9 0 1 1-9 9"/></svg>';
+      copyBtn.innerHTML = ICON_SPINNER;
       try {
         await scope.host.copyText(node.textContent, copyController.signal);
         if (disposed) return;
@@ -71,7 +72,7 @@ export const codeBlockLangView = $view(codeBlockSchema.node, () => {
       } catch (error) {
         if (disposed) return;
         copyBtn.dataset.state = "error";
-        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>';
+        copyBtn.innerHTML = ICON_COPY_ERROR;
         copyBtn.title = error instanceof Error ? error.message : "Could not copy code. Try again.";
         copyStatus.textContent = copyBtn.title;
       } finally {
