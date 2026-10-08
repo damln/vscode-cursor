@@ -523,7 +523,11 @@
   min-height: 96px;
   overflow-wrap: anywhere;
 }
-:is(.marko, .marko-overlay) .inline-image img { max-width: 100%; max-height: min(480px, 60vh); }
+:is(.marko, .marko-overlay) .inline-image :is(img, video) { max-width: 100%; max-height: min(480px, 60vh); }
+/* Once the media shows, its actions float over its corner instead of adding a row below it. */
+:is(.marko, .marko-overlay) .inline-image { position: relative; }
+:is(.marko, .marko-overlay) .inline-image[data-state="loaded"] { min-height: 0; }
+:is(.marko, .marko-overlay) .inline-image[data-state="loaded"] .image-actions { position: absolute; inset: 8px 8px auto auto; }
 :is(.marko, .marko-overlay) .inline-image [hidden] { display: none; }
 :is(.marko, .marko-overlay) .image-path { max-width: 100%; }
 :is(.marko, .marko-overlay) .image-actions { display: flex; gap: 6px; }
