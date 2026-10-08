@@ -2,6 +2,7 @@ import { $prose } from '@milkdown/kit/utils';
 import { Plugin, TextSelection } from '@milkdown/kit/prose/state';
 import type { EditorView } from '@milkdown/kit/prose/view';
 import { scopeOf } from '../scope';
+import { caretCoords } from './inline-code-caret';
 
 export const smoothCaret = $prose(() => new Plugin({view: view => new SmoothCaret(view)}));
 class SmoothCaret {
@@ -48,7 +49,7 @@ class SmoothCaret {
     const native = document.getSelection();
     if (!native?.isCollapsed || !native.anchorNode || !view.dom.contains(native.anchorNode)) {this.hide(); return;}
     try {
-      const rect = view.coordsAtPos(selection.head), viewport = scopeOf(view).surface.getBoundingClientRect();
+      const rect = caretCoords(view), viewport = scopeOf(view).surface.getBoundingClientRect();
       const top = Math.max(rect.top, viewport.top, 0), bottom = Math.min(rect.bottom, viewport.bottom, innerHeight);
       if (bottom <= top || rect.left < viewport.left || rect.left > viewport.right || !Number.isFinite(rect.left + top + bottom)) {this.hide(); return;}
       const animate = this.animateNext && this.previous && Math.abs(this.previous.y-top) < viewport.height;

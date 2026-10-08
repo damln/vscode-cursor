@@ -73,11 +73,7 @@ import { slashCommand } from "./slash-command";
 import { slashList } from "./slash-list";
 import { selectionSlash } from "./selection-slash";
 import { configureLinkReferences, definitionJoin, linkDefinitionSchema, remarkResolveReferences } from "./link-reference";
-import {
-  isInlineCodeMark,
-  outsideMarksAtInlineCodeBoundary,
-  sameMarks,
-} from "../model/inline-code-boundary";
+import { inlineCodeCaret } from "./inline-code-caret";
 import { formatShortcutForEvent } from "../model/format-shortcut";
 import { runCommand } from "./commands";
 import { history } from "@milkdown/kit/plugin/history";
@@ -132,78 +128,6 @@ const formatShortcuts = $prose(ctx => new Plugin({
   },
 }));
 
-// Keep a cursor at either edge of inline code on the non-code side. This
-// covers mouse selection, arrows, typing, deletion and combined marks.
-const exitInlineCodeKey = new PluginKey("exit-inline-code");
-const exitInlineCodePlugin = $prose(
-  () =>
-    new Plugin({
-      key: exitInlineCodeKey,
-      props: {
-        handleKeyDown(view, event) {
-          if (
-            (event.key !== "Backspace" && event.key !== "Delete") ||
-            !view.state.selection.empty
-          ) {
-            return false;
-          }
-          const codeMark =
-            view.state.schema.marks.inlineCode || view.state.schema.marks.code_inline;
-          if (!codeMark) return false;
-          const { $from } = view.state.selection;
-          const outsideMarks = outsideMarksAtInlineCodeBoundary($from, codeMark);
-          if (outsideMarks === null) return false;
-          const activeMarks = view.state.storedMarks ?? $from.marks();
-          if (!sameMarks(activeMarks, outsideMarks)) {
-            view.dispatch(view.state.tr.setStoredMarks(outsideMarks));
-          }
-          return false;
-        },
-        handleTextInput(view, from, to, text) {
-          if (from !== to || !view.state.selection.empty) return false;
-          const codeMark =
-            view.state.schema.marks.inlineCode || view.state.schema.marks.code_inline;
-          if (!codeMark) return false;
-          const cursor = view.state.doc.resolve(from);
-          const outsideMarks = outsideMarksAtInlineCodeBoundary(cursor, codeMark);
-          if (outsideMarks === null) return false;
-          const explicitlyActiveCode = view.state.storedMarks?.some((mark) =>
-            isInlineCodeMark(mark, codeMark)
-          );
-          if (explicitlyActiveCode && text !== " ") return false;
-          const activeMarks = view.state.storedMarks ?? cursor.marks();
-          if (sameMarks(activeMarks, outsideMarks)) return false;
-
-          const transaction = view.state.tr
-            .setStoredMarks(outsideMarks)
-            .insertText(text, from, to)
-            .scrollIntoView();
-          view.dispatch(transaction);
-          return true;
-        },
-      },
-      appendTransaction(transactions, _oldState, newState) {
-        if (
-          !newState.selection.empty ||
-          !transactions.some(
-            transaction => transaction.selectionSet && !transaction.docChanged
-          )
-        ) {
-          return null;
-        }
-        const codeMark =
-          newState.schema.marks.inlineCode || newState.schema.marks.code_inline;
-        if (!codeMark) return null;
-        const { $from } = newState.selection;
-        const outsideMarks = outsideMarksAtInlineCodeBoundary($from, codeMark);
-        if (outsideMarks === null) return null;
-        const activeMarks = newState.storedMarks ?? $from.marks();
-        if (sameMarks(activeMarks, outsideMarks)) return null;
-        return newState.tr.setStoredMarks(outsideMarks);
-      },
-    })
-);
-
 export interface EditorConfig {
   markdown: string;
   spellcheck: boolean;
@@ -254,7 +178,7 @@ export function getEditorPlugins(options: PluginOptions) {
     htmlTagInputRule,
     htmlBoundaryInput,
     codeBlockLangView,
-    exitInlineCodePlugin,
+    inlineCodeCaret,
     colorPreview,
   ];
 }

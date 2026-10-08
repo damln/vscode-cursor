@@ -16,7 +16,7 @@
     "src/model/frontmatter.ts": "5b682e3a7b0337a11bb3e9ad44cffa8c85a6f2472c807230004e434e789cb411",
     "src/model/heading-navigation.ts": "d192c394bc322cedd1f80c07edf31251a0044ac4bf1ba997d1add30271dde144",
     "src/model/html.ts": "5f30ed43d6b9b7f045cd0db3ea43a246959c6154695b4c35e688c2258ce16fb5",
-    "src/model/inline-code-boundary.ts": "ea38037435a58bf70e3d8d79fd5a5d02746462d663fa62f931b24e505c9f5c79",
+    "src/model/inline-code-boundary.ts": "14f3193e1dddf0c9ab720c88f37de6dc75b6c3c3b1138fb0afb65bf206812306",
     "src/model/link-range.ts": "d338c81372bab36be87aaeba270914843f50c535d0d6b4c44ec11feadbe83c9a",
     "src/model/markdown-model.ts": "b7ed1c8321c776ac516324c41e4dd29758901829c7a3baf25de0d551a04a184c",
     "src/model/metadata-colors.ts": "c34401a5d3767fe9a55200293069ee2ceaa845aecf596910f1bc8870b4215c73",
@@ -34,7 +34,7 @@
     "src/plugins/color-preview.ts": "7097a41fc19b797abf19432c31f542a10e8e1737825f9d52549485bf34afb7ee",
     "src/plugins/commands.ts": "f3b19e777467da49cdb73e74cccfedeaad6fb118d37eb8a45d2ce48dd9b46845",
     "src/plugins/contents.ts": "52b8c54ed82deba96c13d2e18ef2dccb22920e820951c0babfc7df99dbb4764a",
-    "src/plugins/editor-setup.ts": "53fc32b3d5dc68226e2c6208b45ddfb774a6f06760fd280e4fa62cd8fce4212a",
+    "src/plugins/editor-setup.ts": "646d282a6d32463601df6e50b3a308468272ac3bcf2e1dcbab75684a2981b236",
     "src/plugins/floating-panel.ts": "e0db93e12ef02857d6b1a7bbb2113539da60540424d385dad504bbdf67fafed5",
     "src/plugins/formatting-actions.ts": "9a336ce6a128647821d81bbb2ea238f3213e566f968837fee5615391eabac479",
     "src/plugins/formatting-state.ts": "0f423f452632fd04a81f29ab89919f83e2f359b79950e2fbf38de79743e5abf4",
@@ -42,6 +42,7 @@
     "src/plugins/html-input.ts": "65b8b8030e63c0f97da8b08e558e58b9366ca67629d865180373336c8f1eaf75",
     "src/plugins/icons.ts": "e6e9bc1909d654a0887958987ce9cce80b120e73b0523420cd40a91850637f35",
     "src/plugins/image.ts": "e92ed97c31788c819ae0427a14f14a08d18acfd2f97ed97dceb9e1a3da3b10d2",
+    "src/plugins/inline-code-caret.ts": "05062a98a791b8451b066336bfd7b4e3038a432cd028d3239312a2aadace9875",
     "src/plugins/link-boundary.ts": "60239dd5cb18e70e64c62ccfe9526fbeab1550d1ebc56c735e4c8c1ecd60eced",
     "src/plugins/link-reference.ts": "c76ab901a7634d40a8b1c2805f982e97a3f2be5461390d564d2c3747cf5d308b",
     "src/plugins/link-tooltip.ts": "db579fb3be73d3fae3cb00a83c026f78ae13b8d4b43bf6af55f36c0fb0e9a0dc",
@@ -53,7 +54,7 @@
     "src/plugins/selection-slash.ts": "7e9f81f6d447165ae543bdc7b7826b9a5d1a78477a9c86f41d7192b275207c2a",
     "src/plugins/slash-command.ts": "c6f22cd43e282f08d659e674399af9af7ace26efff6f783227ded1f14e379041",
     "src/plugins/slash-list.ts": "38a4949d70a0eb5a1809c8cc2862b8fa6997262379302ce8025ac751ab2276c6",
-    "src/plugins/smooth-caret.ts": "98312566c34163b5fd0460595f208aca019808934bfb6dd40be237be94931316",
+    "src/plugins/smooth-caret.ts": "b3b183a562f39ad50d01a682a375a90d2c6f8d676310bfd0f1c0f6fe5a5a3efa",
     "src/plugins/table-toolbar.ts": "e6d12a72215dc01d1998d73fdf92ea3f4a95422c22d9a2ed8871b8fe825ec04e",
     "src/plugins/task-list.ts": "03e3f5bea7aa732362e24bcc7e94bb4128f2553052687f180d18d592121eb17f",
     "src/plugins/toolbar-dom.ts": "a2a630bba48115132c2d154a3b09bde178361e0ff1ea82eb64fd9a751ee05c7b",
@@ -62,7 +63,7 @@
     "src/skins.ts": "6bc7ca0f2f55e74f324181b03d3b2cd12b17b6d2bcd80316348e4c09ea12602e",
     "src/styles/core.css": "49c8f043d54288024f20e16cd51070f26c57b1edb4b331e1fb4068177bc8eba8",
     "src/styles/host.css": "b9f3382c726d185e9de21fa986e4a78a45c81a17d900c9efc419413d7f4b5957",
-    "src/styles/look.css": "126a18ad6b0447ef1bba43ecdd3f9ec738b7a986216b5d8733cfd2a984ca0d05",
+    "src/styles/look.css": "85088976216b2a83ee958c873a4be1a81f7beb6dfbffc4b1f8642a80bad83b24",
     "src/themes.ts": "bef01dec5d01891e940628de93b74a84ea0105858e0bec7d636a93c92898b3cf"
   }
 }
