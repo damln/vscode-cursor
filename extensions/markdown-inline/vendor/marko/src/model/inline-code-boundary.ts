@@ -12,8 +12,17 @@ export function sameMarks(left: readonly Mark[], right: readonly Mark[]) {
   return left.length === right.length && left.every((mark, index) => mark.eq(right[index]));
 }
 
-/** Marks a caret should carry when it sits on the non-code side of inline code. */
-export function outsideMarksAtInlineCodeBoundary(cursor: ResolvedPos, codeMarkType: MarkType) {
+/**
+ * A caret at the edge of inline code. The edge has two caret positions: inside
+ * the code and outside it. `end` is true when the code ends at the caret.
+ */
+export interface CodeEdge {
+  end: boolean;
+  inside: readonly Mark[];
+  outside: readonly Mark[];
+}
+
+export function codeEdgeAt(cursor: ResolvedPos, codeMarkType: MarkType): CodeEdge | null {
   const beforeMarks = marksOf(cursor.nodeBefore);
   const afterMarks = marksOf(cursor.nodeAfter);
   const codeBefore = beforeMarks.some(mark => isInlineCodeMark(mark, codeMarkType));
@@ -21,5 +30,14 @@ export function outsideMarksAtInlineCodeBoundary(cursor: ResolvedPos, codeMarkTy
   if (codeBefore === codeAfter) return null;
   const outsideNode = codeBefore ? cursor.nodeAfter : cursor.nodeBefore;
   const sourceMarks = outsideNode ? marksOf(outsideNode) : codeBefore ? beforeMarks : afterMarks;
-  return sourceMarks.filter(mark => !isInlineCodeMark(mark, codeMarkType));
+  return {
+    end: codeBefore,
+    inside: codeBefore ? beforeMarks : afterMarks,
+    outside: sourceMarks.filter(mark => !isInlineCodeMark(mark, codeMarkType)),
+  };
+}
+
+/** Marks a caret should carry when it sits on the non-code side of inline code. */
+export function outsideMarksAtInlineCodeBoundary(cursor: ResolvedPos, codeMarkType: MarkType) {
+  return codeEdgeAt(cursor, codeMarkType)?.outside ?? null;
 }

@@ -288,6 +288,9 @@
   border-radius: 4px;
   border: 1px solid color-mix(in srgb, var(--marko-foreground) 6%, transparent);
 }
+/* Typing goes into this inline code: the caret is inside it or on its inner edge. */
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown code:has(.inline-code-caret),
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .inline-code-caret > code { box-shadow: 0 0 0 1.5px var(--marko-accent-40); }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown .inline-color-preview {
   margin: 0 0.34em 0 0.08em;
   border: 1px solid color-mix(in srgb, var(--marko-foreground) 28%, transparent);
