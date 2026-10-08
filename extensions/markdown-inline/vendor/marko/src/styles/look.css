@@ -899,7 +899,7 @@
   background: var(--marko-code-bg);
   font-size: 12px;
 }
-:is(.marko, .marko-overlay):not([data-marko-base="none"]) .inline-image img { object-fit: contain; margin: 0; }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .inline-image :is(img, video) { object-fit: contain; margin: 0; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .image-status { padding: 4px 0; color: var(--marko-text-secondary); }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .image-path {
   color: var(--marko-text-secondary);
@@ -918,6 +918,12 @@
   cursor: pointer;
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .image-actions button:disabled { cursor: default; }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .inline-image[data-state="loaded"] .image-actions { margin: 0; inset: 14px 14px auto auto; }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .inline-image[data-state="loaded"] .image-actions button {
+  background: var(--marko-floating-surface);
+  color: var(--marko-floating-foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .image-actions button:focus-visible,
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .image-path-panel :focus-visible { outline: 2px solid var(--marko-accent); outline-offset: 2px; }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .image-path-panel {
