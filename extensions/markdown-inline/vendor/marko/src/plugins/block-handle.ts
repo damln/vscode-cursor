@@ -31,6 +31,8 @@ class BlockControls {
   private rubber: {x: number; y: number; currentX: number; currentY: number; scrollTop: number;
     parent: number; pointerId: number; active: boolean; previous: BlockGroup | null} | null = null;
   private dragging: {group: BlockGroup; doc: EditorView['state']['doc']; y: number; destination: number | null} | null = null;
+  // Pointer events instead of HTML drag and drop: hosts such as Tauri claim native drags for file drops.
+  private press: {id: number; x: number; y: number} | null = null;
   private frame = 0;
   private scroller: HTMLElement;
   private up: HTMLButtonElement;
@@ -42,7 +44,7 @@ class BlockControls {
     const scope = scopeOf(view);
     this.scroller = scope.surface;
     this.handle.className = 'block-group-handle';
-    this.handle.type = 'button'; this.handle.draggable = true;
+    this.handle.type = 'button';
     this.handle.innerHTML = ICON_GRIP;
     this.label.className = 'block-type'; this.label.setAttribute('aria-hidden', 'true'); this.handle.append(this.label);
     this.handle.setAttribute('aria-label', 'Select block. Drag to move selected blocks.');
@@ -62,15 +64,18 @@ class BlockControls {
     document.addEventListener('pointermove', this.pointerMove, options);
     this.scroller.addEventListener('pointerdown', this.pointerDown, options);
     document.addEventListener('pointerup', this.pointerUp, options);
+    document.addEventListener('pointerup', this.release, options);
     document.addEventListener('pointercancel', this.cancelArea, options);
+    document.addEventListener('pointercancel', this.endDrag, options);
     this.scroller.addEventListener('lostpointercapture', this.cancelArea, options);
     this.handle.addEventListener('pointerdown', event => {
-      if (event.button === 0 && !this.handle.disabled) this.selectHovered();
+      if (event.button !== 0 || this.handle.disabled || !this.selectHovered()) return;
+      event.preventDefault();
+      this.press = {id: event.pointerId, x: event.clientX, y: event.clientY};
     }, options);
     this.handle.addEventListener('click', () => {
       if (this.selectHovered()) this.view.focus();
     }, options);
-    this.handle.addEventListener('dragstart', this.dragStart, options);
     this.scroller.addEventListener('pointerleave', event => {
       if (!(event.relatedTarget instanceof Node && this.handle.contains(event.relatedTarget)) && !this.dragging) this.hideHandle();
     }, options);
@@ -78,9 +83,6 @@ class BlockControls {
       if (!(event.relatedTarget instanceof Node && this.scroller.contains(event.relatedTarget)) && !this.dragging) this.hideHandle();
     }, options);
     this.reducedMotion.addEventListener('change', () => this.hideHandle(true), options);
-    document.addEventListener('dragover', this.dragOver, options);
-    document.addEventListener('drop', this.drop, options);
-    document.addEventListener('dragend', this.endDrag, options);
     window.addEventListener('blur', this.endDrag, options);
     window.addEventListener('blur', this.cancelArea, options);
     window.addEventListener('keydown', event => {
@@ -132,6 +134,7 @@ class BlockControls {
     return all.reverse().find(unit => {const rect = this.rect(unit); return rect && x >= rect.left - (unit.parent === -1 ? 64 : 36) && x < rect.left && y >= rect.top && y <= rect.bottom;});
   }
   private pointerMove = (event: PointerEvent) => {
+    if (this.press?.id === event.pointerId) {this.dragMove(event); return;}
     if (!this.rubber && !(event.target instanceof Node && this.scroller.contains(event.target))) return;
     if (!this.view.editable || this.dragging || (event.buttons && !this.rubber)) return;
     if (this.rubber) {
@@ -249,28 +252,38 @@ class BlockControls {
     if (!this.rubber) return;
     const previous = this.rubber.previous; this.pointerUp(); this.select(previous);
   };
-  private dragStart = (event: DragEvent) => {
-    if (!event.dataTransfer) {event.preventDefault(); return;}
-    const group = this.selectHovered();
-    if (!group) {event.preventDefault(); return;}
+  private startDrag(y: number) {
+    const group = blockSelectionKey.getState(this.view.state);
+    if (!group || !this.view.editable || !selectedUnits(this.view.state.doc, group).length) return false;
     cancelBlockMotion(this.view);
     this.dragRects.clear(); this.dragScroll = this.scroller.scrollTop;
-    for (const unit of blockUnits(this.view.state.doc, group!.parent)) {const rect = this.rect(unit); if (rect) this.dragRects.set(unit.from, rect);}
-    this.dragging = {group: group!, doc: this.view.state.doc, y: event.clientY, destination: null};
+    for (const unit of blockUnits(this.view.state.doc, group.parent)) {const rect = this.rect(unit); if (rect) this.dragRects.set(unit.from, rect);}
+    this.dragging = {group, doc: this.view.state.doc, y, destination: null};
     this.view.dom.dataset.blockDragging = 'true';
-    event.dataTransfer.setData('application/x-damln-block-group', 'move'); event.dataTransfer.effectAllowed = 'move';
     this.preview.textContent = this.count.textContent;
-    event.dataTransfer.setDragImage(this.preview, 20, 15);
+    this.hideHandle(true);
     this.frame = requestAnimationFrame(this.autoScroll);
-  };
-  private dragOver = (event: DragEvent) => {
-    if (!this.dragging) return;
+    return true;
+  }
+  private dragMove(event: PointerEvent) {
+    const press = this.press!;
+    if (!event.buttons) {this.endDrag(); return;}
+    if (!this.dragging) {
+      if (Math.hypot(event.clientX - press.x, event.clientY - press.y) < 4) return;
+      if (!this.startDrag(event.clientY)) {this.press = null; return;}
+    }
+    event.preventDefault();
+    const drag = this.dragging!;
+    Object.assign(this.preview.style, {left: event.clientX + 14 + 'px', top: event.clientY + 10 + 'px'});
     const rect = this.scroller.getBoundingClientRect();
     const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
-    if (!inside) {this.dragging.y = (rect.top + rect.bottom) / 2; this.dragging.destination = null; this.indicator.hidden = true; this.clearPreview(); return;}
-    event.preventDefault(); event.stopImmediatePropagation();
-    this.dragging.y = event.clientY; this.locateDrop();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = this.dragging.destination === null ? 'none' : 'move';
+    if (!inside) {drag.y = (rect.top + rect.bottom) / 2; drag.destination = null; this.indicator.hidden = true; this.clearPreview(); return;}
+    drag.y = event.clientY; this.locateDrop();
+  }
+  private release = (event: PointerEvent) => {
+    if (this.press?.id !== event.pointerId) return;
+    this.press = null;
+    if (this.dragging) {event.preventDefault(); this.drop();}
   };
   private locateDrop() {
     const drag = this.dragging; if (!drag) return;
@@ -337,15 +350,15 @@ class BlockControls {
     }
     this.frame = requestAnimationFrame(this.autoScroll);
   };
-  private drop = (event: DragEvent) => {
+  private drop() {
     if (!this.dragging) return;
-    event.preventDefault(); event.stopImmediatePropagation();
     const {group, doc, destination} = this.dragging;
     const before = captureBlocks(this.view, group.parent);
     this.endDrag();
     if (destination !== null && this.view.state.doc === doc) moveBlockGroup(this.view, group, destination, before);
-  };
+  }
   private endDrag = () => {
+    this.press = null; this.preview.style.removeProperty('left'); this.preview.style.removeProperty('top');
     this.clearPreview(); this.dragRects.clear();
     this.dragging = null; cancelAnimationFrame(this.frame); this.indicator.hidden = true;
     delete this.view.dom.dataset.blockDragging;

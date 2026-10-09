@@ -24,7 +24,7 @@
     "src/model/source-markdown.ts": "f9b439f3ffc0bf1e9dd2050b1838188e7f4df040658ee4c4b698c093e74eda93",
     "src/model/toolbar-visibility.ts": "d73827c52f3f24ba00f85d81cd2667b5f9a845cb59503676cc93ef4b6e6c8dfc",
     "src/plugins/action-hints.ts": "6c04774830f394a562b003c25b8f4b41e8bf3e9eb820d36cc37573f62a7ff046",
-    "src/plugins/block-handle.ts": "4dc03c936afe9d371ccecdf5553cf56ebe84db6aee4bb5872a1b792ada1c88f1",
+    "src/plugins/block-handle.ts": "0fffbe8cc85a30419a58f80ae28823b0733bf32fa1b808a54944bff8eb8f13d7",
     "src/plugins/block-motion.ts": "2cf28a05d8e4eca7d1ea59243c97fb0e25e6eed0047c26624edc66b63b77deff",
     "src/plugins/block-movement.ts": "dfc74d65ea1342ab8d4c64a42fb339ff62574e4292b97c78aba112a6f6b8f02c",
     "src/plugins/block-selection.ts": "06336001b15b10cef19acbb748c354326177679e2e74fa70804e0acb0cf63441",
@@ -61,7 +61,7 @@
     "src/plugins/toolbar.ts": "9d3530fb77fdf7e13030e34200ce123798514b51d4c717959cba379b5998ddff",
     "src/scope.ts": "7b51980919e6fbce8380cac0738b4d12ede1af16c2b497c93aca60daeaee2b08",
     "src/skins.ts": "6bc7ca0f2f55e74f324181b03d3b2cd12b17b6d2bcd80316348e4c09ea12602e",
-    "src/styles/core.css": "49c8f043d54288024f20e16cd51070f26c57b1edb4b331e1fb4068177bc8eba8",
+    "src/styles/core.css": "6852a9cc6d721704b2960230a4c2d55244b2e589eb4384acfc3f62a938bfaeb0",
     "src/styles/host.css": "b9f3382c726d185e9de21fa986e4a78a45c81a17d900c9efc419413d7f4b5957",
     "src/styles/look.css": "85088976216b2a83ee958c873a4be1a81f7beb6dfbffc4b1f8642a80bad83b24",
     "src/themes.ts": "bef01dec5d01891e940628de93b74a84ea0105858e0bec7d636a93c92898b3cf"
