@@ -1,8 +1,13 @@
 // Per-editor environment shared by the plugins: where floating UI is mounted,
 // which element scrolls, and the host hooks that replace platform messaging.
-import type { EditorView } from "@milkdown/kit/prose/view";
+import type { EditorView } from '@milkdown/kit/prose/view';
 
-export interface MermaidResult { url: string; width: number; height: number; description: string }
+export interface MermaidResult {
+  url: string;
+  width: number;
+  height: number;
+  description: string;
+}
 export type MermaidRenderer = (source: string, dark: boolean) => Promise<MermaidResult>;
 
 export interface MarkoHost {
@@ -29,11 +34,12 @@ export interface MarkoScope {
 
 export const defaultHost: MarkoHost = {
   openLink(href) {
-    if (/^(https?|mailto):/i.test(href)) window.open(href, "_blank", "noopener,noreferrer");
+    if (/^(https?|mailto):/i.test(href)) window.open(href, '_blank', 'noopener,noreferrer');
   },
-  resolveImage: src => Promise.resolve(src),
-  copyText: text => navigator.clipboard?.writeText(text)
-    ?? Promise.reject(new Error("The clipboard is unavailable on this page.")),
+  resolveImage: (src) => Promise.resolve(src),
+  copyText: (text) =>
+    navigator.clipboard?.writeText(text) ??
+    Promise.reject(new Error('The clipboard is unavailable on this page.')),
 };
 
 let sequence = 0;
@@ -47,19 +53,28 @@ const scopes = new WeakMap<Element, MarkoScope>();
 export function registerScope(scope: MarkoScope) {
   scopes.set(scope.root, scope);
   scopes.set(scope.overlay, scope);
-  return () => { scopes.delete(scope.root); scopes.delete(scope.overlay); };
+  return () => {
+    scopes.delete(scope.root);
+    scopes.delete(scope.overlay);
+  };
 }
 
 const fallbackScope: MarkoScope = {
-  get root() { return document.body; },
-  get surface() { return document.body; },
-  get overlay() { return document.body; },
+  get root() {
+    return document.body;
+  },
+  get surface() {
+    return document.body;
+  },
+  get overlay() {
+    return document.body;
+  },
   host: defaultHost,
-  dark: () => matchMedia("(prefers-color-scheme: dark)").matches,
+  dark: () => matchMedia('(prefers-color-scheme: dark)').matches,
 };
 
 export function scopeOf(target: EditorView | Element | null | undefined): MarkoScope {
-  let node: Element | null = target && "dom" in target ? target.dom : target ?? null;
+  let node: Element | null = target && 'dom' in target ? target.dom : (target ?? null);
   for (; node; node = node.parentElement) {
     const scope = scopes.get(node);
     if (scope) return scope;
@@ -70,7 +85,7 @@ export function scopeOf(target: EditorView | Element | null | undefined): MarkoS
 const mermaidLoads = new WeakMap<MarkoHost, Promise<MermaidRenderer>>();
 
 export function loadMermaid(host: MarkoHost): Promise<MermaidRenderer> {
-  if (!host.loadMermaid) return Promise.reject(new Error("Mermaid previews are not enabled."));
+  if (!host.loadMermaid) return Promise.reject(new Error('Mermaid previews are not enabled.'));
   let loading = mermaidLoads.get(host);
   if (!loading) {
     loading = host.loadMermaid();

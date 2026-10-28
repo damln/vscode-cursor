@@ -1,13 +1,15 @@
-import { slashMenuView } from "./floating-panel";
-import { bulletListSchema, listItemSchema, paragraphSchema } from "@milkdown/kit/preset/commonmark";
-import { Fragment, type Node as ProseNode, type NodeType } from "@milkdown/kit/prose/model";
-import { Plugin, PluginKey, TextSelection, type EditorState } from "@milkdown/kit/prose/state";
-import type { EditorView } from "@milkdown/kit/prose/view";
-import { $prose } from "@milkdown/kit/utils";
-import type { Ctx } from "@milkdown/kit/ctx";
+import type { Ctx } from '@milkdown/kit/ctx';
+import { bulletListSchema, listItemSchema, paragraphSchema } from '@milkdown/kit/preset/commonmark';
+import { Fragment, type NodeType, type Node as ProseNode } from '@milkdown/kit/prose/model';
+import { type EditorState, Plugin, PluginKey, TextSelection } from '@milkdown/kit/prose/state';
+import type { EditorView } from '@milkdown/kit/prose/view';
+import { $prose } from '@milkdown/kit/utils';
+import { slashMenuView } from './floating-panel';
 
-interface ListMenu { query: string }
-const key = new PluginKey<ListMenu | null>("slash-list");
+interface ListMenu {
+  query: string;
+}
+const key = new PluginKey<ListMenu | null>('slash-list');
 
 export function selectedParagraphs(state: EditorState) {
   const { $from, $to } = state.selection;
@@ -15,9 +17,13 @@ export function selectedParagraphs(state: EditorState) {
   const from = $from.before();
   const to = $to.parentOffset === 0 && $to.before() > from ? $to.before() : $to.after();
   const blocks: ProseNode[] = [];
-  state.doc.nodesBetween(from, to, (node) => { blocks.push(node); return false; });
-  return blocks.length && blocks.every(node => node.type.name === "paragraph")
-    ? { from, to, blocks } : null;
+  state.doc.nodesBetween(from, to, (node) => {
+    blocks.push(node);
+    return false;
+  });
+  return blocks.length && blocks.every((node) => node.type.name === 'paragraph')
+    ? { from, to, blocks }
+    : null;
 }
 
 export function splitListItems(blocks: ProseNode[], paragraph: NodeType, item: NodeType) {
@@ -28,13 +34,13 @@ export function splitListItems(blocks: ProseNode[], paragraph: NodeType, item: N
       items.push(item.create(null, paragraph.create(null, Fragment.fromArray(line))));
       line = [];
     };
-    block.forEach(node => {
+    block.forEach((node) => {
       if (node.isText) {
-        node.text!.split(/\r\n|\r|\n/).forEach((part, index) => {
+        (node.text ?? '').split(/\r\n|\r|\n/).forEach((part, index) => {
           if (index) flush();
           if (part) line.push(node.type.schema.text(part, node.marks));
         });
-      } else if (["hardbreak", "hard_break"].includes(node.type.name)) flush();
+      } else if (['hardbreak', 'hard_break'].includes(node.type.name)) flush();
       else line.push(node);
     });
     flush();
@@ -44,9 +50,15 @@ export function splitListItems(blocks: ProseNode[], paragraph: NodeType, item: N
 
 function typedQuery(state: EditorState) {
   const { empty, $from } = state.selection;
-  if (!empty || !selectedParagraphs(state) || $from.parentOffset !== $from.parent.content.size || $from.marks().length) return null;
+  if (
+    !empty ||
+    !selectedParagraphs(state) ||
+    $from.parentOffset !== $from.parent.content.size ||
+    $from.marks().length
+  )
+    return null;
   const query = /(?:^|\s)\/(l[a-z]*)$/i.exec($from.parent.textContent)?.[1];
-  return query && "list".startsWith(query.toLowerCase()) ? query : null;
+  return query && 'list'.startsWith(query.toLowerCase()) ? query : null;
 }
 
 export function convertSelectedParagraphsToList(ctx: Ctx, view: EditorView, removeSuffix = 0) {
@@ -57,16 +69,17 @@ export function convertSelectedParagraphsToList(ctx: Ctx, view: EditorView, remo
     const block = blocks[0];
     blocks[0] = block.copy(block.content.cut(0, block.content.size - removeSuffix));
   }
-  const list = bulletListSchema.type(ctx).create(null,
-    splitListItems(blocks, paragraphSchema.type(ctx), listItemSchema.type(ctx)));
+  const list = bulletListSchema
+    .type(ctx)
+    .create(null, splitListItems(blocks, paragraphSchema.type(ctx), listItemSchema.type(ctx)));
   const tr = view.state.tr.replaceWith(range.from, range.to, list);
   tr.setSelection(TextSelection.near(tr.doc.resolve(range.from + 1)));
-  view.dispatch(tr.setStoredMarks([]).setMeta(key, "dismiss").scrollIntoView());
+  view.dispatch(tr.setStoredMarks([]).setMeta(key, 'dismiss').scrollIntoView());
   view.focus();
   return true;
 }
 
-export const slashList = $prose(ctx => {
+export const slashList = $prose((ctx) => {
   const execute = (view: EditorView) => {
     const menu = key.getState(view.state);
     return menu ? convertSelectedParagraphsToList(ctx, view, menu.query.length + 1) : false;
@@ -77,7 +90,7 @@ export const slashList = $prose(ctx => {
       init: () => null,
       apply(tr, menu, _old, state) {
         const meta = tr.getMeta(key);
-        if (meta === "dismiss") return null;
+        if (meta === 'dismiss') return null;
         if (meta) return meta;
         const query = typedQuery(state);
         return query && (menu || tr.docChanged) ? { query } : null;
@@ -87,46 +100,53 @@ export const slashList = $prose(ctx => {
       handleKeyDown(view, event) {
         const menu = key.getState(view.state);
         if (!menu || event.isComposing) return false;
-        if (event.key === "Escape") {
-          view.dispatch(view.state.tr.setMeta(key, "dismiss"));
+        if (event.key === 'Escape') {
+          view.dispatch(view.state.tr.setMeta(key, 'dismiss'));
           return true;
         }
-        if (event.key === "Enter" || event.key === "Tab") {
-          return "list".startsWith(menu.query.toLowerCase()) ? execute(view) : false;
+        if (event.key === 'Enter' || event.key === 'Tab') {
+          return 'list'.startsWith(menu.query.toLowerCase()) ? execute(view) : false;
         }
-        return event.key === "ArrowDown" || event.key === "ArrowUp";
+        return event.key === 'ArrowDown' || event.key === 'ArrowUp';
       },
     },
     view(view) {
-      const menu = document.createElement("div");
-      menu.className = "inline-slash-menu";
+      const menu = document.createElement('div');
+      menu.className = 'inline-slash-menu';
       const dismissMenu = () => {
-        if (key.getState(view.state)) view.dispatch(view.state.tr.setMeta(key, "dismiss"));
+        if (key.getState(view.state)) view.dispatch(view.state.tr.setMeta(key, 'dismiss'));
       };
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "inline-slash-option";
-      button.textContent = "•  Transform to list";
-      button.title = "Convert the selected paragraphs: one bullet per source line";
-      button.addEventListener("mousedown", event => event.preventDefault());
-      button.addEventListener("click", () => execute(view));
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'inline-slash-option';
+      button.textContent = '•  Transform to list';
+      button.title = 'Convert the selected paragraphs: one bullet per source line';
+      button.addEventListener('mousedown', (event) => event.preventDefault());
+      button.addEventListener('click', () => execute(view));
       menu.append(button);
-      const menuView = slashMenuView(view, menu, dismissMenu, panel => {
-        if (!key.getState(view.state) || menuView.hidden()) { panel.hide(); return; }
+      const menuView = slashMenuView(view, menu, dismissMenu, (panel) => {
+        if (!key.getState(view.state) || menuView.hidden()) {
+          panel.hide();
+          return;
+        }
         if (!panel.show()) return;
+        // biome-ignore lint/style/noNonNullAssertion: the state was checked before showing the panel
         const query = key.getState(view.state)!.query;
-        button.disabled = !"list".startsWith(query.toLowerCase());
-        button.textContent = button.disabled ? "No matching command" : "•  Transform to list";
+        button.disabled = !'list'.startsWith(query.toLowerCase());
+        button.textContent = button.disabled ? 'No matching command' : '•  Transform to list';
         menuView.position();
       });
       const update = menuView.update;
-      view.dom.addEventListener("blur", update);
-      view.dom.addEventListener("focus", update);
-      return { update, destroy() {
-        menuView.destroy();
-        view.dom.removeEventListener("blur", update);
-        view.dom.removeEventListener("focus", update);
-      } };
+      view.dom.addEventListener('blur', update);
+      view.dom.addEventListener('focus', update);
+      return {
+        update,
+        destroy() {
+          menuView.destroy();
+          view.dom.removeEventListener('blur', update);
+          view.dom.removeEventListener('focus', update);
+        },
+      };
     },
   });
 });

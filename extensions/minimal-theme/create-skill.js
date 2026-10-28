@@ -20,7 +20,6 @@ function skillTemplate(name, now = new Date()) {
 name: ${name}
 description: "Use this skill when the user requests help with ${words}."
 metadata:
-  category: UTILITY
   last_reviewed: "${now.toISOString().slice(0, 10)}"
 ---
 

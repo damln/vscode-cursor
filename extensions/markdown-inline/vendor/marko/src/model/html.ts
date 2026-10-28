@@ -3,6 +3,6 @@ export const HTML_TAG_PATTERN = String.raw`<(?:[A-Za-z][A-Za-z0-9-]*(?:\s+[A-Za-
 export function escapeHtmlText(markdown: string): string {
   return markdown.replace(new RegExp(HTML_TAG_PATTERN, 'g'), (tag, offset) => {
     const slashes = markdown.slice(0, offset).match(/\\+$/)?.[0].length ?? 0;
-    return slashes % 2 ? tag : '\\' + tag;
+    return slashes % 2 ? tag : `\\${tag}`;
   });
 }

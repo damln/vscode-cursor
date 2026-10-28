@@ -1,9 +1,9 @@
-import { $view } from "@milkdown/kit/utils";
-import { listItemSchema } from "@milkdown/kit/preset/commonmark";
-import type { EditorState, Transaction } from "@milkdown/kit/prose/state";
-import type { Node as PmNode } from "@milkdown/kit/prose/model";
+import { listItemSchema } from '@milkdown/kit/preset/commonmark';
+import type { Node as PmNode } from '@milkdown/kit/prose/model';
+import type { EditorState, Transaction } from '@milkdown/kit/prose/state';
+import { $view } from '@milkdown/kit/utils';
 
-const LIST_ITEM = "list_item";
+const LIST_ITEM = 'list_item';
 
 interface ListItemRef {
   pos: number;
@@ -48,7 +48,7 @@ export function isTaskListActive(state: EditorState): boolean {
  *  batch goes into one transaction. */
 export function toggleTaskList(
   state: EditorState,
-  dispatch: (transaction: Transaction) => void
+  dispatch: (transaction: Transaction) => void,
 ): boolean {
   const items = selectedListItems(state);
   if (items.length === 0) return false;
@@ -72,33 +72,34 @@ export function toggleTaskList(
 }
 
 export const taskListView = $view(listItemSchema.node, () => {
-  return (node: any, view: any, getPos: any) => {
+  return (node, view, getPos) => {
     const isTask = node.attrs.checked != null;
-    const li = document.createElement("li");
-    li.setAttribute("data-item-type", isTask ? "task" : "bullet");
+    const li = document.createElement('li');
+    li.setAttribute('data-item-type', isTask ? 'task' : 'bullet');
     if (isTask) {
-      li.setAttribute("data-checked", String(node.attrs.checked));
+      li.setAttribute('data-checked', String(node.attrs.checked));
     }
 
     let checkbox: HTMLInputElement | null = null;
-    const contentSpan = document.createElement("span");
+    const contentSpan = document.createElement('span');
 
     if (isTask) {
-      checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = !!node.attrs.checked;
-      checkbox.contentEditable = "false";
-      checkbox.addEventListener("change", () => {
+      const box = document.createElement('input');
+      checkbox = box;
+      box.type = 'checkbox';
+      box.checked = !!node.attrs.checked;
+      box.contentEditable = 'false';
+      box.addEventListener('change', () => {
         const pos = getPos();
         if (pos == null) return;
         const tr = view.state.tr.setNodeMarkup(pos, undefined, {
           ...node.attrs,
-          checked: checkbox!.checked,
+          checked: box.checked,
         });
         view.dispatch(tr);
       });
-      li.appendChild(checkbox);
-      contentSpan.className = "task-list-content";
+      li.appendChild(box);
+      contentSpan.className = 'task-list-content';
     }
 
     li.appendChild(contentSpan);
@@ -106,13 +107,13 @@ export const taskListView = $view(listItemSchema.node, () => {
     return {
       dom: li,
       contentDOM: contentSpan,
-      update: (updatedNode: any) => {
+      update: (updatedNode: PmNode) => {
         const wasTask = isTask;
         const nowTask = updatedNode.attrs.checked != null;
         if (wasTask !== nowTask) return false;
         if (nowTask && checkbox) {
           checkbox.checked = !!updatedNode.attrs.checked;
-          li.setAttribute("data-checked", String(updatedNode.attrs.checked));
+          li.setAttribute('data-checked', String(updatedNode.attrs.checked));
         }
         node = updatedNode;
         return true;

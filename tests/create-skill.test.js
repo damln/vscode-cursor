@@ -67,7 +67,8 @@ test("names normalize predictably and reject unsafe or nonportable folder names"
 test("template includes matching frontmatter and only a human-readable H1 in the body", () => {
   const text = skillTemplate("review-code", new Date("2026-09-17T12:00:00Z"));
   assert.ok(text.startsWith('---\nname: review-code\ndescription: "Use this skill when the user requests help with review code."\n'));
-  assert.match(text, /category: UTILITY\n  last_reviewed: "2026-09-17"/);
+  assert.match(text, /metadata:\n  last_reviewed: "2026-09-17"/);
+  assert.doesNotMatch(text, /category/);
   assert.match(text, /# Review code/);
   assert.equal(text.split("\n---\n")[1], "\n# Review code\n");
   assert.ok(text.endsWith("\n"));

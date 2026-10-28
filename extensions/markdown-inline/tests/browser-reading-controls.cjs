@@ -69,7 +69,7 @@ const { output, html } = webviewPage('reading-controls');
           assert.equal(await page.locator('.git-change').first().evaluate(el => {
             const r = el.getBoundingClientRect(); return document.elementFromPoint(r.left + 1, r.top + 2) === el;
           }), true, 'hovered handle never covers the Git marker');
-          await page.evaluate(() => {document.getElementById('improve-text').hidden = false; document.getElementById('save-state').textContent = 'Draft retained';});
+          await page.evaluate(() => {document.getElementById('save-state').textContent = 'Draft retained';});
           assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
           const bar = await page.locator('header').boundingBox();
           if (viewport === 900) assert.ok(bar.height <= 32, 'desktop header remains one compact row');

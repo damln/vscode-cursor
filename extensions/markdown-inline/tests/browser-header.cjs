@@ -45,14 +45,6 @@ const { output } = webviewPage('header');
     await popup.waitFor({state: 'visible'});
     await page.keyboard.press('Escape');
     await popup.waitFor({state: 'hidden'});
-    if (await page.locator('#improve-text').count()) {
-      await page.locator('#improve-text').evaluate(el => { el.hidden = false; el.disabled = false; });
-      assert.equal((await page.locator('#improve-text').textContent()).trim(), 'Improve text');
-      await page.locator('#improve-text').hover();
-      await popup.waitFor({state: 'visible'});
-      assert.ok((await popup.textContent()).includes('Improve'));
-      await page.keyboard.press('Escape');
-    }
     const geometry = () => page.locator('header').evaluate(el => [el, ...el.querySelectorAll('button:not([hidden])')].map(node => {
       const {x, y, width, height} = node.getBoundingClientRect(); return {x, y, width, height};
     }));
@@ -60,7 +52,7 @@ const { output } = webviewPage('header');
       await page.setViewportSize({width, height: 700});
       const before = await geometry();
       assert.ok(await page.locator('.header-icon-button:not([hidden])').evaluateAll(buttons => buttons.every(b => b.getBoundingClientRect().width >= 24 && b.getBoundingClientRect().height === 24)));
-      assert.deepEqual(await page.locator('.header-action-label').allTextContents(), ['Improve text', 'Width', '17px', 'Edit']);
+      assert.deepEqual(await page.locator('.header-action-label').allTextContents(), ['Width', '17px', 'Edit']);
       await page.locator('#open-raw').hover();
       await popup.waitFor({state: 'visible'});
       const popoverBox = await popup.boundingBox();
@@ -90,7 +82,7 @@ const { output } = webviewPage('header');
     assert.equal(await theme.locator('svg:visible').evaluate(el => getComputedStyle(el).transform), 'none', 'press does not scale the icon');
     await page.mouse.up();
     await page.keyboard.press('Escape');
-    for (const id of ['open-raw', 'improve-text']) {
+    for (const id of ['open-raw', 'cleanup']) {
       const action = page.locator('#' + id);
       await action.hover(); await page.waitForTimeout(150);
       assert.equal(await action.locator('svg:visible').evaluate(el => getComputedStyle(el).transform), 'none', id);

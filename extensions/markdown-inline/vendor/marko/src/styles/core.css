@@ -12,8 +12,12 @@
 }
 :is(.marko, .marko-overlay) *,
 :is(.marko, .marko-overlay) *::before,
-:is(.marko, .marko-overlay) *::after { box-sizing: border-box; }
-.marko[data-marko-block-handles="false"] { --marko-inset-start: var(--marko-padding-end); }
+:is(.marko, .marko-overlay) *::after {
+  box-sizing: border-box;
+}
+.marko[data-marko-block-handles="false"] {
+  --marko-inset-start: var(--marko-padding-end);
+}
 .marko[data-marko-appearance="document"] {
   --marko-font-size: 17px;
   --marko-max-width: 900px;
@@ -35,8 +39,12 @@
   max-height: var(--marko-max-height, none);
   overflow-y: auto;
 }
-.marko[data-marko-appearance="document"] .marko-surface { scrollbar-gutter: stable; }
-.marko-surface[hidden] { display: none; }
+.marko[data-marko-appearance="document"] .marko-surface {
+  scrollbar-gutter: stable;
+}
+.marko-surface[hidden] {
+  display: none;
+}
 .marko-source {
   display: block;
   width: 100%;
@@ -45,9 +53,15 @@
   padding: var(--marko-padding-top) var(--marko-padding-end);
   resize: vertical;
 }
-.marko-source[hidden] { display: none; }
-.marko-source-notice { padding: 6px var(--marko-padding-end); }
-.marko-source-notice[hidden] { display: none; }
+.marko-source[hidden] {
+  display: none;
+}
+.marko-source-notice {
+  padding: 6px var(--marko-padding-end);
+}
+.marko-source-notice[hidden] {
+  display: none;
+}
 .marko-overlay {
   position: absolute;
   inset: 0 0 auto 0;
@@ -61,7 +75,11 @@
   overflow: hidden;
   white-space: nowrap;
 }
-:is(.marko, .marko-overlay) .inline-slash-menu { position: fixed; z-index: 100; width: min(220px, calc(100vw - 16px)); }
+:is(.marko, .marko-overlay) .inline-slash-menu {
+  position: fixed;
+  z-index: 100;
+  width: min(220px, calc(100vw - 16px));
+}
 :is(.marko, .marko-overlay) .inline-slash-option {
   display: flex;
   align-items: center;
@@ -70,14 +88,23 @@
 }
 :is(.marko, .marko-overlay) .frontmatter-card {
   width: calc(min(100%, var(--marko-max-width)) - var(--marko-inset-start) - 2rem);
-  margin-inline-start: calc(max(0px, (100% - var(--marko-max-width)) / 2) + var(--marko-inset-start));
+  margin-inline-start: calc(
+    max(0px, (100% - var(--marko-max-width)) / 2) +
+    var(--marko-inset-start)
+  );
   overflow: hidden;
 }
 :is(.marko, .marko-overlay) .frontmatter-card[hidden],
 :is(.marko, .marko-overlay) .frontmatter-fields[hidden],
 :is(.marko, .marko-overlay) .frontmatter-error[hidden],
-:is(.marko, .marko-overlay) .frontmatter-add[hidden] { display: none; }
-:is(.marko, .marko-overlay) .frontmatter-header { display: flex; align-items: center; min-width: 0; }
+:is(.marko, .marko-overlay) .frontmatter-add[hidden] {
+  display: none;
+}
+:is(.marko, .marko-overlay) .frontmatter-header {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
 :is(.marko, .marko-overlay) .frontmatter-toggle {
   display: flex;
   align-items: center;
@@ -86,15 +113,22 @@
   width: 100%;
   min-height: 28px;
 }
-:is(.marko, .marko-overlay) .frontmatter-toggle[hidden] { display: none; }
+:is(.marko, .marko-overlay) .frontmatter-toggle[hidden] {
+  display: none;
+}
 :is(.marko, .marko-overlay) .metadata-disclosure {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
-:is(.marko, .marko-overlay) .frontmatter-toggle[aria-expanded="true"] .metadata-disclosure svg { transform: rotate(180deg); }
-:is(.marko, .marko-overlay) .frontmatter-fields { display: grid; gap: 4px; }
+:is(.marko, .marko-overlay) .frontmatter-toggle[aria-expanded="true"] .metadata-disclosure svg {
+  transform: rotate(180deg);
+}
+:is(.marko, .marko-overlay) .frontmatter-fields {
+  display: grid;
+  gap: 4px;
+}
 :is(.marko, .marko-overlay) .metadata-modes {
   display: flex;
   flex-wrap: wrap;
@@ -102,7 +136,9 @@
   gap: 4px;
 }
 :is(.marko, .marko-overlay) .metadata-modes button,
-:is(.marko, .marko-overlay) .frontmatter-add { min-height: 28px; }
+:is(.marko, .marko-overlay) .frontmatter-add {
+  min-height: 28px;
+}
 :is(.marko, .marko-overlay) .frontmatter-row {
   display: grid;
   grid-template-columns: minmax(6rem, 28%) minmax(0, 1fr) 74px;
@@ -111,7 +147,9 @@
   min-width: 0;
 }
 @media (pointer: coarse) {
-  :is(.marko, .marko-overlay) .frontmatter-toggle { min-height: 44px; }
+  :is(.marko, .marko-overlay) .frontmatter-toggle {
+    min-height: 44px;
+  }
 }
 :is(.marko, .marko-overlay) .frontmatter-key,
 :is(.marko, .marko-overlay) .frontmatter-value {
@@ -127,7 +165,10 @@
   gap: 2px;
   min-width: 0;
 }
-:is(.marko, .marko-overlay) .frontmatter-value { resize: none; overflow: hidden; }
+:is(.marko, .marko-overlay) .frontmatter-value {
+  resize: none;
+  overflow: hidden;
+}
 :is(.marko, .marko-overlay) .metadata-field-colors {
   display: flex;
   flex-direction: column;
@@ -151,9 +192,18 @@
   height: 14px;
   overflow: hidden;
 }
-:is(.marko, .marko-overlay) .metadata-color-chip::after { position: absolute; inset: 0; }
-:is(.marko, .marko-overlay) .metadata-color-palette { display: flex; flex-wrap: wrap; gap: 5px 8px; }
-:is(.marko, .marko-overlay) .metadata-color-palette[hidden] { display: none; }
+:is(.marko, .marko-overlay) .metadata-color-chip::after {
+  position: absolute;
+  inset: 0;
+}
+:is(.marko, .marko-overlay) .metadata-color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+}
+:is(.marko, .marko-overlay) .metadata-color-palette[hidden] {
+  display: none;
+}
 :is(.marko, .marko-overlay) .frontmatter-delete {
   display: inline-flex;
   align-items: center;
@@ -162,9 +212,16 @@
   min-height: 30px;
   width: 74px;
 }
-:is(.marko, .marko-overlay) .frontmatter-delete svg { flex-shrink: 0; }
-:is(.marko, .marko-overlay) .frontmatter-card button:active:not(:disabled) { opacity: .75; }
-:is(.marko, .marko-overlay) .frontmatter-card button:disabled { opacity: .4; }
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .frontmatter-delete svg {
+  flex-shrink: 0;
+}
+:is(.marko, .marko-overlay) .frontmatter-card button:active:not(:disabled) {
+  opacity: 0.75;
+}
+:is(.marko, .marko-overlay) .frontmatter-card button:disabled {
+  opacity: 0.4;
+}
 :is(.marko, .marko-overlay) .frontmatter-source {
   width: 100%;
   min-width: 0;
@@ -172,37 +229,76 @@
   min-height: 100px;
   resize: vertical;
 }
-:is(.marko, .marko-overlay) .frontmatter-error { white-space: pre-wrap; overflow-wrap: anywhere; }
+:is(.marko, .marko-overlay) .frontmatter-error {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 :is(.marko, .marko-overlay) .metadata-add-field {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   justify-self: start;
 }
-:is(.marko, .marko-overlay) .metadata-new-field { display: grid; grid-template-columns: minmax(6rem, 28%) minmax(0, 1fr); gap: 8px; }
-:is(.marko, .marko-overlay) .metadata-new-field :is(input, textarea) { width: 100%; min-width: 0; }
-:is(.marko, .marko-overlay) .metadata-new-field textarea { resize: vertical; }
-:is(.marko, .marko-overlay) .metadata-new-actions { display: flex; gap: 6px; grid-column: 2; }
-:is(.marko, .marko-overlay) .metadata-new-actions button { min-height: 30px; }
+:is(.marko, .marko-overlay) .metadata-new-field {
+  display: grid;
+  grid-template-columns: minmax(6rem, 28%) minmax(0, 1fr);
+  gap: 8px;
+}
+:is(.marko, .marko-overlay) .metadata-new-field :is(input, textarea) {
+  width: 100%;
+  min-width: 0;
+}
+:is(.marko, .marko-overlay) .metadata-new-field textarea {
+  resize: vertical;
+}
+:is(.marko, .marko-overlay) .metadata-new-actions {
+  display: flex;
+  gap: 6px;
+  grid-column: 2;
+}
+:is(.marko, .marko-overlay) .metadata-new-actions button {
+  min-height: 30px;
+}
 :is(.marko, .marko-overlay) .metadata-confirm {
   grid-column: 1 / -1;
   flex-basis: 100%;
   min-width: 0;
   overflow-wrap: anywhere;
 }
-:is(.marko, .marko-overlay) .metadata-new-error { grid-column: 1 / -1; }
-:is(.marko, .marko-overlay) .metadata-new-help { grid-column: 1 / -1; }
+:is(.marko, .marko-overlay) .metadata-new-error {
+  grid-column: 1 / -1;
+}
+:is(.marko, .marko-overlay) .metadata-new-help {
+  grid-column: 1 / -1;
+}
 @media (max-width: 620px) {
-  :is(.marko, .marko-overlay) .frontmatter-row { grid-template-columns: minmax(0, 1fr) 74px; gap: 0 8px; }
-  :is(.marko, .marko-overlay) .frontmatter-key { grid-column: 1; }
-  :is(.marko, .marko-overlay) .frontmatter-value-wrap { grid-column: 1; grid-row: 2; }
-  :is(.marko, .marko-overlay) .frontmatter-delete { grid-column: 2; grid-row: 1 / 3; }
-  :is(.marko, .marko-overlay) .metadata-new-field { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  :is(.marko, .marko-overlay) .metadata-new-actions { grid-column: 1; }
+  :is(.marko, .marko-overlay) .frontmatter-row {
+    grid-template-columns: minmax(0, 1fr) 74px;
+    gap: 0 8px;
+  }
+  :is(.marko, .marko-overlay) .frontmatter-key {
+    grid-column: 1;
+  }
+  :is(.marko, .marko-overlay) .frontmatter-value-wrap {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  :is(.marko, .marko-overlay) .frontmatter-delete {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+  :is(.marko, .marko-overlay) .metadata-new-field {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  :is(.marko, .marko-overlay) .metadata-new-actions {
+    grid-column: 1;
+  }
 }
 :is(.marko, .marko-overlay) .milkdown {
   position: relative;
-  padding: var(--marko-padding-top) var(--marko-padding-end) var(--marko-padding-bottom) var(--marko-inset-start);
+  padding: var(--marko-padding-top) var(--marko-padding-end) var(--marko-padding-bottom)
+    var(--marko-inset-start);
   min-height: 100%;
   max-width: var(--marko-max-width);
 }
@@ -213,31 +309,69 @@
   vertical-align: -0.03em;
   pointer-events: none;
 }
-:is(.marko, .marko-overlay) .milkdown pre { overflow-x: auto; }
-:is(.marko, .marko-overlay) .milkdown pre code { white-space: pre-wrap; }
-:is(.marko, .marko-overlay) .milkdown .token.namespace { opacity: 0.8; }
-:is(.marko, .marko-overlay) .milkdown table { width: 100%; display: block; overflow-x: auto; }
+:is(.marko, .marko-overlay) .milkdown pre {
+  overflow-x: auto;
+}
+:is(.marko, .marko-overlay) .milkdown pre code {
+  white-space: pre-wrap;
+}
+:is(.marko, .marko-overlay) .milkdown .token.namespace {
+  opacity: 0.8;
+}
+:is(.marko, .marko-overlay) .milkdown table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
 :is(.marko, .marko-overlay) .milkdown th,
-:is(.marko, .marko-overlay) .milkdown td { min-width: 80px; position: relative; }
+:is(.marko, .marko-overlay) .milkdown td {
+  min-width: 80px;
+  position: relative;
+}
 :is(.marko, .marko-overlay) .milkdown .selectedCell::after {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
 }
-:is(.marko, .marko-overlay) .milkdown img { max-width: 100%; }
-:is(.marko, .marko-overlay) .milkdown li[data-item-type="task"] { display: flex; align-items: flex-start; gap: 0.5em; }
-:is(.marko, .marko-overlay) .milkdown li[data-item-type="task"] > .task-list-content { flex: 1; min-width: 0; }
+:is(.marko, .marko-overlay) .milkdown img {
+  max-width: 100%;
+}
+:is(.marko, .marko-overlay) .milkdown li[data-item-type="task"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+:is(.marko, .marko-overlay) .milkdown li[data-item-type="task"] > .task-list-content {
+  flex: 1;
+  min-width: 0;
+}
 :is(.marko, .marko-overlay) .milkdown li[data-item-type="task"] > input[type="checkbox"] {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
   position: relative;
 }
-:is(.marko, .marko-overlay) .milkdown li[data-item-type="task"] > input[type="checkbox"]:checked::after { position: absolute; inset: 0; }
-:is(.marko, .marko-overlay) .milkdown li[data-item-type="task"][data-checked="true"] > .task-list-content { opacity: 0.6; }
-:is(.marko, .marko-overlay) .milkdown .html-editable { min-width: 1em; display: inline; }
-:is(.marko, .marko-overlay) .milkdown .ProseMirror { caret-color: #0092ff; }
+:is(.marko, .marko-overlay)
+  .milkdown
+  li[data-item-type="task"]
+  > input[type="checkbox"]:checked::after {
+  position: absolute;
+  inset: 0;
+}
+:is(.marko, .marko-overlay)
+  .milkdown
+  li[data-item-type="task"][data-checked="true"]
+  > .task-list-content {
+  opacity: 0.6;
+}
+:is(.marko, .marko-overlay) .milkdown .html-editable {
+  min-width: 1em;
+  display: inline;
+}
+:is(.marko, .marko-overlay) .milkdown .ProseMirror {
+  caret-color: #0092ff;
+}
 :is(.marko, .marko-overlay) .milkdown-selection-toolbar {
   display: flex;
   align-items: center;
@@ -253,9 +387,18 @@
   min-width: 28px;
   height: 28px;
 }
-:is(.marko, .marko-overlay) .milkdown-selection-toolbar .tb-link-row .link-tooltip-input { height: 26px; }
-:is(.marko, .marko-overlay) .milkdown-selection-toolbar .tb-separator { width: 1px; height: 18px; }
-:is(.marko, .marko-overlay) .milkdown span[data-type="hardbreak"] { font-size: 0; line-height: 0; color: transparent; }
+:is(.marko, .marko-overlay) .milkdown-selection-toolbar .tb-link-row .link-tooltip-input {
+  height: 26px;
+}
+:is(.marko, .marko-overlay) .milkdown-selection-toolbar .tb-separator {
+  width: 1px;
+  height: 18px;
+}
+:is(.marko, .marko-overlay) .milkdown span[data-type="hardbreak"] {
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
 :is(.marko, .marko-overlay) .milkdown span[data-type="hardbreak"]::after {
   content: "\A";
   white-space: pre;
@@ -263,7 +406,9 @@
   line-height: inherit;
   color: initial;
 }
-:is(.marko, .marko-overlay) .milkdown .ProseMirror:focus { outline: none; }
+:is(.marko, .marko-overlay) .milkdown .ProseMirror:focus {
+  outline: none;
+}
 :is(.marko, .marko-overlay) .milkdown-link-tooltip {
   display: flex;
   flex-direction: column;
@@ -271,9 +416,21 @@
   position: absolute;
   white-space: nowrap;
 }
-:is(.marko, .marko-overlay) .link-tooltip-display { display: flex; align-items: center; gap: 2px; }
-:is(.marko, .marko-overlay) .link-tooltip-edit { display: flex; align-items: center; gap: 4px; }
-:is(.marko, .marko-overlay) .link-tooltip-url { max-width: 220px; overflow: hidden; white-space: nowrap; }
+:is(.marko, .marko-overlay) .link-tooltip-display {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+:is(.marko, .marko-overlay) .link-tooltip-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+:is(.marko, .marko-overlay) .link-tooltip-url {
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+}
 :is(.marko, .marko-overlay) .link-tooltip-btn {
   display: flex;
   align-items: center;
@@ -281,8 +438,15 @@
   height: 28px;
   white-space: nowrap;
 }
-:is(.marko, .marko-overlay) .link-tooltip-separator { width: 1px; height: 18px; }
-:is(.marko, .marko-overlay) .link-tooltip-input { width: 200px; height: 28px; }
+:is(.marko, .marko-overlay) .link-tooltip-separator {
+  width: 1px;
+  height: 18px;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .link-tooltip-input {
+  width: 200px;
+  height: 28px;
+}
 :is(.marko, .marko-overlay) .block-drag-handle {
   --block-handle-offset: -16px;
   position: absolute;
@@ -294,7 +458,9 @@
   user-select: none;
   transform: translateX(var(--block-handle-offset));
 }
-:is(.marko, .marko-overlay) .block-drag-handle[data-block-tag="li"] { --block-handle-offset: -28px; }
+:is(.marko, .marko-overlay) .block-drag-handle[data-block-tag="li"] {
+  --block-handle-offset: -28px;
+}
 :is(.marko, .marko-overlay) .block-drag-grip {
   display: flex;
   align-items: center;
@@ -302,11 +468,22 @@
   width: 16px;
   height: 16px;
 }
-:is(.marko, .marko-overlay) .block-drag-handle[data-show="false"] { display: none; }
-:is(.marko, .marko-overlay) .block-drag-handle:hover { transform: translateX(var(--block-handle-offset)) scale(1.1); }
-:is(.marko, .marko-overlay) .block-drag-handle:active { transform: translateX(var(--block-handle-offset)) scale(1.05); }
-:is(.marko, .marko-overlay) .ProseMirror[data-dragging="true"] { user-select: none !important; }
-:is(.marko, .marko-overlay) .ProseMirror[data-dragging="true"] .ProseMirror-selectednode { opacity: 0.3; }
+:is(.marko, .marko-overlay) .block-drag-handle[data-show="false"] {
+  display: none;
+}
+:is(.marko, .marko-overlay) .block-drag-handle:hover {
+  transform: translateX(var(--block-handle-offset)) scale(1.1);
+}
+:is(.marko, .marko-overlay) .block-drag-handle:active {
+  transform: translateX(var(--block-handle-offset)) scale(1.05);
+}
+:is(.marko, .marko-overlay) .ProseMirror[data-dragging="true"] {
+  /* biome-ignore lint/complexity/noImportantStyles: drag feedback must beat host and skin styles */
+  user-select: none !important;
+}
+:is(.marko, .marko-overlay) .ProseMirror[data-dragging="true"] .ProseMirror-selectednode {
+  opacity: 0.3;
+}
 :is(.marko, .marko-overlay) .milkdown-table-toolbar {
   display: flex;
   align-items: center;
@@ -315,8 +492,15 @@
   position: absolute;
   white-space: nowrap;
 }
-:is(.marko, .marko-overlay) .milkdown-table-toolbar [hidden] { display: none !important; }
-:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-action-group { display: flex; align-items: center; gap: 1px; }
+:is(.marko, .marko-overlay) .milkdown-table-toolbar [hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: [hidden] must hide the element over any display rule */
+  display: none !important;
+}
+:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-action-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
 :is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-btn {
   display: flex;
   align-items: center;
@@ -324,7 +508,10 @@
   min-width: 26px;
   height: 26px;
 }
-:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-separator { width: 1px; height: 18px; }
+:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-separator {
+  width: 1px;
+  height: 18px;
+}
 :is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-table-btn {
   display: flex;
   align-items: center;
@@ -332,8 +519,15 @@
   width: 26px;
   height: 26px;
 }
-:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-table-btn svg { width: 15px; height: 15px; pointer-events: none; }
-:is(.marko, .marko-overlay) .code-lang-wrapper { position: relative; }
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-table-btn svg {
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+}
+:is(.marko, .marko-overlay) .code-lang-wrapper {
+  position: relative;
+}
 :is(.marko, .marko-overlay) .code-lang-bar {
   position: relative;
   display: flex;
@@ -347,7 +541,9 @@
   opacity: 0;
 }
 :is(.marko, .marko-overlay) .code-lang-wrapper:is(:hover, :focus-within) .code-lang-actions,
-:is(.marko, .marko-overlay) .code-lang-actions:has([aria-busy="true"], [data-state="error"]) { opacity: 1; }
+:is(.marko, .marko-overlay) .code-lang-actions:has([aria-busy="true"], [data-state="error"]) {
+  opacity: 1;
+}
 :is(.marko, .marko-overlay) .code-lang-action-btn {
   display: flex;
   flex-shrink: 0;
@@ -356,14 +552,33 @@
   width: 24px;
   height: 24px;
 }
-:is(.marko, .marko-overlay) .code-lang-action-btn svg { flex-shrink: 0; width: 14px; height: 14px; pointer-events: none; }
-:is(.marko, .marko-overlay) .code-lang-action-btn:disabled { opacity: .4; }
-:is(.marko, .marko-overlay) .code-lang-action-btn[aria-busy="true"] { opacity: 1; }
-:is(.marko, .marko-overlay) .code-lang-action-btn:enabled:active { opacity: .8; }
-@media (hover: none) {
-  :is(.marko, .marko-overlay) .code-lang-actions { opacity: 1; }
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .code-lang-action-btn svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
-:is(.marko, .marko-overlay) pre.code-with-gutter { display: flex; align-items: stretch; overflow: hidden !important; }
+:is(.marko, .marko-overlay) .code-lang-action-btn:disabled {
+  opacity: 0.4;
+}
+:is(.marko, .marko-overlay) .code-lang-action-btn[aria-busy="true"] {
+  opacity: 1;
+}
+:is(.marko, .marko-overlay) .code-lang-action-btn:enabled:active {
+  opacity: 0.8;
+}
+@media (hover: none) {
+  :is(.marko, .marko-overlay) .code-lang-actions {
+    opacity: 1;
+  }
+}
+:is(.marko, .marko-overlay) pre.code-with-gutter {
+  display: flex;
+  align-items: stretch;
+  /* biome-ignore lint/complexity/noImportantStyles: gutter layout must beat host and theme pre and code styles */
+  overflow: hidden !important;
+}
 :is(.marko, .marko-overlay) .code-gutter {
   position: relative;
   flex-shrink: 0;
@@ -372,18 +587,37 @@
   pointer-events: none;
   white-space: pre;
 }
-:is(.marko, .marko-overlay) .code-gutter > span { position: absolute; right: 0.9375em; }
+:is(.marko, .marko-overlay) .code-gutter > span {
+  position: absolute;
+  right: 0.9375em;
+}
 :is(.marko, .marko-overlay) pre.code-with-gutter > code {
   flex: 1;
   min-width: 0;
+  /* biome-ignore lint/complexity/noImportantStyles: gutter layout must beat host and theme pre and code styles */
   white-space: pre-wrap !important;
   overflow-wrap: anywhere;
   overflow-x: auto;
 }
-:is(.marko, .marko-overlay)[data-marko-code-wrap="false"] pre.code-with-gutter > code { white-space: pre !important; overflow-wrap: normal; }
-:is(.marko, .marko-overlay) .code-lang-trigger { display: inline-flex; align-items: center; gap: 4px; }
-:is(.marko, .marko-overlay) .code-lang-chevron { display: flex; flex-shrink: 0; align-items: center; opacity: 0.5; }
-:is(.marko, .marko-overlay) .code-lang-trigger:hover .code-lang-chevron { opacity: 0.8; }
+:is(.marko, .marko-overlay)[data-marko-code-wrap="false"] pre.code-with-gutter > code {
+  /* biome-ignore lint/complexity/noImportantStyles: gutter layout must beat host and theme pre and code styles */
+  white-space: pre !important;
+  overflow-wrap: normal;
+}
+:is(.marko, .marko-overlay) .code-lang-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+:is(.marko, .marko-overlay) .code-lang-chevron {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  opacity: 0.5;
+}
+:is(.marko, .marko-overlay) .code-lang-trigger:hover .code-lang-chevron {
+  opacity: 0.8;
+}
 :is(.marko, .marko-overlay) .code-lang-dropdown {
   position: fixed;
   z-index: 9999;
@@ -393,10 +627,19 @@
   display: flex;
   flex-direction: column;
 }
-:is(.marko, .marko-overlay) .code-lang-search { width: 100%; }
-:is(.marko, .marko-overlay) .code-lang-list { overflow-y: auto; max-height: 196px; }
-:is(.marko, .marko-overlay) .code-lang-list::-webkit-scrollbar { width: 4px; }
-:is(.marko, .marko-overlay) .milkdown-link-tooltip [hidden] { display: none; }
+:is(.marko, .marko-overlay) .code-lang-search {
+  width: 100%;
+}
+:is(.marko, .marko-overlay) .code-lang-list {
+  overflow-y: auto;
+  max-height: 196px;
+}
+:is(.marko, .marko-overlay) .code-lang-list::-webkit-scrollbar {
+  width: 4px;
+}
+:is(.marko, .marko-overlay) .milkdown-link-tooltip [hidden] {
+  display: none;
+}
 :is(.marko, .marko-overlay) .floating-panel {
   opacity: 1;
   transform: translateY(0);
@@ -404,8 +647,16 @@
   max-height: calc(100vh - 16px);
   overflow: auto;
 }
-:is(.marko, .marko-overlay) :is(.milkdown-selection-toolbar, .milkdown-table-toolbar).floating-panel { overflow: visible; }
-:is(.marko, .marko-overlay) :is(.milkdown-selection-toolbar, .milkdown-table-toolbar)[data-pointer-side]::after {
+:is(.marko, .marko-overlay)
+  :is(.milkdown-selection-toolbar, .milkdown-table-toolbar, .milkdown-link-tooltip).floating-panel {
+  overflow: visible;
+}
+:is(.marko, .marko-overlay)
+  :is(
+    .milkdown-selection-toolbar,
+    .milkdown-table-toolbar,
+    .milkdown-link-tooltip
+  )[data-pointer-side]::after {
   position: absolute;
   left: var(--toolbar-pointer-x);
   width: 8px;
@@ -413,23 +664,65 @@
   transform: translateX(-50%) rotate(45deg);
   pointer-events: none;
 }
-:is(.marko, .marko-overlay) [data-pointer-side="bottom"]::after { bottom: -5px; }
-:is(.marko, .marko-overlay) :is(.milkdown-selection-toolbar, .milkdown-table-toolbar)[data-pointer-side="top"]::after { top: -5px; transform: translateX(-50%) rotate(225deg); }
-@media (max-width: 767px) {
-  :is(.marko, .marko-overlay) :is(.milkdown-selection-toolbar, .milkdown-table-toolbar).floating-panel { flex-wrap: wrap; }
+:is(.marko, .marko-overlay) [data-pointer-side="bottom"]::after {
+  bottom: -5px;
 }
-:is(.marko, .marko-overlay) .floating-panel[data-show="false"] { opacity: 0; transform: translateY(2px); pointer-events: none; }
-:is(.marko, .marko-overlay) .floating-panel[hidden] { display: none !important; }
+:is(.marko, .marko-overlay) .milkdown-link-tooltip.floating-panel::before {
+  content: "";
+  position: absolute;
+  inset: -9px 0;
+  z-index: -1;
+}
+:is(.marko, .marko-overlay)
+  :is(
+    .milkdown-selection-toolbar,
+    .milkdown-table-toolbar,
+    .milkdown-link-tooltip
+  )[data-pointer-side="top"]::after {
+  top: -5px;
+  transform: translateX(-50%) rotate(225deg);
+}
+@media (max-width: 767px) {
+  :is(.marko, .marko-overlay)
+    :is(.milkdown-selection-toolbar, .milkdown-table-toolbar).floating-panel {
+    flex-wrap: wrap;
+  }
+}
+:is(.marko, .marko-overlay) .floating-panel[data-show="false"] {
+  opacity: 0;
+  transform: translateY(2px);
+  pointer-events: none;
+}
+:is(.marko, .marko-overlay) .floating-panel[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: [hidden] must hide the element over any display rule */
+  display: none !important;
+}
 @starting-style {
-  :is(.marko, .marko-overlay) .floating-panel[data-show="true"] { opacity: 0; transform: translateY(2px); }
+  :is(.marko, .marko-overlay) .floating-panel[data-show="true"] {
+    opacity: 0;
+    transform: translateY(2px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(.marko, .marko-overlay) .floating-panel { transform: none; }
+  :is(.marko, .marko-overlay) .floating-panel {
+    transform: none;
+  }
 }
-:is(.marko, .marko-overlay) .milkdown-link-tooltip .link-tooltip-edit { flex-wrap: wrap; }
-:is(.marko, .marko-overlay) .milkdown-link-tooltip .link-tooltip-input { flex: 1 1 170px; min-width: 80px; }
-:is(.marko, .marko-overlay) .tb-buttons-row { flex-wrap: wrap; }
-:is(.marko, .marko-overlay) .code-lang-item { display: block; width: 100%; }
+:is(.marko, .marko-overlay) .milkdown-link-tooltip .link-tooltip-edit {
+  flex-wrap: wrap;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .milkdown-link-tooltip .link-tooltip-input {
+  flex: 1 1 170px;
+  min-width: 80px;
+}
+:is(.marko, .marko-overlay) .tb-buttons-row {
+  flex-wrap: wrap;
+}
+:is(.marko, .marko-overlay) .code-lang-item {
+  display: block;
+  width: 100%;
+}
 :is(.marko, .marko-overlay) .block-group-handle {
   position: fixed;
   z-index: 45;
@@ -440,10 +733,23 @@
   gap: 2px;
   white-space: nowrap;
 }
-:is(.marko, .marko-overlay) .block-group-handle { user-select: none; touch-action: none; }
-:is(.marko, .marko-overlay) .block-group-handle:disabled { pointer-events: none; }
-:is(.marko, .marko-overlay) .block-group-handle svg { width: 12px; height: 12px; flex-shrink: 0; }
-:is(.marko, .marko-overlay) .block-type { opacity: .7; overflow: hidden; }
+:is(.marko, .marko-overlay) .block-group-handle {
+  user-select: none;
+  touch-action: none;
+}
+:is(.marko, .marko-overlay) .block-group-handle:disabled {
+  pointer-events: none;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .block-group-handle svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+:is(.marko, .marko-overlay) .block-type {
+  opacity: 0.7;
+  overflow: hidden;
+}
 :is(.marko, .marko-overlay) .block-group-toolbar {
   position: fixed;
   z-index: 70;
@@ -455,24 +761,54 @@
   gap: 6px;
   max-width: calc(100vw - 24px);
 }
-:is(.marko, .marko-overlay) .block-group-toolbar span { min-width: 62px; }
-:is(.marko, .marko-overlay) .block-group-toolbar button { min-height: 28px; white-space: nowrap; }
-:is(.marko, .marko-overlay) .block-group-toolbar button:disabled { opacity: .4; }
+:is(.marko, .marko-overlay) .block-group-toolbar span {
+  min-width: 62px;
+}
+:is(.marko, .marko-overlay) .block-group-toolbar button {
+  min-height: 28px;
+  white-space: nowrap;
+}
+:is(.marko, .marko-overlay) .block-group-toolbar button:disabled {
+  opacity: 0.4;
+}
 :is(.marko, .marko-overlay) .block-group-drop {
   position: fixed;
   z-index: 81;
   height: 3px;
   pointer-events: none;
 }
-:is(.marko, .marko-overlay) .block-group-rectangle { position: fixed; z-index: 40; pointer-events: none; }
-:is(.marko, .marko-overlay) .ProseMirror[data-block-dragging] .block-group-selected { opacity: .45; }
-:is(.marko, .marko-overlay) :is(.block-group-handle,.block-group-toolbar,.block-group-drop,.block-group-rectangle)[hidden] { display: none; }
+:is(.marko, .marko-overlay) .block-group-rectangle {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+}
+:is(.marko, .marko-overlay) .ProseMirror[data-block-dragging] .block-group-selected {
+  opacity: 0.45;
+}
+:is(.marko, .marko-overlay)
+  :is(
+    .block-group-handle,
+    .block-group-toolbar,
+    .block-group-drop,
+    .block-group-rectangle
+  )[hidden] {
+  display: none;
+}
 @media (pointer: coarse) {
-  :is(.marko, .marko-overlay) .block-group-handle { min-width: 44px; height: 44px; }
-  :is(.marko, .marko-overlay) .block-group-toolbar button { min-height: 44px; }
+  :is(.marko, .marko-overlay) .block-group-handle {
+    min-width: 44px;
+    height: 44px;
+  }
+  :is(.marko, .marko-overlay) .block-group-toolbar button {
+    min-height: 44px;
+  }
 }
 @media (max-width: 480px) {
-  :is(.marko, .marko-overlay) .block-group-toolbar { flex-wrap: wrap; justify-content: center; width: max-content; }
+  :is(.marko, .marko-overlay) .block-group-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: max-content;
+  }
 }
 :is(.marko, .marko-overlay) .block-group-preview {
   position: fixed;
@@ -493,8 +829,12 @@
   width: 24px;
   height: 24px;
 }
-:is(.marko, .marko-overlay) .contents-trigger[hidden] { display: none; }
-:is(.marko, .marko-overlay) .contents-trigger span { display: none; }
+:is(.marko, .marko-overlay) .contents-trigger[hidden] {
+  display: none;
+}
+:is(.marko, .marko-overlay) .contents-trigger span {
+  display: none;
+}
 :is(.marko, .marko-overlay) .contents-panel {
   position: fixed;
   z-index: 70;
@@ -503,7 +843,9 @@
   overflow-y: auto;
   box-sizing: border-box;
 }
-:is(.marko, .marko-overlay) .contents-panel strong { display: block; }
+:is(.marko, .marko-overlay) .contents-panel strong {
+  display: block;
+}
 :is(.marko, .marko-overlay) .contents-panel button {
   display: block;
   width: 100%;
@@ -513,7 +855,10 @@
 }
 @media (pointer: coarse) {
   :is(.marko, .marko-overlay) .contents-trigger,
-:is(.marko, .marko-overlay) .contents-panel button { min-height: 44px; min-width: 44px; }
+  :is(.marko, .marko-overlay) .contents-panel button {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 :is(.marko, .marko-overlay) .inline-image {
   display: inline-flex;
@@ -525,31 +870,90 @@
   min-height: 96px;
   overflow-wrap: anywhere;
 }
-:is(.marko, .marko-overlay) .inline-image :is(img, video) { max-width: 100%; max-height: min(480px, 60vh); }
+:is(.marko, .marko-overlay) .inline-image :is(img, video) {
+  max-width: 100%;
+  max-height: min(480px, 60vh);
+}
 /* Once the media shows, its actions float over its corner instead of adding a row below it. */
-:is(.marko, .marko-overlay) .inline-image { position: relative; }
-:is(.marko, .marko-overlay) .inline-image[data-state="loaded"] { min-height: 0; }
-:is(.marko, .marko-overlay) .inline-image[data-state="loaded"] .image-actions { position: absolute; inset: 8px 8px auto auto; }
-:is(.marko, .marko-overlay) .inline-image [hidden] { display: none; }
-:is(.marko, .marko-overlay) .image-path { max-width: 100%; }
-:is(.marko, .marko-overlay) .image-actions { display: flex; gap: 6px; }
+:is(.marko, .marko-overlay) .inline-image {
+  position: relative;
+}
+:is(.marko, .marko-overlay) .inline-image[data-state="loaded"] {
+  min-height: 0;
+}
+:is(.marko, .marko-overlay) .inline-image[data-state="loaded"] .image-actions {
+  position: absolute;
+  inset: 8px 8px auto auto;
+}
+/* An audio player is short, so its actions sit beside it instead of over its controls. */
+:is(.marko, .marko-overlay) .inline-image[data-kind="audio"] {
+  min-width: min(360px, 100%);
+}
+:is(.marko, .marko-overlay) .inline-image[data-kind="audio"] audio {
+  width: min(420px, 100%);
+}
+:is(.marko, .marko-overlay) .inline-image[data-kind="audio"][data-state="loaded"] .image-actions {
+  position: static;
+}
+:is(.marko, .marko-overlay) .inline-image [hidden] {
+  display: none;
+}
+:is(.marko, .marko-overlay) .image-path {
+  max-width: 100%;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
+:is(.marko, .marko-overlay) .image-actions {
+  display: flex;
+  gap: 6px;
+}
 :is(.marko, .marko-overlay) .image-actions button,
-:is(.marko, .marko-overlay) .image-path-panel button { min-height: 28px; }
-:is(.marko, .marko-overlay) .image-actions button:disabled { opacity: .45; }
-:is(.marko, .marko-overlay) .image-path-panel { position: fixed; z-index: 100; width: min(360px, calc(100vw - 16px)); }
-:is(.marko, .marko-overlay) .image-path-panel label { display: block; }
-:is(.marko, .marko-overlay) .image-path-panel input { display: block; width: 100%; }
+:is(.marko, .marko-overlay) .image-path-panel button {
+  min-height: 28px;
+}
+:is(.marko, .marko-overlay) .image-actions button:disabled {
+  opacity: 0.45;
+}
+:is(.marko, .marko-overlay) .image-path-panel {
+  position: fixed;
+  z-index: 100;
+  width: min(360px, calc(100vw - 16px));
+}
+:is(.marko, .marko-overlay) .image-path-panel label {
+  display: block;
+}
+:is(.marko, .marko-overlay) .image-path-panel input {
+  display: block;
+  width: 100%;
+}
 @media (hover: hover) {
-  :is(.marko, .marko-overlay) .inline-image[data-state="loaded"]:not(:hover):not(:focus-within) .image-actions { opacity: 0; }
+  :is(.marko, .marko-overlay)
+    .inline-image[data-state="loaded"]:not(:hover):not(:focus-within)
+    .image-actions {
+    opacity: 0;
+  }
 }
 @media (pointer: coarse) {
   :is(.marko, .marko-overlay) .image-actions button,
-:is(.marko, .marko-overlay) .image-path-panel button { min-height: 44px; }
+  :is(.marko, .marko-overlay) .image-path-panel button {
+    min-height: 44px;
+  }
 }
-:is(.marko, .marko-overlay) .contents-panel button { display: flex; align-items: center; gap: 8px; }
-:is(.marko, .marko-overlay) .contents-title { flex: 1; min-width: 0; overflow: hidden; }
-:is(.marko, .marko-overlay) .contents-level { flex: 0 0 18px; }
-:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-btn:disabled { opacity: .45; }
+:is(.marko, .marko-overlay) .contents-panel button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:is(.marko, .marko-overlay) .contents-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+:is(.marko, .marko-overlay) .contents-level {
+  flex: 0 0 18px;
+}
+:is(.marko, .marko-overlay) .milkdown-table-toolbar .tb-btn:disabled {
+  opacity: 0.45;
+}
 :is(.marko, .marko-overlay) .smooth-editor-caret {
   position: fixed;
   top: 0;
@@ -559,9 +963,17 @@
   z-index: 35;
 }
 :is(.marko, .marko-overlay) .smooth-editor-caret[hidden],
-:is(.marko, .marko-overlay) .action-hint[hidden] { display: none; }
-:is(.marko, .marko-overlay) .smooth-editor-caret > span { display: block; width: 100%; height: 100%; }
-:is(.marko, .marko-overlay) .ProseMirror[data-smooth-caret] { caret-color: transparent; }
+:is(.marko, .marko-overlay) .action-hint[hidden] {
+  display: none;
+}
+:is(.marko, .marko-overlay) .smooth-editor-caret > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:is(.marko, .marko-overlay) .ProseMirror[data-smooth-caret] {
+  caret-color: transparent;
+}
 :is(.marko, .marko-overlay) .action-hint {
   position: fixed;
   z-index: 120;
@@ -570,15 +982,29 @@
   overflow: hidden;
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  :is(.marko, .marko-overlay) .smooth-editor-caret { display: none; }
-  :is(.marko, .marko-overlay) .ProseMirror[data-smooth-caret] { caret-color: #0092ff; }
+  :is(.marko, .marko-overlay) .smooth-editor-caret {
+    display: none;
+  }
+  :is(.marko, .marko-overlay) .ProseMirror[data-smooth-caret] {
+    caret-color: #0092ff;
+  }
 }
-:is(.marko, .marko-overlay) .mermaid-block { overflow: hidden; }
-:is(.marko, .marko-overlay) .mermaid-block > .code-lang-bar { gap: 6px; flex-wrap: wrap; }
+:is(.marko, .marko-overlay) .mermaid-block {
+  overflow: hidden;
+}
+:is(.marko, .marko-overlay) .mermaid-block > .code-lang-bar {
+  gap: 6px;
+  flex-wrap: wrap;
+}
 :is(.marko, .marko-overlay) .mermaid-block > pre[hidden],
 :is(.marko, .marko-overlay) .mermaid-controls[hidden],
-:is(.marko, .marko-overlay) .mermaid-preview[hidden] { display: none !important; }
-:is(.marko, .marko-overlay) .mermaid-preview { position: relative; }
+:is(.marko, .marko-overlay) .mermaid-preview[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: [hidden] must hide the element over any display rule */
+  display: none !important;
+}
+:is(.marko, .marko-overlay) .mermaid-preview {
+  position: relative;
+}
 :is(.marko, .marko-overlay) .mermaid-viewport {
   position: relative;
   height: clamp(240px, 40vh, 440px);
@@ -589,6 +1015,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
+  /* biome-ignore lint/complexity/noImportantStyles: host img rules must not resize the diagram */
   max-width: none !important;
   max-height: none;
   user-select: none;
@@ -607,11 +1034,22 @@
   width: 30px;
   height: 30px;
 }
-:is(.marko, .marko-overlay) .mermaid-button-labeled { width: auto; gap: 6px; }
-:is(.marko, .marko-overlay) .mermaid-button[hidden] { display: none; }
-:is(.marko, .marko-overlay) .mermaid-button:active:enabled { opacity: .8; }
-:is(.marko, .marko-overlay) .mermaid-button:disabled { opacity: .3; }
-:is(.marko, .marko-overlay) .mermaid-zoom { min-width: 42px; }
+:is(.marko, .marko-overlay) .mermaid-button-labeled {
+  width: auto;
+  gap: 6px;
+}
+:is(.marko, .marko-overlay) .mermaid-button[hidden] {
+  display: none;
+}
+:is(.marko, .marko-overlay) .mermaid-button:active:enabled {
+  opacity: 0.8;
+}
+:is(.marko, .marko-overlay) .mermaid-button:disabled {
+  opacity: 0.3;
+}
+:is(.marko, .marko-overlay) .mermaid-zoom {
+  min-width: 42px;
+}
 :is(.marko, .marko-overlay) .mermaid-message {
   position: absolute;
   z-index: 1;
@@ -623,7 +1061,11 @@
   max-height: calc(100% - 40px);
   overflow: auto;
 }
-:is(.marko, .marko-overlay) .mermaid-preview[data-state="loading"] .mermaid-message::before { display: inline-block; width: 10px; height: 10px; }
+:is(.marko, .marko-overlay) .mermaid-preview[data-state="loading"] .mermaid-message::before {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+}
 :is(.marko, .marko-overlay) .mermaid-measure {
   position: fixed;
   left: -100000px;
@@ -641,11 +1083,25 @@
   overflow: hidden;
   transform: none;
 }
-:is(.marko, .marko-overlay) .mermaid-fullscreen[open] { display: flex; flex-direction: column; }
-:is(.marko, .marko-overlay) .mermaid-fullscreen-header { display: flex; align-items: center; gap: 16px; }
-:is(.marko, .marko-overlay) .mermaid-fullscreen > .mermaid-viewport { flex: 1; min-height: 0; height: auto !important; }
+:is(.marko, .marko-overlay) .mermaid-fullscreen[open] {
+  display: flex;
+  flex-direction: column;
+}
+:is(.marko, .marko-overlay) .mermaid-fullscreen-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+:is(.marko, .marko-overlay) .mermaid-fullscreen > .mermaid-viewport {
+  flex: 1;
+  min-height: 0;
+  /* biome-ignore lint/complexity/noImportantStyles: fullscreen fills the remaining height over the base viewport height */
+  height: auto !important;
+}
 @media (forced-colors: active) {
-  :is(.marko, .marko-overlay) .milkdown .ProseMirror { caret-color: auto; }
+  :is(.marko, .marko-overlay) .milkdown .ProseMirror {
+    caret-color: auto;
+  }
 }
 :is(.marko, .marko-overlay) .frontmatter-card[data-present="false"] {
   width: 100%;
@@ -653,9 +1109,24 @@
   padding-inline: calc(var(--marko-inset-start) - 10px) 2rem;
 }
 @media (pointer: coarse) {
-  :is(.marko, .marko-overlay) .contents-trigger { width: 44px; height: 44px; }
+  :is(.marko, .marko-overlay) .contents-trigger {
+    width: 44px;
+    height: 44px;
+  }
 }
-:is(.marko, .marko-overlay) .selection-slash-menu { width: min(280px, calc(100vw - 16px)); }
-:is(.marko, .marko-overlay) .selection-slash-menu input { display: block; width: 100%; box-sizing: border-box; }
-:is(.marko, .marko-overlay) .selection-slash-menu [role="listbox"] { max-height: min(288px, calc(100vh - 140px)); overflow-y: auto; }
-:is(.marko, .marko-overlay) .selection-slash-menu .inline-slash-option { justify-content: space-between; min-height: 30px; }
+:is(.marko, .marko-overlay) .selection-slash-menu {
+  width: min(280px, calc(100vw - 16px));
+}
+:is(.marko, .marko-overlay) .selection-slash-menu input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+:is(.marko, .marko-overlay) .selection-slash-menu [role="listbox"] {
+  max-height: min(288px, calc(100vh - 140px));
+  overflow-y: auto;
+}
+:is(.marko, .marko-overlay) .selection-slash-menu .inline-slash-option {
+  justify-content: space-between;
+  min-height: 30px;
+}

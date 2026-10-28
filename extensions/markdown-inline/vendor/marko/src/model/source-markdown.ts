@@ -14,28 +14,64 @@ const LINK_TARGET: Record<string, string[]> = {
 };
 
 function sameLinkTarget(a: Node | undefined, b: Node): a is Node {
-  return !!a && a.type === b.type && LINK_TARGET[b.type!].every(key => a?.[key] === b[key]);
+  return (
+    !!a && !!b.type && a.type === b.type && LINK_TARGET[b.type].every((key) => a?.[key] === b[key])
+  );
 }
 
 // Milkdown can distribute one link around inline code, moving separating
 // whitespace outside the links. Preserve that whitespace while comparing the
 // contiguous label as one link with the same destination and title.
+function mergeIntoPreviousLink(result: Node[], node: Node, previous: Node | undefined): boolean {
+  const gap =
+    previous?.type === 'text' && /^[\t\n\r ]+$/.test(previous.value ?? '') ? previous : undefined;
+  const link = gap ? result.at(-2) : previous;
+  if (!sameLinkTarget(link, node)) return false;
+  if (gap) result.pop();
+  link.children ??= [];
+  const children = link.children;
+  for (const child of [...(gap ? [gap] : []), ...(node.children ?? [])])
+    appendNormalized(children, child);
+  return true;
+}
+
 function appendNormalized(result: Node[], node: Node) {
   const previous = result.at(-1);
-  if (node.type === 'link' || node.type === 'linkReference') {
-    const gap = previous?.type === 'text' && /^[\t\n\r ]+$/.test(previous.value ?? '') ? previous : undefined;
-    const link = gap ? result.at(-2) : previous;
-    if (sameLinkTarget(link, node)) {
-      if (gap) result.pop();
-      const children = link.children ?? (link.children = []);
-      for (const child of [...(gap ? [gap] : []), ...(node.children ?? [])]) appendNormalized(children, child);
-      return;
-    }
-  }
-  if (node.type === 'text' && previous?.type === 'text' &&
-      JSON.stringify(previous.marks) === JSON.stringify(node.marks)) {
+  if (
+    (node.type === 'link' || node.type === 'linkReference') &&
+    mergeIntoPreviousLink(result, node, previous)
+  )
+    return;
+  if (
+    node.type === 'text' &&
+    previous?.type === 'text' &&
+    JSON.stringify(previous.marks) === JSON.stringify(node.marks)
+  ) {
     previous.value = String(previous.value) + node.value;
   } else result.push(node);
+}
+
+// Emphasis delimiters cannot enclose boundary whitespace. Keep every
+// whitespace byte, but allow the serializer to move it outside bold/italic.
+function normalizedText(text: string, marks: string[]): Node[] {
+  return text
+    .split(/([\t\n\r ]+)/)
+    .filter(Boolean)
+    .map((value) => ({
+      type: 'text',
+      value,
+      marks: /^[\t\n\r ]+$/.test(value)
+        ? marks.filter((mark) => mark !== 'emphasis' && mark !== 'strong')
+        : marks,
+    }));
+}
+
+function normalizedNode(node: Node, marks: string[]): Node {
+  return {
+    ...node,
+    ...(marks.length ? { marks } : {}),
+    ...(node.children ? { children: normalizeChildren(node.children) } : {}),
+  };
 }
 
 // The editor distributes marks around inline code and links. Compare their
@@ -44,20 +80,15 @@ function normalizeChildren(children: Node[], marks: string[] = []): Node[] {
   const result: Node[] = [];
   const append = (node: Node) => appendNormalized(result, node);
   for (const node of children) {
-    if (['emphasis', 'strong', 'delete'].includes(node.type ?? '')) {
-      normalizeChildren(node.children ?? [], [...new Set([...marks, node.type!])].sort()).forEach(append);
+    const type = node.type ?? '';
+    if (['emphasis', 'strong', 'delete'].includes(type)) {
+      normalizeChildren(node.children ?? [], [...new Set([...marks, type])].sort()).forEach(append);
     } else if (node.type === 'text') {
-      // Emphasis delimiters cannot enclose boundary whitespace. Keep every
-      // whitespace byte, but allow the serializer to move it outside bold/italic.
-      for (const value of (node.value ?? '').split(/([\t\n\r ]+)/).filter(Boolean)) {
-        append({type: 'text', value, marks: /^[\t\n\r ]+$/.test(value)
-          ? marks.filter(mark => mark !== 'emphasis' && mark !== 'strong') : marks});
-      }
+      normalizedText(node.value ?? '', marks).forEach(append);
     } else if (node.type === 'link' || node.type === 'linkReference') {
-      append({...node, children: normalizeChildren(node.children ?? [], marks)});
+      append({ ...node, children: normalizeChildren(node.children ?? [], marks) });
     } else {
-      append({...node, ...(marks.length ? {marks} : {}),
-        ...(node.children ? {children: normalizeChildren(node.children)} : {})});
+      append(normalizedNode(node, marks));
     }
   }
   return result;
@@ -66,25 +97,32 @@ function normalizeChildren(children: Node[], marks: string[] = []): Node[] {
 function semanticKey(value: unknown): string {
   const nodes = Array.isArray(value) ? value : [value];
   return JSON.stringify(normalizeChildren(nodes), (key, item) => {
-    if (["position", "data", "spread"].includes(key)) return undefined;
-    return typeof item === "string" ? item.replace(/\r\n?/g, "\n") : item;
+    if (['position', 'data', 'spread'].includes(key)) return undefined;
+    return typeof item === 'string' ? item.replace(/\r\n?/g, '\n') : item;
   });
 }
 
 /** Match unchanged siblings first so an inserted block cannot steal their style. */
 function pairBlocks(previous: Block[], next: Block[]): number[] {
-  const keys = previous.map(semanticKey), used = new Set<number>();
+  const keys = previous.map(semanticKey),
+    used = new Set<number>();
   const pairs = next.map((node, index) => {
     const key = semanticKey(node);
-    const match = keys[index] === key && !used.has(index) ? index
-      : keys.findIndex((candidate, i) => candidate === key && !used.has(i));
+    const match =
+      keys[index] === key && !used.has(index)
+        ? index
+        : keys.findIndex((candidate, i) => candidate === key && !used.has(i));
     if (match >= 0) used.add(match);
     return match;
   });
   return pairs.map((match, index) => {
     if (match >= 0) return match;
-    const candidates = previous.map((node, i) => ({node, i})).filter(({node, i}) =>
-      !used.has(i) && node.type === next[index].type && node.ordered === next[index].ordered);
+    const candidates = previous
+      .map((node, i) => ({ node, i }))
+      .filter(
+        ({ node, i }) =>
+          !used.has(i) && node.type === next[index].type && node.ordered === next[index].ordered,
+      );
     candidates.sort((a, b) => Math.abs(a.i - index) - Math.abs(b.i - index));
     const candidate = candidates[0]?.i ?? -1;
     if (candidate >= 0) used.add(candidate);
@@ -92,24 +130,44 @@ function pairBlocks(previous: Block[], next: Block[]): number[] {
   });
 }
 
+function authoredBullet(source: string, old: Block | undefined): string | undefined {
+  const offset = old?.children?.[0]?.position?.start.offset;
+  const original = offset === undefined ? '' : source[offset];
+  return /^[-*+]$/.test(original) ? original : undefined;
+}
+
+function replaceBullets(
+  list: Block,
+  bullet: string,
+  markdown: string,
+  result: string[],
+  start: number,
+) {
+  for (const item of list.children ?? []) {
+    const offset = item.position?.start.offset;
+    if (offset !== undefined && /^[-*+]$/.test(markdown[offset])) result[offset - start] = bullet;
+  }
+}
+
 /** Replace only AST-identified bullet tokens, never dashes/stars inside content. */
-function preserveBulletMarkers(source: string, previous: Block | undefined, markdown: string, next: Block): string {
+function preserveBulletMarkers(
+  source: string,
+  previous: Block | undefined,
+  markdown: string,
+  next: Block,
+): string {
   const start = next.position?.start.offset ?? 0;
   const result = markdown.slice(start, next.position?.end.offset ?? 0).split('');
   const visit = (node: Block, old: Block | undefined, inherited?: string) => {
     let bullet = inherited;
     if (node.type === 'list' && !node.ordered) {
-      const offset = old?.children?.[0]?.position?.start.offset;
-      const original = offset === undefined ? '' : source[offset];
-      if (/^[-*+]$/.test(original)) bullet = original;
-      if (bullet) for (const item of node.children ?? []) {
-        const offset = item.position?.start.offset;
-        if (offset !== undefined && /^[-*+]$/.test(markdown[offset])) result[offset - start] = bullet;
-      }
+      bullet = authoredBullet(source, old) ?? inherited;
+      if (bullet) replaceBullets(node, bullet, markdown, result, start);
     }
-    const children = node.children ?? [], oldChildren = old?.children ?? [];
+    const children = node.children ?? [],
+      oldChildren = old?.children ?? [];
     const pairs = pairBlocks(oldChildren, children);
-    children.forEach((child, i) => visit(child, oldChildren[pairs[i]], bullet));
+    for (const [i, child] of children.entries()) visit(child, oldChildren[pairs[i]], bullet);
   };
   visit(next, previous);
   return result.join('');
@@ -124,15 +182,21 @@ function editedGap(source: string, previous: string, next: string, eol: string):
 
 /** Preserve authored blocks; refuse visual editing when the parser loses meaning. */
 export class SourceMarkdown {
-  constructor(private source: string, private canonical: string, private parse: Parse) {}
+  constructor(
+    private source: string,
+    private canonical: string,
+    private parse: Parse,
+  ) {}
 
   get supported() {
-    return semanticKey(this.parse(this.source).children) ===
-      semanticKey(this.parse(this.canonical).children);
+    return (
+      semanticKey(this.parse(this.source).children) ===
+      semanticKey(this.parse(this.canonical).children)
+    );
   }
 
   blockRanges() {
-    return this.parse(this.source).children.map(block => ({
+    return this.parse(this.source).children.map((block) => ({
       from: block.position?.start.offset ?? 0,
       to: block.position?.end.offset ?? this.source.length,
     }));
@@ -154,44 +218,70 @@ export class SourceMarkdown {
 
   update(markdown: string): string {
     if (markdown === this.canonical) return this.source;
-    if (!this.supported) throw new Error("This Markdown requires source editing.");
+    if (!this.supported) throw new Error('This Markdown requires source editing.');
     const old = this.parse(this.source).children;
     const previous = this.parse(this.canonical).children;
     const next = this.parse(markdown).children;
-    const eol = this.source.includes("\r\n") ? "\r\n" : "\n";
+    const eol = this.source.includes('\r\n') ? '\r\n' : '\n';
     const pairs = pairBlocks(old, next);
     const start = (node: Block) => node.position?.start.offset ?? 0;
     const end = (node: Block) => node.position?.end.offset ?? 0;
-    const leading = editedGap(old.length ? this.source.slice(0, start(old[0])) : this.source,
+    const leading = editedGap(
+      old.length ? this.source.slice(0, start(old[0])) : this.source,
       previous.length ? this.canonical.slice(0, start(previous[0])) : this.canonical,
-      next.length ? markdown.slice(0, start(next[0])) : markdown, eol);
-    const previousTail = previous.length ? this.canonical.slice(end(previous.at(-1)!)) : "";
-    let nextTail = next.length ? markdown.slice(end(next.at(-1)!)) : "";
+      next.length ? markdown.slice(0, start(next[0])) : markdown,
+      eol,
+    );
+    const previousTail = previous.length
+      ? this.canonical.slice(end(previous[previous.length - 1]))
+      : '';
+    let nextTail = next.length ? markdown.slice(end(next[next.length - 1])) : '';
     // Milkdown adds an empty writing paragraph after a terminal non-text block.
     // Its one extra serializer newline is scaffolding, not an authored blank line.
-    if (previousTail === '\n' && nextTail === '\n\n' &&
-        previous.at(-1)?.type === next.at(-1)?.type &&
-        !['paragraph', 'heading'].includes(next.at(-1)?.type ?? 'paragraph')) nextTail = previousTail;
-    const trailing = editedGap(old.length ? this.source.slice(end(old.at(-1)!)) : "",
-      previousTail, nextTail, eol);
+    if (
+      previousTail === '\n' &&
+      nextTail === '\n\n' &&
+      previous.at(-1)?.type === next.at(-1)?.type &&
+      !['paragraph', 'heading'].includes(next.at(-1)?.type ?? 'paragraph')
+    )
+      nextTail = previousTail;
+    const trailing = editedGap(
+      old.length ? this.source.slice(end(old[old.length - 1])) : '',
+      previousTail,
+      nextTail,
+      eol,
+    );
     const blocks = next.map((node, index) => {
       const match = pairs[index];
       if (match < 0 || semanticKey(old[match]) !== semanticKey(node)) {
-        return preserveBulletMarkers(this.source, old[match], markdown, node).replace(/\r?\n/g, eol);
+        return preserveBulletMarkers(this.source, old[match], markdown, node).replace(
+          /\r?\n/g,
+          eol,
+        );
       }
       return this.source.slice(start(old[match]), end(old[match]));
     });
-    const join = (preserveGaps: boolean) => blocks.map((block, index) => {
-      if (!index) return leading + block;
-      const match = pairs[index];
-      const adjacent = match > 0 && pairs[index - 1] === match - 1;
-      const nextGap = markdown.slice(end(next[index - 1]), start(next[index])).replace(/\r?\n/g, eol);
-      const gap = preserveGaps && adjacent
-        ? editedGap(this.source.slice(end(old[match - 1]), start(old[match])),
-          this.canonical.slice(end(previous[match - 1]), start(previous[match])), nextGap, eol)
-        : nextGap;
-      return gap + block;
-    }).join("") + (blocks.length ? trailing : "");
+    const join = (preserveGaps: boolean) =>
+      blocks
+        .map((block, index) => {
+          if (!index) return leading + block;
+          const match = pairs[index];
+          const adjacent = match > 0 && pairs[index - 1] === match - 1;
+          const nextGap = markdown
+            .slice(end(next[index - 1]), start(next[index]))
+            .replace(/\r?\n/g, eol);
+          const gap =
+            preserveGaps && adjacent
+              ? editedGap(
+                  this.source.slice(end(old[match - 1]), start(old[match])),
+                  this.canonical.slice(end(previous[match - 1]), start(previous[match])),
+                  nextGap,
+                  eol,
+                )
+              : nextGap;
+          return gap + block;
+        })
+        .join('') + (blocks.length ? trailing : '');
     const expected = semanticKey(next);
     let result = join(true);
     // A heading can become a paragraph, requiring a blank line where none was
@@ -199,7 +289,7 @@ export class SourceMarkdown {
     if (semanticKey(this.parse(result).children) !== expected) result = join(false);
     // Context-sensitive Markdown (e.g. adjacent lists) must not change meaning.
     if (semanticKey(this.parse(result).children) !== expected) {
-      throw new Error("This edit needs source mode to preserve Markdown structure.");
+      throw new Error('This edit needs source mode to preserve Markdown structure.');
     }
     this.source = result;
     this.canonical = markdown;

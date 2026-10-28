@@ -2,7 +2,7 @@
   "name": "markdown-inline",
   "displayName": "Damln Markdown Inline",
   "description": "A native VS Code custom editor for inline Markdown editing.",
-  "version": "0.8.15",
+  "version": "0.8.16",
   "publisher": "damln",
   "license": "MIT",
   "engines": {
@@ -16,7 +16,6 @@
   ],
   "activationEvents": [
     "onCommand:damlnMarkdownInline.newMarkdown",
-    "onCommand:damlnMarkdownInline.correctText",
     "onCustomEditor:damln.markdownInline",
     "onCommand:damlnMarkdownInline.toggleBold",
     "onCommand:damlnMarkdownInline.toggleItalic",
@@ -62,7 +61,6 @@
     "themes.js",
     "extension.js",
     "new-markdown.js",
-    "text-improver.js",
     "jump-model.js",
     "markdown-model.js",
     "toolbar-visibility.js",
@@ -85,12 +83,6 @@
         "command": "damlnMarkdownInline.newMarkdown",
         "title": "New Markdown",
         "category": "Markdown Inline"
-      },
-      {
-        "command": "damlnMarkdownInline.correctText",
-        "title": "Correct Text",
-        "category": "Markdown Inline",
-        "enablement": "activeCustomEditorId == damln.markdownInline"
       },
       {
         "command": "damlnMarkdownInline.toggleBold",

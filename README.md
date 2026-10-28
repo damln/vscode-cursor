@@ -70,8 +70,7 @@ Uninstall the retired `damln.html-preview` extension and replace any old
 
 Personal profiles, SSH setup, trusted-domain overrides, old packages and workspace
 history are excluded. Markdown images can contact their hosts.
-Mermaid renders locally. **Improve text** requires an external CLI, absent here;
-when explicitly used, that CLI may send document text to its AI provider.
+Mermaid renders locally.
 
 Source stays in `extensions/`, with shared `tests/` and build `scripts/`.
 Run `python3 scripts/build_markdown_inline.py` with Docker to type-check, test and

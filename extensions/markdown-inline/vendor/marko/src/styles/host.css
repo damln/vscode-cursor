@@ -3,7 +3,9 @@
 @import "./look.css" layer(marko.theme);
 
 /* Bridge the existing Escrito and Markdown Inline host palettes. */
-.marko { display: block; }
+.marko {
+  display: block;
+}
 :is(.marko, .marko-overlay) {
   --marko-background: var(--page-background);
   --marko-foreground: var(--foreground);

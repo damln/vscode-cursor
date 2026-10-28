@@ -1,7 +1,7 @@
-import { TooltipProvider } from "@milkdown/kit/plugin/tooltip";
-import type { Selection } from "@milkdown/kit/prose/state";
-import type { EditorView } from "@milkdown/kit/prose/view";
-import { scopeOf } from "../scope";
+import { TooltipProvider } from '@milkdown/kit/plugin/tooltip';
+import type { Selection } from '@milkdown/kit/prose/state';
+import type { EditorView } from '@milkdown/kit/prose/view';
+import { scopeOf } from '../scope';
 
 let active: FloatingPanel | undefined;
 const suppressTooltips = new Set<() => void>();
@@ -18,7 +18,12 @@ function escapePopup(event: KeyboardEvent) {
 export class FloatingPanel {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private opened = false;
-  constructor(readonly element: HTMLElement, readonly priority = 1, private dismiss = () => {}, private onEscape?: (restoreFocus: boolean) => void) {
+  constructor(
+    readonly element: HTMLElement,
+    readonly priority = 1,
+    private dismiss = () => {},
+    private onEscape?: (restoreFocus: boolean) => void,
+  ) {
     element.classList.add('floating-panel');
     element.hidden = true;
     element.inert = true;
@@ -50,8 +55,12 @@ export class FloatingPanel {
     this.element.inert = true;
     this.element.setAttribute('aria-hidden', 'true');
     this.element.dataset.show = 'false';
-    this.timer = setTimeout(() => { this.element.hidden = true; },
-      matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 90);
+    this.timer = setTimeout(
+      () => {
+        this.element.hidden = true;
+      },
+      matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 90,
+    );
     this.dismiss();
   }
   escape() {
@@ -60,58 +69,100 @@ export class FloatingPanel {
     this.hide();
   }
   destroy() {
-    this.hide(); clearTimeout(this.timer); this.element.remove();
+    this.hide();
+    clearTimeout(this.timer);
+    this.element.remove();
   }
 }
 
-export function floatingTooltip(view: EditorView, options: ConstructorParameters<typeof TooltipProvider>[0], priority = 1, dismiss?: () => void, onEscape?: (restoreFocus: boolean) => void) {
+export function floatingTooltip(
+  view: EditorView,
+  options: ConstructorParameters<typeof TooltipProvider>[0],
+  priority = 1,
+  dismiss?: () => void,
+  onEscape?: (restoreFocus: boolean) => void,
+) {
   let currentView: EditorView | undefined;
   let dismissedSelection: Selection | undefined;
-  const suppress = () => { dismissedSelection = currentView?.state.selection; };
+  const suppress = () => {
+    dismissedSelection = currentView?.state.selection;
+  };
   suppressTooltips.add(suppress);
   const allowed = (view: EditorView) => {
     if (dismissedSelection?.eq(view.state.selection)) return false;
     dismissedSelection = undefined;
     return true;
   };
-  const provider = new TooltipProvider({...options, root: scopeOf(view).overlay, shift: {padding: 8},
-    shouldShow: view => allowed(view) && (options.shouldShow?.(view) ?? true),
+  const provider = new TooltipProvider({
+    ...options,
+    root: scopeOf(view).overlay,
+    shift: { padding: 8 },
+    shouldShow: (view) => allowed(view) && (options.shouldShow?.(view) ?? true),
   });
-  const panel = new FloatingPanel(options.content, priority, dismiss, restore => {
+  const panel = new FloatingPanel(options.content, priority, dismiss, (restore) => {
     if (onEscape) onEscape(restore);
     else if (restore) currentView?.focus();
     provider.hide();
   });
-  const show = provider.show, hide = provider.hide, destroy = provider.destroy, update = provider.update;
-  provider.update = (...args) => { currentView = args[0]; update(...args); };
+  const show = provider.show,
+    hide = provider.hide,
+    destroy = provider.destroy,
+    update = provider.update;
+  provider.update = (...args) => {
+    currentView = args[0];
+    update(...args);
+  };
   // Also guard an already queued positioning callback after Escape.
   provider.show = (...args) => {
     const view = args[1] ?? currentView;
     if ((!view || allowed(view)) && panel.show()) show(...args);
   };
-  provider.hide = () => { hide(); panel.hide(); };
-  provider.destroy = () => { suppressTooltips.delete(suppress); destroy(); panel.destroy(); };
+  provider.hide = () => {
+    hide();
+    panel.hide();
+  };
+  provider.destroy = () => {
+    suppressTooltips.delete(suppress);
+    destroy();
+    panel.destroy();
+  };
   // An explicit keyboard command or link click can reopen at the same caret.
-  return Object.assign(provider, {reopen: () => { dismissedSelection = undefined; }});
+  return Object.assign(provider, {
+    reopen: () => {
+      dismissedSelection = undefined;
+    },
+  });
 }
 
-export function toolbarPointer(element: HTMLElement): NonNullable<ConstructorParameters<typeof TooltipProvider>[0]["middleware"]>[number] {
+export function toolbarPointer(
+  element: HTMLElement,
+): NonNullable<ConstructorParameters<typeof TooltipProvider>[0]['middleware']>[number] {
   return {
-    name: "toolbarPointer",
-    fn({rects, x, placement}) {
+    name: 'toolbarPointer',
+    fn({ rects, x, placement }) {
       const center = rects.reference.x + rects.reference.width / 2 - x;
-      element.style.setProperty("--toolbar-pointer-x", `${Math.max(24, Math.min(center, rects.floating.width - 24))}px`);
-      element.dataset.pointerSide = placement.startsWith("top") ? "bottom" : "top";
+      element.style.setProperty(
+        '--toolbar-pointer-x',
+        `${Math.max(24, Math.min(center, rects.floating.width - 24))}px`,
+      );
+      element.dataset.pointerSide = placement.startsWith('top') ? 'bottom' : 'top';
       return {};
     },
   };
 }
 
-export function positionMenu(element: HTMLElement, anchor: DOMRect | {left: number; top: number; bottom: number}) {
+export function positionMenu(
+  element: HTMLElement,
+  anchor: DOMRect | { left: number; top: number; bottom: number },
+) {
   const bounds = element.getBoundingClientRect();
   element.style.left = `${Math.max(8, Math.min(anchor.left, innerWidth - bounds.width - 8))}px`;
-  element.style.top = `${Math.max(8, anchor.bottom + bounds.height + 8 <= innerHeight
-    ? anchor.bottom + 4 : anchor.top - bounds.height - 4)}px`;
+  element.style.top = `${Math.max(
+    8,
+    anchor.bottom + bounds.height + 8 <= innerHeight
+      ? anchor.bottom + 4
+      : anchor.top - bounds.height - 4,
+  )}px`;
 }
 
 /**
@@ -124,16 +175,18 @@ export function slashMenuView(
   dismiss: () => void,
   render: (panel: FloatingPanel) => void,
 ) {
-  const panel = new FloatingPanel(menu, 2, dismiss, restore => { if (restore) view.focus(); });
+  const panel = new FloatingPanel(menu, 2, dismiss, (restore) => {
+    if (restore) view.focus();
+  });
   scopeOf(view).overlay.append(menu);
   const update = () => render(panel);
   const dismissOutside = (event: Event) => {
     if (event.target instanceof Node && menu.contains(event.target)) return;
     dismiss();
   };
-  document.addEventListener("mousedown", dismissOutside);
-  document.addEventListener("scroll", update, true);
-  window.addEventListener("resize", update);
+  document.addEventListener('mousedown', dismissOutside);
+  document.addEventListener('scroll', update, true);
+  window.addEventListener('resize', update);
   return {
     panel,
     update,
@@ -142,9 +195,9 @@ export function slashMenuView(
     position: () => positionMenu(menu, view.coordsAtPos(view.state.selection.from)),
     destroy() {
       panel.destroy();
-      document.removeEventListener("mousedown", dismissOutside);
-      document.removeEventListener("scroll", update, true);
-      window.removeEventListener("resize", update);
+      document.removeEventListener('mousedown', dismissOutside);
+      document.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
     },
   };
 }

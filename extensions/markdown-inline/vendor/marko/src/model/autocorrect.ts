@@ -1,7 +1,7 @@
 export const NO_AUTOCORRECT_ATTRS: Record<string, string> = {
-  spellcheck: "false",
-  autocorrect: "off",
-  autocapitalize: "off",
+  spellcheck: 'false',
+  autocorrect: 'off',
+  autocapitalize: 'off',
 };
 
 export function disableAutocorrect(element: HTMLElement): void {

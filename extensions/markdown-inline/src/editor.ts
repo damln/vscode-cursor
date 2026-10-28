@@ -93,9 +93,6 @@ let acknowledgmentTimer: number | null = null;
 let updates = Promise.resolve();
 let lastDraftMessage: string | null = null;
 const actions = new FlushActions();
-let improving = false;
-let improvementError = "";
-const improveText = document.querySelector<HTMLButtonElement>("#improve-text");
 const cleanup = document.querySelector<HTMLButtonElement>("#cleanup");
 const rootElement = document.getElementById("editor");
 const openRawElement = document.getElementById("open-raw");
@@ -190,34 +187,13 @@ const {applyTheme: applyInlineTheme, applyCodeWrap} = setupEditorSettings(inline
 });
 applyCodeWrap(codeWrap);
 
-function setStatus(value: string, error = false) {
-  const status = improving ? "Improving…" : improvementError || value;
+function setStatus(status: string, error = false) {
   if (saveState.textContent !== status) saveState.textContent = status;
   saveState.title = status;
-  saveState.dataset.state = error || improvementError || sync.error ? 'error'
-    : improving || status === 'Synchronizing' ? 'saving'
+  saveState.dataset.state = error || sync.error ? 'error'
+    : status === 'Synchronizing' ? 'saving'
     : status === 'Modified' ? 'modified'
     : status === 'Saved' ? 'saved' : 'idle';
-}
-
-function setImproving(running: boolean) {
-  improving = running;
-  if (cleanup) cleanup.disabled = running || !ready || sync.pending || Boolean(sync.error);
-  document.body.classList.toggle("improving", running);
-  documentScroll.inert = running;
-  recovery.inert = running;
-  openRaw.toggleAttribute("disabled", running);
-  documentScroll.setAttribute("aria-busy", String(running));
-  if (improveText) {
-    improveText.disabled = running || !ready || sync.pending || Boolean(sync.error);
-    improveText.setAttribute("aria-busy", String(running));
-    improveText.dataset.state = running ? "loading" : "idle";
-  }
-  editor?.action(ctx => ctx.get(editorViewCtx).setProps({
-    editable: () => !improving && Boolean(sourceMarkdown?.supported),
-  }));
-  if (running && document.activeElement instanceof HTMLElement) document.activeElement.blur();
-  setStatus(sync.dirty ? "Modified" : "Saved");
 }
 
 const recovery = document.createElement('section');
@@ -250,9 +226,8 @@ recovery.append(recoveryText, compareDraft, restoreDraft, retry, useFile);
 documentScroll.before(recovery);
 
 function sendNextEdit() {
-  if (cleanup) cleanup.disabled = improving || !ready || sync.pending || Boolean(sync.error);
+  if (cleanup) cleanup.disabled = !ready || sync.pending || Boolean(sync.error);
   gitGutter.update();
-  if (improveText) improveText.disabled = improving || !ready || sync.pending || Boolean(sync.error);
   const request = typingTimer === null ? sync.next() : null;
   const draftMessage = JSON.stringify({ session, draft: sync.draft });
   if (draftMessage !== lastDraftMessage) {
@@ -402,7 +377,8 @@ async function createEditor(source: string, snapshot: EditorSnapshot | null = nu
     }
   });
   ready = true;
-  setImproving(improving);
+  if (cleanup) cleanup.disabled = sync.pending || Boolean(sync.error);
+  setStatus(sync.dirty ? "Modified" : "Saved");
   restoreEditorSnapshot(snapshot);
 }
 
@@ -466,7 +442,7 @@ function isThemeMessage(value: any): value is ThemeMessage {
 }
 
 function receiveCommand(message: CommandMessage) {
-  if (!editor || improving) return;
+  if (!editor) return;
   if ((document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement)
     && message.command !== 'focusToolbar') return;
   if (message.command === "focusToolbar") { editor?.action(ctx => focusToolbar(ctx.get(editorViewCtx))); return; }
@@ -493,7 +469,7 @@ function receiveCommand(message: CommandMessage) {
 }
 
 function receiveJump(message: JumpMessage) {
-  if (!editor || improving) return;
+  if (!editor) return;
   editor.action(ctx => {
     jumpController.start(ctx.get(editorViewCtx), message);
   });
@@ -502,7 +478,6 @@ function receiveJump(message: JumpMessage) {
 window.addEventListener(
   "keydown",
   event => {
-    if (improving) { event.preventDefault(); event.stopImmediatePropagation(); return; }
     if (event.isComposing || event.keyCode === 229) return;
     if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'v') {
       event.preventDefault(); event.stopPropagation(); flushAction({type: 'pastePlainText'}); return;
@@ -527,7 +502,7 @@ window.addEventListener(
 
 // Let ProseMirror reconcile the DOM caret before choosing the contextual toolbar.
 window.addEventListener("keydown", event => {
-  if (!improving && !event.isComposing && event.altKey && event.key === "F10") {
+  if (!event.isComposing && event.altKey && event.key === "F10") {
     event.preventDefault(); editor?.action(ctx => focusToolbar(ctx.get(editorViewCtx)));
   }
 });
@@ -545,15 +520,6 @@ window.addEventListener("message", event => {
     updates = updates.then(() => gitGutter.setBaseline(message.text));
     return;
   }
-  if (message?.type === "textImprover") {
-    updates = updates.then(() => {
-      if (improveText) improveText.hidden = !message.available;
-      improvementError = typeof message.error === "string" ? message.error : "";
-      setImproving(message.running === true);
-    });
-    return;
-  }
-  if (improving && message?.type === 'history') return;
   if (message?.type === 'history' && ['undo', 'redo'].includes(message.action)) {
     flushAction({ type: message.action });
     return;
@@ -666,7 +632,7 @@ root.addEventListener(
 
 // Let ProseMirror reconcile the DOM caret before choosing the contextual toolbar.
 window.addEventListener("keydown", event => {
-  if (!improving && !event.isComposing && event.altKey && event.key === "F10") {
+  if (!event.isComposing && event.altKey && event.key === "F10") {
     event.preventDefault(); editor?.action(ctx => focusToolbar(ctx.get(editorViewCtx)));
   }
 });
@@ -687,7 +653,6 @@ window.addEventListener("message", event => {
       documentScroll.scrollTop = 0;
     });
   }
-  if (improving && ["requestPlainPaste", "pasteText"].includes(message?.type)) return;
   if (message?.type === "requestPlainPaste") flushAction({type: "pastePlainText"});
   if (message?.type === "pasteText" && typeof message.text === "string" && editor) {
     const field = document.activeElement;
@@ -738,7 +703,6 @@ window.addEventListener("damln-open-link", event => {
 });
 
 openRaw.addEventListener("click", () => {
-  if (improving) return;
   let offset = preservedPrefix.length;
   const fallback = document.querySelector<HTMLTextAreaElement>('.source-fallback');
   if (fallback) offset += fallback.selectionStart;
@@ -748,18 +712,7 @@ openRaw.addEventListener("click", () => {
   });
   flushAction({ type: "openRaw", offset });
 });
-for (const type of ["pointerdown", "click", "beforeinput", "paste", "drop"] as const) {
-  window.addEventListener(type, event => {
-    if (improving && event.target instanceof Element && !event.target.closest("header, .theme-picker")) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }
-  }, true);
-}
-improveText?.addEventListener("click", () => {
-  if (!improving && !sync.error) vscode.postMessage({ type: "improveText" });
-});
 cleanup?.addEventListener("click", () => {
-  if (ready && !improving && !sync.pending && !sync.error) vscode.postMessage({ type: "cleanup" });
+  if (ready && !sync.pending && !sync.error) vscode.postMessage({ type: "cleanup" });
 });
 vscode.postMessage({ type: "ready", session });

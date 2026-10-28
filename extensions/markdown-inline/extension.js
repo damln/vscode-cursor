@@ -5,7 +5,6 @@ const { GitBaseline } = require("./git-baseline");
 const { createNewMarkdown } = require("./new-markdown");
 const crypto = require("node:crypto");
 const vscode = require("vscode");
-const { findTextImprover, runTextImprover } = require("./text-improver");
 const { cleanupMarkdown } = require("./markdown-model");
 const {
   documentPayload,
@@ -89,7 +88,6 @@ class MarkdownInlineProvider {
     this.flushes = new Map();
     this.pendingAnchors = new Map();
     this.sourcePositions = new Map();
-    this.improvements = new Map();
     this.drafts = new DraftStore(context.workspaceState);
     const kind = vscode.window?.activeColorTheme?.kind;
     const light = kind === 1 || kind === 4;
@@ -193,23 +191,10 @@ class MarkdownInlineProvider {
     }
   }
 
-  textImprover(document) {
-    return findTextImprover(vscode.workspace.workspaceFolders, document.uri, vscode.workspace.isTrusted);
-  }
-
-  async sendImprovementState(document, error) {
-    const key = document.uri.toString();
-    const message = { type: "textImprover", available: Boolean(this.textImprover(document)),
-      running: this.improvements.has(key), error };
-    await broadcast(panelsFor(this.panels, this.panelDocuments, key), message);
-  }
-
   async cleanup(document, queue) {
-    if (this.improvements.has(document.uri.toString())) return;
     try {
       await this.flushDocument(document);
       await queue.run(async () => {
-        if (this.improvements.has(document.uri.toString())) return;
         const original = document.getText();
         const text = cleanupMarkdown(original);
         if (text === original) return;
@@ -219,41 +204,6 @@ class MarkdownInlineProvider {
     } catch (error) {
       void vscode.window.showErrorMessage(`Cleanup: ${errorMessage(error)}`);
     }
-  }
-
-  async improveText(document, queue) {
-    const key = document.uri.toString();
-    if (this.improvements.has(key)) return;
-    const operation = { controller: new AbortController(), running: false };
-    this.improvements.set(key, operation);
-    let failure;
-    try {
-      const tool = this.textImprover(document);
-      if (!tool) throw new Error("Text improver is unavailable in this workspace.");
-      await this.sendImprovementState(document);
-      await this.flushDocument(document);
-      await queue.run(() => {});
-      if (!await document.save()) throw new Error("Could not save the file before improving it.");
-      operation.running = true;
-      const version = document.version;
-      const original = document.getText();
-      const text = await runTextImprover(tool, document.uri.fsPath, { signal: operation.controller.signal });
-      await queue.run(async () => {
-        if (operation.controller.signal.aborted) throw new Error("Text improvement cancelled.");
-        if (document.version !== version || document.getText() !== original) {
-          throw new Error("The file changed during text improvement. Run it again on the latest text.");
-        }
-        if (text === original) return;
-        if (!await replaceDocument(document, text)) throw new Error("VS Code rejected the improved text.");
-      });
-      if (!await document.save()) throw new Error("Improved text is in the editor but could not be saved.");
-    } catch (error) {
-      failure = errorMessage(error);
-    } finally {
-      this.improvements.delete(key);
-      await this.sendImprovementState(document, failure);
-    }
-    if (failure) void vscode.window.showErrorMessage(`Text improver: ${failure}`);
   }
 
   async openLink(document, panel, href) {
@@ -328,9 +278,6 @@ class MarkdownInlineProvider {
       this.panels.delete(panel);
       this.panelDocuments.delete(panel);
       this.panelSessions.delete(panel);
-      if (![...this.panelDocuments.values()].some(doc => doc.uri.toString() === key)) {
-        this.improvements.get(key)?.controller.abort();
-      }
       void queue.pending.then(() => {
         if (this.documentQueues.get(key) === queue &&
             ![...this.panelDocuments.values()].some(doc => doc.uri.toString() === key)) {
@@ -363,16 +310,12 @@ class MarkdownInlineProvider {
         }
         return;
       }
-      if (message?.type === "improveText") return this.improveText(document, queue);
       if (message?.type === "cleanup") return this.cleanup(document, queue);
       if (message?.type === "restoreDraft") {
-        if (this.improvements.has(key)) return panel.webview.postMessage({...documentPayload(document),
-          type: "editResult", requestId: message.requestId, status: "error", error: "Wait for text improvement before restoring."});
         return queue.run(() => this.restoreDraft(document, panel, message))
           .then(applied => applied === true ? this.saveDocument(document, panel) : undefined);
       }
       if (message?.type === "save") {
-        if (this.improvements.has(key)) return;
         return queue.run(() => {}).then(() => this.saveDocument(document, panel));
       }
       if (message?.type === "resolveImage") {
@@ -401,7 +344,6 @@ class MarkdownInlineProvider {
         initialized = true;
         sendDocument();
         await panel.webview.postMessage({ type: "theme", theme: this.theme });
-        await this.sendImprovementState(document);
         const fragment = this.pendingAnchors.get(key);
         if (fragment !== undefined) {
           this.pendingAnchors.delete(key);
@@ -412,12 +354,6 @@ class MarkdownInlineProvider {
           openingNavigation = { type: "focusStart" };
         }
         await focusOpenedDocument();
-        return;
-      }
-      if (this.improvements.has(key) && ["undo", "redo", "openRaw", "pastePlainText"].includes(message.type)) return;
-      if (this.improvements.get(key)?.running && message.type === "edit") {
-        await panel.webview.postMessage({ ...documentPayload(document), type: "editResult",
-          requestId: message.requestId, status: "error", error: "Text improvement is running. Your draft is retained." });
         return;
       }
       if (message.type === "undo" || message.type === "redo") {
@@ -538,11 +474,6 @@ class MarkdownInlineProvider {
       <span id="save-state" role="status" aria-live="polite" aria-atomic="true"></span>
     </div>
     <div class="header-actions">
-      <button id="improve-text" class="header-button header-icon-button" type="button" hidden aria-label="Improve text" data-tooltip="Improve and save this file using Codex with GPT-5.6 Luna">
-        ${icon('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/><path d="m15 5 3 3"/>', "action-icon")}
-        <span class="header-action-label">Improve text</span>
-        ${icon('<path d="M12 3a9 9 0 1 1-9 9"/>', "action-loading improve-spinner")}
-      </button>
       <button id="cleanup" class="header-button header-icon-button" type="button" disabled aria-label="Cleanup" data-tooltip="Remove trailing spaces and extra blank lines, preserve indentation, and save. Frontmatter is preserved.">
         ${icon('<path d="M4 5h16M4 12h10M4 19h16m-3-10 3 3-3 3"/>', "action-icon")}
         <span class="header-action-label">Cleanup</span>
@@ -597,12 +528,6 @@ function activate(context) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("damlnMarkdownInline.newMarkdown", () => createNewMarkdown(vscode)),
-    vscode.commands.registerCommand("damlnMarkdownInline.correctText", () => {
-      const panel = activePanel(provider.panels);
-      const document = panel && provider.panelDocuments.get(panel);
-      if (!document) return;
-      return provider.improveText(document, provider.documentQueues.get(document.uri.toString()));
-    }),
     vscode.window.onDidChangeTextEditorSelection(event => {
       if (event.textEditor.document.languageId === "markdown") {
         provider.sourcePositions.set(event.textEditor.document.uri.toString(), event.textEditor.document.offsetAt(event.selections[0].active));

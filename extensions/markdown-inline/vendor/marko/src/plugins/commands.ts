@@ -1,13 +1,24 @@
-import type { Ctx } from "@milkdown/kit/ctx";
-import { commandsCtx, editorViewCtx } from "@milkdown/kit/core";
-import { toggleEmphasisCommand, toggleInlineCodeCommand, toggleStrongCommand } from "@milkdown/kit/preset/commonmark";
-import { toggleStrikethroughCommand } from "@milkdown/kit/preset/gfm";
-import { openLinkEditor } from "./link-tooltip";
-import { focusToolbar } from "./toolbar";
-import { moveCurrentBlock } from "./block-movement";
+import { commandsCtx, editorViewCtx } from '@milkdown/kit/core';
+import type { Ctx } from '@milkdown/kit/ctx';
+import {
+  toggleEmphasisCommand,
+  toggleInlineCodeCommand,
+  toggleStrongCommand,
+} from '@milkdown/kit/preset/commonmark';
+import { toggleStrikethroughCommand } from '@milkdown/kit/preset/gfm';
+import { moveCurrentBlock } from './block-movement';
+import { openLinkEditor } from './link-tooltip';
+import { focusToolbar } from './toolbar';
 
 export const MARKO_COMMANDS = [
-  "bold", "italic", "strikethrough", "inlineCode", "link", "focusToolbar", "moveBlockUp", "moveBlockDown",
+  'bold',
+  'italic',
+  'strikethrough',
+  'inlineCode',
+  'link',
+  'focusToolbar',
+  'moveBlockUp',
+  'moveBlockDown',
 ] as const;
 export type MarkoCommand = (typeof MARKO_COMMANDS)[number];
 
@@ -21,12 +32,18 @@ const MARKS = {
 
 export function runCommand(ctx: Ctx, command: MarkoCommand): boolean {
   const view = ctx.get(editorViewCtx);
-  if (!view.editable && command !== "focusToolbar") return false;
+  if (!view.editable && command !== 'focusToolbar') return false;
   switch (command) {
-    case "link": openLinkEditor(view); return true;
-    case "focusToolbar": focusToolbar(view); return true;
-    case "moveBlockUp": return moveCurrentBlock(view, -1) !== false;
-    case "moveBlockDown": return moveCurrentBlock(view, 1) !== false;
+    case 'link':
+      openLinkEditor(view);
+      return true;
+    case 'focusToolbar':
+      focusToolbar(view);
+      return true;
+    case 'moveBlockUp':
+      return moveCurrentBlock(view, -1) !== false;
+    case 'moveBlockDown':
+      return moveCurrentBlock(view, 1) !== false;
     default: {
       const done = ctx.get(commandsCtx).call(MARKS[command].key);
       view.focus();

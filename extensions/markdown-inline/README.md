@@ -49,10 +49,6 @@ Frontmatter fields grow with their content without internal scrollbars. Hex
 colors show a swatch, including transparency; click a swatch to select its
 value for editing. YAML mode also shows a compact color palette.
 
-**Improve text** requires the workspace's text-improver CLI and a trusted local
-file; it is unavailable for Remote SSH files. See
-[text-improver.js](text-improver.js) for integration requirements.
-
 ## Source map
 
 - [extension.js](extension.js): VS Code integration and webview boundary.

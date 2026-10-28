@@ -1,11 +1,11 @@
-import type { MarkoCommand } from "../plugins/commands";
+import type { MarkoCommand } from '../plugins/commands';
 
 const FORMAT_SHORTCUTS: Record<string, { command: MarkoCommand; shift: boolean }> = {
-  b: {command: "bold", shift: false},
-  i: {command: "italic", shift: false},
-  x: {command: "strikethrough", shift: true},
-  "`": {command: "inlineCode", shift: false},
-  k: {command: "link", shift: false},
+  b: { command: 'bold', shift: false },
+  i: { command: 'italic', shift: false },
+  x: { command: 'strikethrough', shift: true },
+  '`': { command: 'inlineCode', shift: false },
+  k: { command: 'link', shift: false },
 };
 
 export function formatShortcutForEvent(event: KeyboardEvent): MarkoCommand | null {

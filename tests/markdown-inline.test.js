@@ -302,8 +302,8 @@ test("uses compact accessible icon controls for contextual table actions", () =>
     "utf8"
   );
 
-  assert.match(source, /dataset\.tableActions = "row"/);
-  assert.match(source, /dataset\.tableActions = "column"/);
+  assert.match(source, /dataset\.tableActions = ["']row["']/);
+  assert.match(source, /dataset\.tableActions = ["']column["']/);
   assert.match(source, /title: action\.label/);
   assert.match(css, /\.tb-table-btn\s*\{[^}]*width:\s*26px;/s);
 });
