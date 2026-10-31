@@ -57,7 +57,10 @@ function typedQuery(state: EditorState) {
     $from.marks().length
   )
     return null;
-  const query = /(?:^|\s)\/(l[a-z]*)$/i.exec($from.parent.textContent)?.[1];
+  const text = $from.parent.textContent;
+  // A paragraph holding only the command belongs to the `/` menu, which lists every command.
+  if (/^\/[a-z ]*$/i.test(text)) return null;
+  const query = /\s\/(l[a-z]*)$/i.exec(text)?.[1];
   return query && 'list'.startsWith(query.toLowerCase()) ? query : null;
 }
 

@@ -9,6 +9,7 @@ import {
   bulletListSchema,
   commonmark,
   hardbreakClearMarkPlugin,
+  insertHrInputRule,
   listItemSchema,
   orderedListSchema,
   remarkInlineLinkPlugin,
@@ -87,6 +88,7 @@ import { codeBlockLangView } from './code-lang';
 import { colorPreview } from './color-preview';
 import { runCommand } from './commands';
 import { contentsRail } from './contents';
+import { hrOnEnter } from './hr-input';
 import { htmlEditableView } from './html-editable';
 import { htmlBoundaryInput, htmlTagInputRule } from './html-input';
 import { imageView } from './image';
@@ -103,7 +105,7 @@ import { liquidHighlight } from './liquid-highlight';
 import { markdownPastePlugin } from './markdown-paste';
 import { remarkPlainParentheses } from './parentheses';
 import { selectionSlash } from './selection-slash';
-import { slashCommand } from './slash-command';
+import { type SlashCommand, slashCommand } from './slash-command';
 import { slashList } from './slash-list';
 import { configureTableToolbar, tableToolbar } from './table-toolbar';
 import { taskListView } from './task-list';
@@ -197,6 +199,8 @@ export interface PluginOptions {
   contents: boolean;
   /** Keep undo history in the editor. Disable when the host owns undo. */
   history: boolean;
+  /** Host commands added to the `/` menu. */
+  slashCommands?: readonly SlashCommand[];
 }
 
 export function getEditorPlugins(options: PluginOptions) {
@@ -207,8 +211,9 @@ export function getEditorPlugins(options: PluginOptions) {
     actionHints,
     formatShortcuts,
     softBreakShortcut,
+    hrOnEnter,
     preserveBreakAttributes,
-    slashCommand,
+    slashCommand(options.slashCommands),
     selectionSlash,
     slashList,
     // Empty paragraphs, including table cells, must not become synthetic <br /> tags.
@@ -216,6 +221,7 @@ export function getEditorPlugins(options: PluginOptions) {
     commonmark.filter(
       (plugin) =>
         plugin !== hardbreakClearMarkPlugin &&
+        plugin !== insertHrInputRule &&
         ![...remarkPreserveEmptyLinePlugin, ...remarkInlineLinkPlugin].includes(plugin),
     ),
     remarkResolveReferences,

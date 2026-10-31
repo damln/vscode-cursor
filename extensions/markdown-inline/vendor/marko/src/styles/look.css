@@ -423,6 +423,12 @@
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown li {
   margin: 0.15em 0;
 }
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown li:first-child {
+  margin-top: 0;
+}
+:is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown li:last-child {
+  margin-bottom: 0;
+}
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown li > p {
   margin: 0;
 }
@@ -434,9 +440,12 @@
   color: var(--marko-text-secondary);
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown hr {
+  /* One paragraph line tall, so typing --- swaps a line for a rule without moving the text around it. */
+  box-sizing: content-box;
+  height: 1lh;
+  margin: 0.5em 0;
   border: none;
-  border-top: 1px solid var(--marko-border);
-  margin: 1.5em 0;
+  background: linear-gradient(var(--marko-border), var(--marko-border)) center / 100% 1px no-repeat;
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"]) .milkdown a {
   color: var(--marko-accent);

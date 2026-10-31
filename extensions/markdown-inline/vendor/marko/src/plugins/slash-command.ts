@@ -1,3 +1,4 @@
+import type { Ctx } from '@milkdown/kit/ctx';
 import { codeBlockSchema } from '@milkdown/kit/preset/commonmark';
 import { createTable } from '@milkdown/kit/preset/gfm';
 import type { EditorState } from '@milkdown/kit/prose/state';
@@ -6,18 +7,34 @@ import type { EditorView } from '@milkdown/kit/prose/view';
 import { $prose } from '@milkdown/kit/utils';
 import { matchingSlashCommands } from '../model/slash-command';
 import { slashMenuView } from './floating-panel';
+import { convertSelectedParagraphsToList } from './slash-list';
 
 const slashKey = new PluginKey<{ selected: string } | null>('inline-slash-command');
 
-function availableCommands(state: EditorState): string[] {
+/** A host command offered in the `/` menu after the built-in blocks. */
+export interface SlashCommand {
+  id: string;
+  label: string;
+  /** Icon markup, shown before the label. */
+  icon: string;
+  title?: string;
+  /** Runs once the typed command is removed from its paragraph. */
+  run(view: EditorView): void;
+}
+
+function availableCommands(state: EditorState, extra: readonly SlashCommand[]): string[] {
   const { empty, $from } = state.selection;
   return empty &&
     $from.depth === 1 &&
     $from.parent.type.name === 'paragraph' &&
     $from.parentOffset === $from.parent.content.size &&
     !$from.parent.firstChild?.marks.length
-    ? matchingSlashCommands($from.parent.textContent)
+    ? matchingSlashCommands($from.parent.textContent, extra)
     : [];
+}
+
+function step(matches: string[], selected: string, offset: number) {
+  return matches[(matches.indexOf(selected) + offset + matches.length) % matches.length];
 }
 
 function markSelected(buttons: Map<string, HTMLButtonElement>, selected: string) {
@@ -27,16 +44,26 @@ function markSelected(buttons: Map<string, HTMLButtonElement>, selected: string)
   }
 }
 
-export const slashCommand = $prose((ctx) => {
+export const slashCommand = (extra: readonly SlashCommand[] = []) =>
+  $prose((ctx) => slashPlugin(ctx, extra));
+
+function slashPlugin(ctx: Ctx, extra: readonly SlashCommand[]) {
   function execute(view: EditorView, id = slashKey.getState(view.state)?.selected) {
     if (
       !view.editable ||
       !id ||
       !slashKey.getState(view.state) ||
-      !availableCommands(view.state).includes(id)
+      !availableCommands(view.state, extra).includes(id)
     )
       return false;
     const { $from } = view.state.selection;
+    const host = extra.find((command) => command.id === id);
+    if (host) {
+      view.dispatch(view.state.tr.delete($from.start(), $from.end()).setMeta(slashKey, 'dismiss'));
+      host.run(view);
+      return true;
+    }
+    if (id === 'list') return convertSelectedParagraphsToList(ctx, view, $from.parent.content.size);
     const start = $from.before();
     const node = id === 'table' ? createTable(ctx, 2, 2) : codeBlockSchema.type(ctx).create();
     const transaction = view.state.tr.replaceWith(start, $from.after(), node);
@@ -54,15 +81,14 @@ export const slashCommand = $prose((ctx) => {
       return true;
     }
     if (event.key === 'Enter' || event.key === 'Tab') return execute(view);
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      const matches = availableCommands(view.state);
-      const index = matches.indexOf(menu.selected);
-      const selected =
-        matches[(index + (event.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length];
-      view.dispatch(view.state.tr.setMeta(slashKey, { selected }));
-      return true;
-    }
-    return false;
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return false;
+    const matches = availableCommands(view.state, extra);
+    view.dispatch(
+      view.state.tr.setMeta(slashKey, {
+        selected: step(matches, menu.selected, event.key === 'ArrowDown' ? 1 : -1),
+      }),
+    );
+    return true;
   }
 
   return new Plugin<{ selected: string } | null>({
@@ -72,7 +98,7 @@ export const slashCommand = $prose((ctx) => {
       apply(transaction, menu, _oldState, state) {
         const meta = transaction.getMeta(slashKey);
         if (meta === 'dismiss') return null;
-        const matches = availableCommands(state);
+        const matches = availableCommands(state, extra);
         if (!matches.length || (!transaction.docChanged && !menu)) return null;
         const selected = meta?.selected ?? menu?.selected;
         return { selected: matches.includes(selected) ? selected : matches[0] };
@@ -91,20 +117,23 @@ export const slashCommand = $prose((ctx) => {
       };
       const buttons = new Map<string, HTMLButtonElement>();
       for (const command of [
-        { id: 'code', label: 'Code block', icon: '&lt;/&gt;' },
+        { id: 'code', label: 'Code block', icon: '&lt;/&gt;', title: undefined },
         {
           id: 'table',
+          title: '2 columns, a header row and one body row',
           label: 'Table',
           icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M12 4v16"/></svg>',
         },
+        { id: 'list', label: 'List', icon: '•', title: 'Bullet list' },
+        ...extra,
       ]) {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'inline-slash-option';
         button.setAttribute('role', 'menuitem');
         button.setAttribute('aria-label', `Insert ${command.label.toLowerCase()}`);
-        button.innerHTML = `<span aria-hidden="true">${command.icon}</span><span>${command.label}</span><kbd>↵</kbd>`;
-        if (command.id === 'table') button.title = '2 columns, a header row and one body row';
+        button.innerHTML = `<span class="inline-slash-icon" aria-hidden="true">${command.icon}</span><span>${command.label}</span><kbd>↵</kbd>`;
+        if (command.title) button.title = command.title;
         button.addEventListener('mousedown', (event) => event.preventDefault());
         button.addEventListener('click', () => execute(view, command.id));
         const select = () => {
@@ -130,7 +159,7 @@ export const slashCommand = $prose((ctx) => {
           panel.hide();
           return;
         }
-        const matches = availableCommands(view.state);
+        const matches = availableCommands(view.state, extra);
         const key = matches.join(',');
         if (rendered !== key) {
           menu.replaceChildren(...matches.flatMap((id) => buttons.get(id) ?? []));
@@ -153,4 +182,4 @@ export const slashCommand = $prose((ctx) => {
       };
     },
   });
-});
+}

@@ -86,6 +86,11 @@
   gap: 10px;
   width: 100%;
 }
+:is(.marko, .marko-overlay) .inline-slash-icon {
+  display: inline-flex;
+  flex: 0 0 20px;
+  justify-content: center;
+}
 :is(.marko, .marko-overlay) .frontmatter-card {
   width: calc(min(100%, var(--marko-max-width)) - var(--marko-inset-start) - 2rem);
   margin-inline-start: calc(
