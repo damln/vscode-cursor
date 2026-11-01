@@ -1,0 +1,29 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  js:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Syntax check
+        run: |
+          git ls-files '*.js' '*.cjs' '*.mjs' ':!extensions/markdown-inline/media/*' \
+            | xargs -n1 node --check
+
+      - name: ESLint
+        run: |
+          npx --yes eslint@10.13.0 --no-config-lookup \
+            --ignore-pattern 'extensions/markdown-inline/media/**' \
+            --ignore-pattern 'extensions/jump/**' \
+            --rule '{"no-dupe-keys":"error","no-duplicate-case":"error","no-unreachable":"error","no-debugger":"error","no-self-assign":"error","no-const-assign":"error","no-dupe-else-if":"error","no-unsafe-finally":"error"}' \
+            '**/*.js' '**/*.cjs'
