@@ -25,7 +25,7 @@ export function moveBlockGroup(
   const fragment = Fragment.fromArray(selected.map((unit) => unit.node));
   const between = view.state.doc.slice(
     destination < from ? destination : to,
-    destination < from ? from : destination,
+    Math.max(from, destination),
   ).content;
   const replacement = destination < from ? fragment.append(between) : between.append(fragment);
   const newStart = destination < from ? destination : destination - (to - from);

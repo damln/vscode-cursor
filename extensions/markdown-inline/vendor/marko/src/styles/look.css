@@ -1355,7 +1355,7 @@
 }
 /* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"]
-.link-tooltip-input {
+  .link-tooltip-input {
   border-color: rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.04);
   color: #222;
@@ -1366,7 +1366,7 @@
 }
 /* biome-ignore lint/style/noDescendingSpecificity: the more specific earlier rule is meant to win over this one */
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"]
-.block-tag-label {
+  .block-tag-label {
   color: rgba(0, 0, 0, 0.2);
 }
 :is(.marko, .marko-overlay):not([data-marko-base="none"])[data-marko-scheme="light"]

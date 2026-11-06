@@ -57,3 +57,18 @@ export function preserveListSpacingJoin(
   }
   return undefined;
 }
+
+interface FlowNode {
+  type: string;
+  children?: FlowNode[];
+}
+
+const isEmptyParagraph = (node: FlowNode) => node.type === 'paragraph' && !node.children?.length;
+
+/** An empty paragraph is a line to type on, not authored text. Written out, each one adds two blank lines. */
+export function withoutEmptyParagraphs<T extends FlowNode>(node: T): T {
+  if (!node.children?.length || node.type === 'paragraph') return node;
+  const kept = node.children.filter((child) => !isEmptyParagraph(child));
+  const children = (kept.length ? kept : node.children.slice(0, 1)).map(withoutEmptyParagraphs);
+  return { ...node, children };
+}

@@ -7,6 +7,7 @@ import type { EditorView } from '@milkdown/kit/prose/view';
 import { contiguousMarkedRange } from '../model/link-range';
 import { scopeOf } from '../scope';
 import { floatingTooltip, toolbarPointer } from './floating-panel';
+import { ICON_TRASH } from './icons';
 
 export const linkTooltip = tooltipFactory('link-tooltip');
 /** Time to move the pointer between a link and its panel before the panel closes. */
@@ -20,7 +21,15 @@ export function findLinkAtCursor(
   state: EditorState,
 ): { href: string; from: number; to: number } | null {
   const { selection, schema } = state;
-  if (!selection.empty || !schema.marks.link) return null;
+  if (!schema.marks.link) return null;
+  if (!selection.empty) {
+    let href: string | null = null;
+    state.doc.nodesBetween(selection.from, selection.to, (node) => {
+      href ??= node.marks.find((m) => m.type === schema.marks.link)?.attrs.href ?? null;
+      return href === null;
+    });
+    return href === null ? null : { href, from: selection.from, to: selection.to };
+  }
   const { $from } = selection;
   const mark = $from.marks().find((m) => m.type === schema.marks.link);
   if (!mark) return null;
@@ -90,7 +99,8 @@ export function configureLinkTooltip(ctx: Ctx) {
             copyReset = setTimeout(() => (copy.textContent = 'Copy'), 1200);
           });
       });
-      preview.append(url, copy, open);
+      const unlink = trashButton(() => removeLink());
+      preview.append(url, copy, open, unlink);
       const form = document.createElement('div');
       form.className = 'link-tooltip-edit';
       const input = document.createElement('input');
@@ -185,12 +195,23 @@ export function configureLinkTooltip(ctx: Ctx) {
         view.dispatch(tr);
         view.focus();
       }
-      button('Apply', apply);
-      const remove = button('Remove', () => {
+      function removeLink() {
         close();
         view.dispatch(view.state.tr.removeMark(from, to, view.state.schema.marks.link));
         view.focus();
-      });
+      }
+      function trashButton(action: () => void) {
+        const trash = document.createElement('button');
+        trash.type = 'button';
+        trash.className = 'link-tooltip-btn link-tooltip-remove';
+        trash.innerHTML = ICON_TRASH;
+        trash.title = 'Remove the link';
+        trash.setAttribute('aria-label', 'Remove the link');
+        trash.addEventListener('mousedown', (e) => e.preventDefault());
+        trash.addEventListener('click', action);
+        return trash;
+      }
+      button('Apply', apply);
       button('Open', () => scopeOf(view).host.openLink(input.value.trim()));
       button('Copy', () =>
         scopeOf(view)
@@ -200,6 +221,8 @@ export function configureLinkTooltip(ctx: Ctx) {
             input.reportValidity();
           }),
       );
+      const remove = trashButton(removeLink);
+      form.append(remove);
       button('Close', () => close(true));
       input.addEventListener('input', () => input.setCustomValidity(''));
       el.addEventListener('keydown', (e) => {

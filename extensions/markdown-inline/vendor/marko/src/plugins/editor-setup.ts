@@ -81,7 +81,7 @@ import { history } from '@milkdown/kit/plugin/history';
 import { relaxEscapes } from '../model/escapes';
 import { formatShortcutForEvent } from '../model/format-shortcut';
 import { escapeHtmlText } from '../model/html';
-import { preserveListSpacingJoin } from '../model/markdown-model';
+import { preserveListSpacingJoin, withoutEmptyParagraphs } from '../model/markdown-model';
 import { blockHandle, blockSelection } from './block-handle';
 import { caretSync } from './caret-sync';
 import { codeBlockLangView } from './code-lang';
@@ -282,6 +282,8 @@ export function configureEditor(editor: Editor, config: EditorConfig) {
       join: [...(prev.join ?? []), preserveListSpacingJoin, definitionJoin],
       handlers: {
         ...prev.handlers,
+        root: (node, _parent, state, info) =>
+          state.containerFlow(withoutEmptyParagraphs(node), info),
         text: (node, parent, state, info) =>
           // biome-ignore lint/style/noNonNullAssertion: Milkdown's default stringify options define the text handler
           escapeHtmlText(relaxEscapes(prev.handlers!.text!(node, parent, state, info), node.value)),
@@ -300,7 +302,11 @@ export function configureEditor(editor: Editor, config: EditorConfig) {
         const spec = factory(schemaCtx);
         return {
           ...spec,
-          attrs: { ...spec.attrs, spread: { ...spec.attrs?.spread, validate: 'boolean|string' } },
+          // A new list item is tight. Milkdown's default (true) puts a blank line before a nested list.
+          attrs: {
+            ...spec.attrs,
+            spread: { ...spec.attrs?.spread, default: false, validate: 'boolean|string' },
+          },
         };
       });
     }
