@@ -8,7 +8,7 @@
     "src/mermaid-global.ts": "e50c266b57dd587d077e040d92b3aa1105637666f61c343d7e0d7325a291b4ed",
     "src/mermaid.ts": "35ce6dd5a42e2576c870ddb0615606bb2000d5f3f504f1705f69ffe9a0c4c383",
     "src/model/autocorrect.ts": "bf534489348d54eba915eabdabeac91ccf137c15142d4c65e77e69da6c7ec532",
-    "src/model/color.ts": "69376694f178eba7bcd4d8bdb241bffb47b5b22d1e18cf265efb5efeb09d3db2",
+    "src/model/color.ts": "ce95caa92888f6058ccf31191402e486754b3fb25090bc5945355a9d01feb1a2",
     "src/model/editor-transaction.ts": "8f4068cf6d7dbc5321627c49d04580aefaef376b79b33a5ad351bf6e73e2f1f5",
     "src/model/escapes.ts": "6b12dea43629f0cef03ad15b0af332d72700da4f9f202a881138064533c68b87",
     "src/model/external-document.ts": "b8a5971d9c9b212226c3fb7412cbb53015a4187e4feaa3c065fda95c0627437d",
