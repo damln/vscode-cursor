@@ -110,7 +110,7 @@ import { slashList } from './slash-list';
 import { configureTableToolbar, tableToolbar } from './table-toolbar';
 import { taskListView } from './task-list';
 // Plugins
-import { configureSelectionToolbar, selectionToolbar } from './toolbar';
+import { configureSelectionToolbar, selectionToolbar, type ToolbarActions } from './toolbar';
 
 // Soft breaks serialize as a plain newline and round-trip through Milkdown's
 // existing inline-break parser. Explicit Markdown hard breaks stay unchanged.
@@ -192,6 +192,8 @@ export interface EditorConfig {
   markdown: string;
   spellcheck: boolean;
   onChange: (markdown: string, previousMarkdown: string, typing: boolean) => void;
+  /** What the selection toolbar offers: every action (default), or only bold, italic, strikethrough, code and link. */
+  toolbar?: ToolbarActions;
 }
 
 export interface PluginOptions {
@@ -201,6 +203,8 @@ export interface PluginOptions {
   history: boolean;
   /** Host commands added to the `/` menu. */
   slashCommands?: readonly SlashCommand[];
+  /** The `/` menu and its list shortcuts. On by default. Off for a compact message box. */
+  slashMenu?: boolean;
 }
 
 export function getEditorPlugins(options: PluginOptions) {
@@ -213,9 +217,9 @@ export function getEditorPlugins(options: PluginOptions) {
     softBreakShortcut,
     hrOnEnter,
     preserveBreakAttributes,
-    slashCommand(options.slashCommands),
-    selectionSlash,
-    slashList,
+    ...(options.slashMenu === false
+      ? []
+      : [slashCommand(options.slashCommands), selectionSlash, slashList]),
     // Empty paragraphs, including table cells, must not become synthetic <br /> tags.
     // Reference links keep their reference style instead of being inlined.
     commonmark.filter(
@@ -318,7 +322,7 @@ export function configureEditor(editor: Editor, config: EditorConfig) {
       configureRefractor: () => refractor as any,
     });
 
-    configureSelectionToolbar(ctx);
+    configureSelectionToolbar(ctx, config.toolbar);
     configureTableToolbar(ctx);
     configureLinkTooltip(ctx);
   });

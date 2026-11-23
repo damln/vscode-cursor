@@ -33,7 +33,9 @@ function canShowToolbar(view: EditorView, state: EditorState) {
   return true;
 }
 
-export function configureSelectionToolbar(ctx: Ctx) {
+export type ToolbarActions = 'all' | 'inline';
+
+export function configureSelectionToolbar(ctx: Ctx, offer: ToolbarActions = 'all') {
   const el = document.createElement('div');
   el.className = 'milkdown-selection-toolbar';
   el.setAttribute('role', 'toolbar');
@@ -45,7 +47,9 @@ export function configureSelectionToolbar(ctx: Ctx) {
   buttonsRow.style.display = 'flex';
   buttonsRow.style.alignItems = 'center';
   buttonsRow.style.gap = '2px';
-  const actions = formattingActions(ctx);
+  const actions = formattingActions(ctx).filter(
+    (action) => offer === 'all' || action.group === 'inline',
+  );
   const buttons = actions.map((action, index) => {
     if (index && action.group !== actions[index - 1].group && action.group !== 'move') {
       buttonsRow.append(createToolbarSeparator());
